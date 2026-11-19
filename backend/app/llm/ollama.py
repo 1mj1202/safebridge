@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import json
+import re
 import uuid
 
 import httpx
@@ -49,7 +50,9 @@ class OllamaConversation(Conversation):
             cid = tc.get("id") or uuid.uuid4().hex[:12]
             self._names[cid] = fn.get("name", "")
             calls.append(ToolCall(cid, fn.get("name", ""), args))
-        return StepResult(text=msg.get("content", ""), tool_calls=calls,
+        # 생각(thinking) 태그를 내보내는 모델도 있어 본문에서 지운다
+        text = re.sub(r"<think>.*?</think>", "", msg.get("content") or "", flags=re.S).strip()
+        return StepResult(text=text, tool_calls=calls,
                           stop_reason="tool_use" if calls else "end_turn")
 
     def add_tool_results(self, results: list[tuple[str, str, bool]]) -> None:

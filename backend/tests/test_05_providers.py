@@ -59,3 +59,14 @@ def test_ollama_conversation_parses_tool_calls(monkeypatch):
     assert sent["tools"][0]["function"]["name"] == "get_schedule"
     conv.add_tool_results([(res.tool_calls[0].id, json.dumps({"ok": 1}), False)])
     assert conv.messages[-1] == {"role": "tool", "tool_name": "get_schedule", "content": '{"ok": 1}'}
+
+
+def test_ollama_strips_think_tags(monkeypatch):
+    def fake_post(url, json=None, timeout=None):
+        body = {"message": {"role": "assistant", "content": "<think>음...</think>\n번역문"}}
+        return httpx.Response(200, json=body, request=httpx.Request("POST", url))
+
+    monkeypatch.setattr(ollama.httpx, "post", fake_post)
+    conv = ollama.OllamaProvider("http://x", "qwen3:8b", 5).conversation("sys", [])
+    conv.add_user("hi")
+    assert conv.step().text == "번역문"
