@@ -1,0 +1,26 @@
+{
+  "_note": "핵심 안전용어 고정 번역 사전(팀 작성 초안). 원어민 검수 전. LLM 번역 후 이 용어가 그대로 쓰였는지 검사한다.",
+  "langs": ["ko", "en", "zh", "vi", "th"],
+  "terms": [
+    {"id": "fall", "ko": "추락", "en": "fall from height", "zh": "高处坠落", "vi": "ngã từ trên cao", "th": "การตกจากที่สูง"},
+    {"id": "falling_object", "ko": "낙하물", "en": "falling object", "zh": "坠落物", "vi": "vật rơi", "th": "วัตถุตกหล่น"},
+    {"id": "opening", "ko": "개구부", "en": "floor opening", "zh": "洞口", "vi": "lỗ mở sàn", "th": "ช่องเปิดพื้น"},
+    {"id": "guardrail", "ko": "안전난간", "en": "guardrail", "zh": "安全护栏", "vi": "lan can an toàn", "th": "ราวกันตก"},
+    {"id": "harness", "ko": "안전대", "en": "safety harness", "zh": "安全带", "vi": "dây đai an toàn", "th": "เข็มขัดนิรภัย"},
+    {"id": "helmet", "ko": "안전모", "en": "hard hat", "zh": "安全帽", "vi": "mũ bảo hộ", "th": "หมวกนิรภัย"},
+    {"id": "formwork", "ko": "거푸집", "en": "formwork", "zh": "模板", "vi": "cốp pha", "th": "แบบหล่อ"},
+    {"id": "shoring", "ko": "동바리", "en": "shoring", "zh": "支撑", "vi": "cây chống", "th": "ค้ำยัน"},
+    {"id": "slab", "ko": "슬래브", "en": "slab", "zh": "楼板", "vi": "sàn bê tông", "th": "พื้นคอนกรีต"},
+    {"id": "slab_edge", "ko": "슬래브 단부", "en": "slab edge", "zh": "楼板边缘", "vi": "mép sàn", "th": "ขอบพื้น"},
+    {"id": "rebar", "ko": "철근", "en": "rebar", "zh": "钢筋", "vi": "cốt thép", "th": "เหล็กเสริม"},
+    {"id": "pour", "ko": "콘크리트 타설", "en": "concrete pouring", "zh": "浇筑混凝土", "vi": "đổ bê tông", "th": "การเทคอนกรีต"},
+    {"id": "lifting", "ko": "양중", "en": "lifting", "zh": "吊装", "vi": "cẩu nâng", "th": "การยก"},
+    {"id": "tower_crane", "ko": "타워크레인", "en": "tower crane", "zh": "塔吊", "vi": "cần trục tháp", "th": "ทาวเวอร์เครน"},
+    {"id": "safety_net", "ko": "추락방호망", "en": "safety net", "zh": "安全网", "vi": "lưới an toàn", "th": "ตาข่ายนิรภัย"},
+    {"id": "opening_cover", "ko": "개구부 덮개", "en": "opening cover", "zh": "洞口盖板", "vi": "nắp đậy lỗ mở", "th": "ฝาปิดช่องเปิด"},
+    {"id": "signal", "ko": "신호수", "en": "signal person", "zh": "信号工", "vi": "người xi nhan", "th": "คนให้สัญญาณ"},
+    {"id": "no_entry", "ko": "출입금지", "en": "no entry", "zh": "禁止进入", "vi": "cấm vào", "th": "ห้ามเข้า"},
+    {"id": "stop_work", "ko": "작업중지", "en": "stop work", "zh": "停止作业", "vi": "dừng làm việc", "th": "หยุดงาน"},
+    {"id": "strong_wind", "ko": "강풍", "en": "strong wind", "zh": "大风", "vi": "gió mạnh", "th": "ลมแรง"}
+  ]
+}

@@ -1,0 +1,35 @@
+# 로컬·공개 배포: docker compose up --build   →  http://localhost:8080
+# 시연용 로컬 LLM 까지: docker compose --profile local-llm up --build
+#   (최초 1회) docker compose exec ollama ollama pull qwen3:8b
+#
+# ※ 작성 환경에 Docker 데몬이 없어 실제 기동은 검증하지 못했다 (README '검증 현황' 참고).
+services:
+  api:
+    build: ./backend
+    environment:
+      SAFEBRIDGE_LLM_PROVIDER: ${LLM_PROVIDER:-mock}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      SAFEBRIDGE_OLLAMA_URL: http://ollama:11434
+      SAFEBRIDGE_OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen3:8b}
+      SAFEBRIDGE_DATABASE_URL: sqlite:////data/safebridge.db
+      SAFEBRIDGE_PUBLIC_WEB_URL: ${PUBLIC_WEB_URL:-http://localhost:8080}
+      SAFEBRIDGE_DEMO_TODAY: ${DEMO_TODAY:-}
+      SAFEBRIDGE_KMA_SERVICE_KEY: ${KMA_SERVICE_KEY:-}
+      SAFEBRIDGE_CORS_ORIGINS: '["http://localhost:8080"]'
+    volumes: [apidata:/data]
+    ports: ["8000:8000"]
+
+  web:
+    build: ./frontend
+    depends_on: [api]
+    ports: ["8080:80"]
+
+  ollama:
+    image: ollama/ollama:latest
+    profiles: [local-llm]
+    volumes: [ollama:/root/.ollama]
+    ports: ["11434:11434"]
+
+volumes:
+  apidata:
+  ollama:

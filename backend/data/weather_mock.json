@@ -1,0 +1,10 @@
+{
+  "_note": "가상 기상예보(시연용). SAFEBRIDGE_KMA_SERVICE_KEY 가 있으면 기상청 단기예보 조회서비스를 쓴다. 값: 일 최대 순간풍속(m/s)·시간 최대 강수량(mm/h)·최저/최고기온(℃)",
+  "default": {"wind_gust": 4.0, "rain_mm_h": 0.0, "temp_min": 3.0, "temp_max": 11.0, "sky": "맑음"},
+  "days": {
+    "2026-11-23": {"wind_gust": 6.5, "rain_mm_h": 0.0, "temp_min": 1.0, "temp_max": 9.0, "sky": "구름많음"},
+    "2026-11-24": {"wind_gust": 11.8, "rain_mm_h": 0.0, "temp_min": -1.0, "temp_max": 7.0, "sky": "맑음, 오후 강풍"},
+    "2026-11-25": {"wind_gust": 7.0, "rain_mm_h": 2.5, "temp_min": 2.0, "temp_max": 8.0, "sky": "비"},
+    "2026-11-26": {"wind_gust": 5.0, "rain_mm_h": 0.0, "temp_min": 0.0, "temp_max": 9.0, "sky": "맑음"}
+  }
+}
