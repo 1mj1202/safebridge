@@ -1,0 +1,162 @@
+// BIM 3D 뷰어 — 공정 상태별 부재 색 + 추락(빨강)·낙하(주황) 위험 영역. 영역 클릭 → onZoneClick
+import { useEffect, useRef } from "react";
+import * as THREE from "three";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import type { BimModel, Zone } from "../../shared/types";
+import { ZONE_COLOR, ifcToThree, statusStyle, zoneBox, type Status } from "./scene";
+
+interface Props {
+  model: BimModel;
+  status: Record<string, Status>;
+  zones: Zone[];
+  selected: string[];
+  onZoneClick?: (zone: Zone) => void;
+}
+
+interface Ctx {
+  renderer: THREE.WebGLRenderer;
+  scene: THREE.Scene;
+  camera: THREE.PerspectiveCamera;
+  controls: OrbitControls;
+  meshes: Map<string, THREE.Mesh>;
+  zoneGroup: THREE.Group;
+}
+
+export default function Viewer3D({ model, status, zones, selected, onZoneClick }: Props) {
+  const host = useRef<HTMLDivElement>(null);
+  const ctx = useRef<Ctx | null>(null);
+  const clickRef = useRef(onZoneClick);
+  clickRef.current = onZoneClick;
+
+  // 장면·모델 (모델이 바뀔 때만)
+  useEffect(() => {
+    const el = host.current!;
+    const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    el.appendChild(renderer.domElement);
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xf1f5f9);
+    const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 500);
+    camera.position.set(-22, 30, 38);
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.target.set(15, 6, -9);
+    controls.update();
+    scene.add(new THREE.HemisphereLight(0xffffff, 0x94a3b8, 1.6));
+    const sun = new THREE.DirectionalLight(0xffffff, 1.4);
+    sun.position.set(-30, 50, 20);
+    scene.add(sun);
+    const grid = new THREE.GridHelper(80, 40, 0xcbd5e1, 0xe2e8f0);
+    grid.position.set(15, -0.01, -9);
+    scene.add(grid);
+
+    const meshes = new Map<string, THREE.Mesh>();
+    for (const e of model.elements) {
+      const g = new THREE.BufferGeometry();
+      const v = new Float32Array(e.vertices.length);
+      for (let i = 0; i < e.vertices.length; i += 3) {
+        const [x, y, z] = ifcToThree([e.vertices[i], e.vertices[i + 1], e.vertices[i + 2]]);
+        v[i] = x; v[i + 1] = y; v[i + 2] = z;
+      }
+      g.setAttribute("position", new THREE.BufferAttribute(v, 3));
+      g.setIndex(e.faces);
+      g.computeVertexNormals();
+      const m = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ transparent: true, roughness: 0.8 }));
+      m.userData.tag = e.tag;
+      scene.add(m);
+      meshes.set(e.tag, m);
+    }
+    const zoneGroup = new THREE.Group();
+    scene.add(zoneGroup);
+    ctx.current = { renderer, scene, camera, controls, meshes, zoneGroup };
+
+    const resize = () => {
+      const w = el.clientWidth, h = el.clientHeight;
+      renderer.setSize(w, h);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+    };
+    const ro = new ResizeObserver(resize);
+    ro.observe(el);
+    resize();
+
+    const ray = new THREE.Raycaster();
+    const onClick = (ev: MouseEvent) => {
+      const r = renderer.domElement.getBoundingClientRect();
+      const p = new THREE.Vector2(((ev.clientX - r.left) / r.width) * 2 - 1, -((ev.clientY - r.top) / r.height) * 2 + 1);
+      ray.setFromCamera(p, camera);
+      const hit = ray.intersectObjects(zoneGroup.children, false)[0];
+      if (hit?.object.userData.zone) clickRef.current?.(hit.object.userData.zone as Zone);
+    };
+    renderer.domElement.addEventListener("click", onClick);
+
+    let raf = 0;
+    const loop = () => {
+      raf = requestAnimationFrame(loop);
+      controls.update();
+      renderer.render(scene, camera);
+    };
+    loop();
+    return () => {
+      cancelAnimationFrame(raf);
+      ro.disconnect();
+      renderer.domElement.removeEventListener("click", onClick);
+      controls.dispose();
+      scene.traverse((o) => {
+        if (o instanceof THREE.Mesh) {
+          o.geometry.dispose();
+          (o.material as THREE.Material).dispose();
+        }
+      });
+      renderer.dispose();
+      el.removeChild(renderer.domElement);
+      ctx.current = null;
+    };
+  }, [model]);
+
+  // 공정 상태 색
+  useEffect(() => {
+    const c = ctx.current;
+    if (!c) return;
+    for (const [tag, m] of c.meshes) {
+      const s = statusStyle(status[tag]);
+      const mat = m.material as THREE.MeshStandardMaterial;
+      mat.color.setHex(s.color);
+      mat.opacity = s.opacity;
+      mat.depthWrite = s.opacity > 0.5;
+    }
+  }, [status, model]);
+
+  // 위험 영역
+  useEffect(() => {
+    const c = ctx.current;
+    if (!c) return;
+    for (const o of [...c.zoneGroup.children]) {
+      c.zoneGroup.remove(o);
+      if (o instanceof THREE.Mesh || o instanceof THREE.LineSegments) {
+        o.geometry.dispose();
+        (o.material as THREE.Material).dispose();
+      }
+    }
+    const sel = new Set(selected);
+    for (const z of zones) {
+      const { center, size } = zoneBox(z);
+      const geo = new THREE.BoxGeometry(size[0], size[2], size[1]); // three: x, y(높이), z
+      const on = sel.size === 0 || sel.has(z.id);
+      const mesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({
+        color: ZONE_COLOR[z.kind], transparent: true, opacity: on ? (sel.has(z.id) ? 0.7 : 0.45) : 0.08,
+        depthWrite: false,
+      }));
+      const p = ifcToThree(center);
+      mesh.position.set(p[0], p[1], p[2]);
+      mesh.userData.zone = z;
+      mesh.renderOrder = 2;
+      c.zoneGroup.add(mesh);
+      const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geo),
+        new THREE.LineBasicMaterial({ color: ZONE_COLOR[z.kind], transparent: true, opacity: on ? 1 : 0.2 }));
+      edges.position.copy(mesh.position);
+      c.zoneGroup.add(edges);
+    }
+  }, [zones, selected, model]);
+
+  return <div ref={host} className="h-full w-full overflow-hidden rounded-xl" data-testid="viewer3d" />;
+}

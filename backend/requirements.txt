@@ -1,0 +1,13 @@
+# 이 개발환경(Python 3.13)에서 검증한 버전
+fastapi==0.143.3
+uvicorn[standard]==0.53.0
+sqlalchemy==2.1.5
+pydantic==2.13.5
+pydantic-settings
+ifcopenshell==0.9.0.post1
+numpy
+httpx==0.28.1
+anthropic==2.10.0
+tzdata                   # Windows 에는 시간대 DB 가 없음
+# 테스트
+pytest

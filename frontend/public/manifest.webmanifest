@@ -1,0 +1,9 @@
+{
+  "name": "SafeBridge 세이프브릿지",
+  "short_name": "SafeBridge",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}

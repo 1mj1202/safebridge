@@ -1,0 +1,222 @@
+{
+  "_note": "TBM 카드 문장 은행 — 용어 사전 기준으로 팀이 고정 번역한 짧은 문장. 카드는 이 문장으로 조립하므로 LLM 없이도 같은 결과가 나온다. {storey}·{place} 자리표시자.",
+  "langs": [
+    "ko",
+    "en",
+    "zh",
+    "vi",
+    "th"
+  ],
+  "lang_names": {
+    "ko": "한국어",
+    "en": "English",
+    "zh": "中文",
+    "vi": "Tiếng Việt",
+    "th": "ภาษาไทย"
+  },
+  "phrases": {
+    "card.place": {
+      "ko": "오늘 일할 곳",
+      "en": "Where you work today",
+      "zh": "今天的作业地点",
+      "vi": "Nơi làm việc hôm nay",
+      "th": "พื้นที่ทำงานวันนี้"
+    },
+    "card.hazard": {
+      "ko": "조심할 사고",
+      "en": "Accidents to watch for",
+      "zh": "需要注意的事故",
+      "vi": "Tai nạn cần chú ý",
+      "th": "อุบัติเหตุที่ต้องระวัง"
+    },
+    "card.check": {
+      "ko": "작업 전 확인할 것",
+      "en": "Check before work",
+      "zh": "作业前确认",
+      "vi": "Kiểm tra trước khi làm",
+      "th": "ตรวจสอบก่อนทำงาน"
+    },
+    "place.slab_top": {
+      "ko": "{storey} 슬래브 위",
+      "en": "On top of the {storey} slab",
+      "zh": "{storey}楼板上",
+      "vi": "Trên sàn bê tông tầng {storey}",
+      "th": "บนพื้นคอนกรีตชั้น {storey}"
+    },
+    "place.below": {
+      "ko": "{storey} 슬래브 아래(하부)",
+      "en": "Below the {storey} slab",
+      "zh": "{storey}楼板下方",
+      "vi": "Bên dưới sàn bê tông tầng {storey}",
+      "th": "ใต้พื้นคอนกรีตชั้น {storey}"
+    },
+    "work.거푸집": {
+      "ko": "거푸집 설치 작업",
+      "en": "Formwork installation",
+      "zh": "模板安装作业",
+      "vi": "Lắp dựng cốp pha",
+      "th": "งานติดตั้งแบบหล่อ"
+    },
+    "work.철근": {
+      "ko": "철근 배근 작업",
+      "en": "Rebar placing",
+      "zh": "钢筋绑扎作业",
+      "vi": "Lắp đặt cốt thép",
+      "th": "งานผูกเหล็กเสริม"
+    },
+    "work.타설": {
+      "ko": "콘크리트 타설 작업",
+      "en": "Concrete pouring",
+      "zh": "浇筑混凝土作业",
+      "vi": "Đổ bê tông",
+      "th": "งานเทคอนกรีต"
+    },
+    "work.양중": {
+      "ko": "자재 양중(타워크레인)",
+      "en": "Material lifting (tower crane)",
+      "zh": "材料吊装(塔吊)",
+      "vi": "Cẩu nâng vật liệu (cần trục tháp)",
+      "th": "การยกวัสดุ (ทาวเวอร์เครน)"
+    },
+    "hazard.fall_edge": {
+      "ko": "슬래브 단부에서 추락",
+      "en": "Fall from height at the slab edge",
+      "zh": "楼板边缘高处坠落",
+      "vi": "Ngã từ trên cao ở mép sàn",
+      "th": "การตกจากที่สูงที่ขอบพื้น"
+    },
+    "hazard.fall_opening": {
+      "ko": "개구부로 추락",
+      "en": "Fall from height through a floor opening",
+      "zh": "从洞口高处坠落",
+      "vi": "Ngã từ trên cao xuống lỗ mở sàn",
+      "th": "การตกจากที่สูงลงช่องเปิดพื้น"
+    },
+    "hazard.falling_object": {
+      "ko": "위에서 떨어지는 낙하물에 맞음",
+      "en": "Struck by a falling object from above",
+      "zh": "被上方坠落物击中",
+      "vi": "Bị vật rơi từ trên cao trúng",
+      "th": "ถูกวัตถุตกหล่นจากด้านบน"
+    },
+    "hazard.collapse": {
+      "ko": "거푸집·동바리 무너짐",
+      "en": "Collapse of formwork or shoring",
+      "zh": "模板或支撑坍塌",
+      "vi": "Sập cốp pha hoặc cây chống",
+      "th": "แบบหล่อหรือค้ำยันพังถล่ม"
+    },
+    "hazard.caught": {
+      "ko": "인양물 사이에 끼임",
+      "en": "Caught between lifted loads",
+      "zh": "被吊物夹住",
+      "vi": "Bị kẹt giữa vật cẩu",
+      "th": "ถูกหนีบระหว่างวัสดุที่ยก"
+    },
+    "check.harness": {
+      "ko": "안전대를 걸고 일하세요",
+      "en": "Wear and hook your safety harness",
+      "zh": "系好并挂好安全带",
+      "vi": "Đeo và móc dây đai an toàn",
+      "th": "สวมและเกี่ยวเข็มขัดนิรภัย"
+    },
+    "check.guardrail": {
+      "ko": "안전난간이 있는지 확인하세요",
+      "en": "Check that the guardrail is in place",
+      "zh": "确认安全护栏已安装",
+      "vi": "Kiểm tra lan can an toàn đã có",
+      "th": "ตรวจสอบว่ามีราวกันตก"
+    },
+    "check.opening_cover": {
+      "ko": "개구부 덮개가 고정됐는지 확인하세요",
+      "en": "Check the opening cover is fixed",
+      "zh": "确认洞口盖板已固定",
+      "vi": "Kiểm tra nắp đậy lỗ mở đã cố định",
+      "th": "ตรวจสอบว่าฝาปิดช่องเปิดยึดแน่น"
+    },
+    "check.helmet": {
+      "ko": "안전모 턱끈을 매세요",
+      "en": "Fasten your hard hat chin strap",
+      "zh": "系紧安全帽下颚带",
+      "vi": "Cài quai mũ bảo hộ",
+      "th": "รัดสายคางหมวกนิรภัย"
+    },
+    "check.no_entry_below": {
+      "ko": "작업 구역 아래는 출입금지입니다",
+      "en": "No entry below the work area",
+      "zh": "作业区下方禁止进入",
+      "vi": "Cấm vào khu vực bên dưới",
+      "th": "ห้ามเข้าใต้พื้นที่ทำงาน"
+    },
+    "check.signal": {
+      "ko": "신호수 신호에 따르세요",
+      "en": "Follow the signal person",
+      "zh": "听从信号工指挥",
+      "vi": "Làm theo người xi nhan",
+      "th": "ปฏิบัติตามคนให้สัญญาณ"
+    },
+    "check.shoring": {
+      "ko": "동바리 고정 상태를 확인하세요",
+      "en": "Check the shoring is secure",
+      "zh": "确认支撑牢固",
+      "vi": "Kiểm tra cây chống chắc chắn",
+      "th": "ตรวจสอบค้ำยันให้มั่นคง"
+    },
+    "check.tool_tether": {
+      "ko": "공구는 떨어지지 않게 묶으세요",
+      "en": "Tie tools so they cannot fall",
+      "zh": "工具要系好防坠",
+      "vi": "Buộc dụng cụ để không bị rơi",
+      "th": "ผูกเครื่องมือกันตก"
+    },
+    "weather.wind": {
+      "ko": "강풍 예보: 순간풍속 {value}m/s. 기준을 넘으면 작업중지",
+      "en": "Strong wind forecast: gusts {value} m/s. Stop work if over the limit",
+      "zh": "大风预报: 阵风{value}米/秒。超过标准即停止作业",
+      "vi": "Dự báo gió mạnh: gió giật {value} m/s. Vượt ngưỡng thì dừng làm việc",
+      "th": "พยากรณ์ลมแรง: ลมกระโชก {value} ม./วินาที เกินเกณฑ์ให้หยุดงาน"
+    },
+    "weather.rain": {
+      "ko": "비 예보: 시간당 {value}mm. 미끄럼 주의, 타설 일정 확인",
+      "en": "Rain forecast: {value} mm/h. Watch for slipping, check the pouring schedule",
+      "zh": "降雨预报: 每小时{value}毫米。注意防滑, 确认浇筑计划",
+      "vi": "Dự báo mưa: {value} mm/giờ. Cẩn thận trơn trượt, kiểm tra lịch đổ bê tông",
+      "th": "พยากรณ์ฝน: {value} มม./ชม. ระวังลื่น ตรวจสอบตารางเทคอนกรีต"
+    },
+    "weather.cold": {
+      "ko": "추위: 최저 {value}℃. 결빙·미끄럼 주의",
+      "en": "Cold: low of {value}°C. Watch for ice and slipping",
+      "zh": "寒冷: 最低{value}℃。注意结冰防滑",
+      "vi": "Lạnh: thấp nhất {value}°C. Cẩn thận băng và trơn trượt",
+      "th": "อากาศหนาว: ต่ำสุด {value}°C ระวังน้ำแข็งและลื่น"
+    },
+    "ui.understood": {
+      "ko": "이해했어요",
+      "en": "I understand",
+      "zh": "我明白了",
+      "vi": "Tôi đã hiểu",
+      "th": "เข้าใจแล้ว"
+    },
+    "ui.question": {
+      "ko": "질문 있어요",
+      "en": "I have a question",
+      "zh": "我有问题",
+      "vi": "Tôi có câu hỏi",
+      "th": "มีคำถาม"
+    },
+    "ui.report": {
+      "ko": "위험 신고",
+      "en": "Report a hazard",
+      "zh": "报告危险",
+      "vi": "Báo cáo nguy hiểm",
+      "th": "แจ้งอันตราย"
+    },
+    "ui.listen": {
+      "ko": "듣기",
+      "en": "Listen",
+      "zh": "收听",
+      "vi": "Nghe",
+      "th": "ฟัง"
+    }
+  }
+}
