@@ -19,6 +19,13 @@ SYSTEM = ("You are a construction-site safety translator. Translate exactly, in 
           "with little schooling understands. Output only the translation, nothing else.")
 
 
+def looks_korean(text: str) -> bool:
+    """한글이 글자의 30% 이상이면 한국어 답으로 본다(구역 이름 'A동' 같은 고유명은 허용)."""
+    letters = [c for c in text if c.isalpha()]
+    hangul = sum(1 for c in letters if "\uac00" <= c <= "\ud7a3")
+    return bool(letters) and hangul / len(letters) >= 0.3
+
+
 def _llm(prompt: str) -> str:
     return get_provider().complete(SYSTEM, prompt).strip()
 

@@ -4,13 +4,14 @@
 """
 from __future__ import annotations
 
-from . import glossary
+from . import glossary, names
 from .tbm import PICTO
 
 
-def zones(draft: dict) -> list[dict]:
-    return [{"zone": b["zone"], "storey": b["storey"], "restricted": b["restricted"],
-             "teams": [t["team"] for t in b["teams"]], "langs": b["langs"]} for b in draft.get("briefings", [])]
+def zones(draft: dict, lang: str = "ko") -> list[dict]:
+    return [{"zone": b["zone"], "label": names.zone(b["zone"], lang), "storey": b["storey"],
+             "restricted": b["restricted"], "teams": [names.team(t["trade"], lang) for t in b["teams"]],
+             "langs": b["langs"]} for b in draft.get("briefings", [])]
 
 
 def find(draft: dict, zone: str) -> dict | None:
@@ -44,9 +45,9 @@ def brief(draft: dict, zone: str, lang: str) -> dict | None:
     if b["restricted"]:
         build.insert(0, glossary.phrase("chat.restricted", lang))
     return {
-        "zone": b["zone"], "storey": b["storey"], "restricted": b["restricted"],
-        "teams": [{"team": t["team"], "lead": t["lead"]} for t in b["teams"]],
-        "title": glossary.phrase("chat.today", lang, zone=b["zone"]),
+        "zone": b["zone"], "label": names.zone(b["zone"], lang), "storey": b["storey"], "restricted": b["restricted"],
+        "teams": [{"team": names.team(t["trade"], lang), "lead": names.lead(t["trade"], lang)} for t in b["teams"]],
+        "title": glossary.phrase("chat.today", lang, zone=names.zone(b["zone"], lang)),
         "sections": [
             {"type": "weather", "title": glossary.phrase("chat.weather", lang), "lines": weather},
             {"type": "build", "title": glossary.phrase("chat.build", lang), "lines": [{"text": t} for t in build]},
