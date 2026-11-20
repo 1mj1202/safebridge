@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.core.db import get_db
 from app.models import Issue
-from app.services import field_chat, glossary, issues, zone_brief
+from app.services import field_chat, glossary, issues, names, zone_brief
 
 from .schemas import ChatRequest, IssueRequest
 from .worker import _lang, _tbm
@@ -24,7 +24,7 @@ def zones(token: str, lang: str = "ko", db: Session = Depends(get_db)):
     ui = {k: glossary.phrase(f"chat.{k}", lang) for k in UI_KEYS}
     ui.update({k: glossary.phrase(f"ui.{k}", lang) for k in ("understood", "question", "report", "listen")})
     return {"lang": lang, "langs": glossary.lang_names(), "work_date": a.work_date,
-            "zones": zone_brief.zones(a.draft), "ui": ui}
+            "zones": zone_brief.zones(a.draft, lang), "ui": ui}
 
 
 def _zone(db: Session, token: str, zone: str):
@@ -65,7 +65,7 @@ def issue(token: str, body: IssueRequest, db: Session = Depends(get_db)):
                urgency=tri["urgency"], safety=tri["safety"], translated=tri["translated"], route=route)
     db.add(it)
     db.commit()
-    msgs = [glossary.phrase("chat.sent", lang, lead=route[0])]
+    msgs = [glossary.phrase("chat.sent", lang, lead=names.first_contact((row or {}).get("teams", []), lang))]
     if it.urgency == "urgent":
         msgs.insert(0, glossary.phrase("chat.urgent", lang))
     return {"id": it.id, "key": it.key, "urgency": it.urgency, "route": route, "messages": msgs}

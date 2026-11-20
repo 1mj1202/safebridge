@@ -9,7 +9,7 @@ export default function ZonePicker({ greet, zones, onPick }: { greet: string; zo
         {zones.map((z) => (
           <button key={z.zone} onClick={() => onPick(z.zone)}
             className={`rounded-2xl p-4 text-left shadow ring-1 ${z.restricted ? "bg-slate-100 text-slate-500 ring-slate-200" : "bg-white ring-blue-200"}`}>
-            <div className="text-xl font-bold">{z.restricted ? "⛔" : "📍"} {z.zone}</div>
+            <div className="text-xl font-bold">{z.restricted ? "⛔" : "📍"} {z.label}</div>
             {z.teams.length > 0 && <div className="text-sm text-slate-500">{z.teams.join(" · ")}</div>}
           </button>
         ))}

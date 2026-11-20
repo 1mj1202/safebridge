@@ -588,6 +588,66 @@
       "lo": "ປ່ຽນພື້ນທີ່",
       "tet": "Troka área",
       "my": "နေရာ ပြောင်းရန်"
+    },
+    "zone.building": {
+      "ko": "{b}동",
+      "en": "Building {b}",
+      "zh": "{b}栋",
+      "vi": "Tòa {b}",
+      "th": "อาคาร {b}",
+      "ne": "भवन {b}",
+      "mn": "{b} барилга",
+      "lo": "ອາຄານ {b}",
+      "tet": "Edifísiu {b}",
+      "my": "{b} အဆောက်အအုံ"
+    },
+    "zone.ground": {
+      "ko": "외곽 지상",
+      "en": "outside, ground level",
+      "zh": "外围地面",
+      "vi": "mặt đất bên ngoài",
+      "th": "พื้นดินด้านนอก",
+      "ne": "बाहिरी जमिन",
+      "mn": "гадна газрын түвшин",
+      "lo": "ພື້ນດິນດ້ານນອກ",
+      "tet": "rai li'ur",
+      "my": "အပြင်ဘက် မြေပြင်"
+    },
+    "role.team": {
+      "ko": "{name}팀",
+      "en": "{name} team",
+      "zh": "{name}班组",
+      "vi": "Tổ {name}",
+      "th": "ทีม{name}",
+      "ne": "{name} टोली",
+      "mn": "{name} баг",
+      "lo": "ທີມ{name}",
+      "tet": "Ekipa {name}",
+      "my": "{name} အဖွဲ့"
+    },
+    "role.lead": {
+      "ko": "{team} 반장",
+      "en": "{team} leader",
+      "zh": "{team}班长",
+      "vi": "Tổ trưởng ({team})",
+      "th": "หัวหน้า{team}",
+      "ne": "{team} प्रमुख",
+      "mn": "{team}-ийн ахлагч",
+      "lo": "ຫົວໜ້າ{team}",
+      "tet": "Xefe {team}",
+      "my": "{team} ခေါင်းဆောင်"
+    },
+    "role.construction": {
+      "ko": "원청 공사담당",
+      "en": "main contractor's site engineer",
+      "zh": "总包施工负责人",
+      "vi": "kỹ sư công trường của nhà thầu chính",
+      "th": "วิศวกรสนามของผู้รับเหมาหลัก",
+      "ne": "मुख्य ठेकेदारको साइट इन्जिनियर",
+      "mn": "ерөнхий гүйцэтгэгчийн талбайн инженер",
+      "lo": "ວິສະວະກອນສະໜາມຂອງຜູ້ຮັບເໝົາຫຼັກ",
+      "tet": "enjeñeiru kontratante prinsipál",
+      "my": "ပင်မကန်ထရိုက်တာ၏ လုပ်ငန်းခွင် အင်ဂျင်နီယာ"
     }
   }
 }

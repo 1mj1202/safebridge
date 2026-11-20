@@ -88,7 +88,7 @@ export default function WorkerPage() {
       <header className="flex items-center justify-between gap-2">
         <div className="min-w-0">
           <p className="text-xs text-slate-500">{data.work_date}</p>
-          <h1 className="truncate text-xl font-bold">📍 {zone}</h1>
+          <h1 className="truncate text-xl font-bold">📍 {brief?.zone === zone ? brief.label : zone}</h1>
         </div>
         <div className="flex shrink-0 gap-2">
           <button onClick={() => setBig((b) => !b)} aria-pressed={big}

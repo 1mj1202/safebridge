@@ -1,7 +1,7 @@
 """근로자 현장 챗봇 — 구역 선택 → 브리핑 → 질문 → 이슈(긴급도·전달) → 관리자 회신."""
 import pytest
 
-from app.services import glossary, issues
+from app.services import field_chat, glossary, issues, translate
 
 
 @pytest.fixture(scope="module")
@@ -50,3 +50,32 @@ def test_triage_keywords_offline():
                                                    "translated": True, "urgency": "normal", "safety": False}
     assert issues._parse('<x>{"ko": "균열", "urgency": "urgent"}</x>')["ko"] == "균열"
     assert issues._parse("모르겠음") is None
+
+
+def test_worker_names_follow_language(client, tbm):
+    z = client.get(f"/api/w/{tbm['token']}/zones", params={"lang": "vi"}).json()
+    row = next(r for r in z["zones"] if r["zone"] == "A동 3F-a")
+    assert row["label"] == "Tòa A 3F-a" and "Tổ cốp pha" in row["teams"]
+    b = client.get(f"/api/w/{tbm['token']}/brief", params={"zone": "A동 3F-a", "lang": "th"}).json()
+    assert "อาคาร A" in b["title"] and not translate.looks_korean(b["teams"][0]["lead"])
+    r = client.post(f"/api/w/{tbm['token']}/issue", json={"lang": "vi", "zone": "A동 3F-a", "text": "x"}).json()
+    assert "Tổ trưởng" in r["messages"][-1] and r["route"][0] == "형틀팀 반장"  # 관리자 쪽은 한국어 그대로
+
+
+class _KoreanAnswer:
+    name = "fake"
+
+    def __init__(self): self.calls = []
+
+    def complete(self, system, prompt):
+        self.calls.append(prompt)
+        return "안전대를 착용하세요" if len(self.calls) == 1 else "Hãy đeo dây đai an toàn"
+
+
+def test_chat_retranslates_korean_answer(monkeypatch):
+    fake = _KoreanAnswer()
+    monkeypatch.setattr(field_chat, "get_provider", lambda: fake)
+    monkeypatch.setattr(translate, "get_provider", lambda: fake)
+    r = field_chat.answer("Tôi phải đeo gì?", "vi", "위험: 추락")
+    assert r == {"text": "Hãy đeo dây đai an toàn", "grounded": True} and len(fake.calls) == 2
+    assert translate.looks_korean("안전대를 착용하세요") and not translate.looks_korean("A동 3F-a: Hãy đeo dây đai")

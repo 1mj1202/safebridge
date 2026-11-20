@@ -10,6 +10,7 @@ from app.llm.base import LLMError
 from app.llm.factory import get_provider
 
 from . import glossary
+from . import translate
 from .translate import NAMES
 
 log = logging.getLogger(__name__)
@@ -18,7 +19,8 @@ NO_ANSWER = "NO_ANSWER"
 SYSTEM = ("You are SafeBridge, a construction-site safety assistant talking to a foreign worker. "
           "Answer ONLY using the approved safety briefing given to you. Never invent rules, numbers or permissions. "
           f"If the briefing does not answer the question, reply exactly {NO_ANSWER}. "
-          "Use at most 3 short, plain sentences in the worker's language. No markdown.")
+          "Use at most 3 short, plain sentences in the worker's language, never in Korean "
+          "(the briefing is Korean only for reference). No markdown.")
 
 
 def answer(question: str, lang: str, context_ko: str) -> dict:
@@ -36,4 +38,10 @@ def answer(question: str, lang: str, context_ko: str) -> dict:
         return fallback
     if not text or NO_ANSWER in text:
         return fallback
+    if lang != "ko" and translate.looks_korean(text):
+        # 근거가 한국어라 모델이 한국어로 답하는 경우가 있어 근로자 언어로 다시 옮긴다
+        tr = translate.translate(text, "ko", lang)
+        if not tr["ok"] or translate.looks_korean(tr["text"]):
+            return fallback
+        text = tr["text"]
     return {"text": text, "grounded": True}
