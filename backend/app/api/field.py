@@ -13,7 +13,7 @@ from .worker import _lang, _tbm
 
 router = APIRouter(prefix="/api/w", tags=["field"])
 
-UI_KEYS = ("greet", "ask", "issue", "urgent", "reply", "change_zone", "ask_lead")
+UI_KEYS = ("greet", "ask", "issue", "urgent", "reply", "change_zone", "ask_lead", "scan_hint")
 
 
 @router.get("/{token}/zones")
