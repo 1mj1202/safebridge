@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { api } from "../../shared/api";
 import type { ChatMsg } from "./fieldTypes";
 
-interface IssueStatus { status: "open" | "answered"; answer: string; title: string }
+interface IssueStatus { status: "open" | "answered"; answer: string }
 
 export function useIssueReplies(token: string, msgs: ChatMsg[], add: (m: ChatMsg) => void, ms = 10000) {
   const pending = msgs.filter((m) => m.issue && !msgs.some((r) => r.id === `reply-${m.issue!.id}`));
@@ -13,7 +13,7 @@ export function useIssueReplies(token: string, msgs: ChatMsg[], add: (m: ChatMsg
     const check = () => ids.split(",").forEach((s) => {
       const [id, key] = s.split(":");
       api.get<IssueStatus>(`/w/${token}/issues/${id}?key=${encodeURIComponent(key)}`).then((r) => {
-        if (r.status === "answered") add({ id: `reply-${id}`, from: "lead", tone: "reply", text: `${r.title}: ${r.answer}` });
+        if (r.status === "answered") add({ id: `reply-${id}`, from: "lead", tone: "reply", text: r.answer });
       }).catch(() => undefined);
     });
     const t = setInterval(check, ms);

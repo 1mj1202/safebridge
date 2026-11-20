@@ -65,10 +65,11 @@ def issue(token: str, body: IssueRequest, db: Session = Depends(get_db)):
                urgency=tri["urgency"], safety=tri["safety"], translated=tri["translated"], route=route)
     db.add(it)
     db.commit()
-    msgs = [glossary.phrase("chat.sent", lang, lead=names.first_contact((row or {}).get("teams", []), lang))]
+    lead = names.first_contact((row or {}).get("teams", []), lang)
+    msgs = [glossary.phrase("chat.sent", lang, lead=lead)]
     if it.urgency == "urgent":
         msgs.insert(0, glossary.phrase("chat.urgent", lang))
-    return {"id": it.id, "key": it.key, "urgency": it.urgency, "route": route, "messages": msgs}
+    return {"id": it.id, "key": it.key, "urgency": it.urgency, "route": route, "lead": lead, "messages": msgs}
 
 
 @router.get("/{token}/issues/{iid}")
