@@ -3,7 +3,7 @@ from app.llm.base import ToolSpec
 from app.services import weather
 
 SPEC = ToolSpec(
-    name="check_weather",
+    name="get_weather",
     description="작업일 기상예보(순간풍속·강수·기온)를 조회하고 공종별 작업중지·주의 기준을 판정한다.",
     input_schema={
         "type": "object",

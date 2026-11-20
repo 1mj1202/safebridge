@@ -8,7 +8,7 @@ from app.llm import ollama
 from app.llm.base import ToolSpec
 from app.llm.claude import ClaudeConversation
 
-SPEC = ToolSpec("get_schedule", "d", {"type": "object", "properties": {"date": {"type": "string"}}})
+SPEC = ToolSpec("get_activities", "d", {"type": "object", "properties": {"date": {"type": "string"}}})
 
 
 class _FakeMessages:
@@ -20,7 +20,7 @@ class _FakeMessages:
         return SimpleNamespace(stop_reason="tool_use", content=[
             SimpleNamespace(type="thinking", thinking=""),
             SimpleNamespace(type="text", text="확인합니다"),
-            SimpleNamespace(type="tool_use", id="tu1", name="get_schedule", input={"date": "2026-11-24"}),
+            SimpleNamespace(type="tool_use", id="tu1", name="get_activities", input={"date": "2026-11-24"}),
         ])
 
 
@@ -33,7 +33,7 @@ def test_claude_conversation_keeps_content_and_sends_fallbacks():
     res = conv.step()
     assert res.tool_calls[0].input == {"date": "2026-11-24"} and res.text == "확인합니다"
     kw = fake.calls[0]
-    assert kw["fallbacks"] == "default" and kw["tools"][0]["name"] == "get_schedule"
+    assert kw["fallbacks"] == "default" and kw["tools"][0]["name"] == "get_activities"
     assert "tool_choice" not in kw and "thinking" not in kw
     assert conv.messages[1]["content"][0].type == "thinking"  # thinking 블록 그대로 보존
     conv.add_tool_results([("tu1", "{}", False)])
@@ -47,7 +47,7 @@ def test_ollama_conversation_parses_tool_calls(monkeypatch):
     def fake_post(url, json=None, timeout=None):
         sent.update(json)
         body = {"message": {"role": "assistant", "content": "",
-                            "tool_calls": [{"function": {"name": "get_schedule",
+                            "tool_calls": [{"function": {"name": "get_activities",
                                                          "arguments": {"date": "2026-11-24"}}}]}}
         return httpx.Response(200, json=body, request=httpx.Request("POST", url))
 
@@ -55,10 +55,10 @@ def test_ollama_conversation_parses_tool_calls(monkeypatch):
     conv = ollama.OllamaProvider("http://x", "qwen3:8b", 5).conversation("sys", [SPEC])
     conv.add_user("hi")
     res = conv.step()
-    assert res.stop_reason == "tool_use" and res.tool_calls[0].name == "get_schedule"
-    assert sent["tools"][0]["function"]["name"] == "get_schedule"
+    assert res.stop_reason == "tool_use" and res.tool_calls[0].name == "get_activities"
+    assert sent["tools"][0]["function"]["name"] == "get_activities"
     conv.add_tool_results([(res.tool_calls[0].id, json.dumps({"ok": 1}), False)])
-    assert conv.messages[-1] == {"role": "tool", "tool_name": "get_schedule", "content": '{"ok": 1}'}
+    assert conv.messages[-1] == {"role": "tool", "tool_name": "get_activities", "content": '{"ok": 1}'}
 
 
 def test_ollama_strips_think_tags(monkeypatch):

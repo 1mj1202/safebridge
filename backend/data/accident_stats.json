@@ -20,6 +20,32 @@
    "강풍": 1
   }
  },
+ "by_work": {
+  "source": "국토안전관리원 건설안전사고 재해자특성 2019-2025",
+  "total_accidents": 40714,
+  "rows": {
+   "철근콘크리트공사": {
+    "accidents": 10998,
+    "deaths": 281,
+    "injured": 10845,
+    "share_of_all": 0.27,
+    "age60_deaths": 0.374,
+    "age60_all": 0.313,
+    "foreign_deaths": 0.306,
+    "foreign_all": 0.229
+   },
+   "가설공사": {
+    "accidents": 3867,
+    "deaths": 97,
+    "injured": 3790,
+    "share_of_all": 0.095,
+    "age60_deaths": 0.371,
+    "age60_all": 0.273,
+    "foreign_deaths": 0.134,
+    "foreign_all": 0.124
+   }
+  }
+ },
  "hourly_deaths": {
   "source": "안전보건공단 건설업 시간대별 사고사망자수 2016-2021",
   "slots": [

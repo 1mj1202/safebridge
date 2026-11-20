@@ -8,6 +8,10 @@ def get(trade: str, accident_type: str) -> dict | None:
     return load_json("risk_profile.json")["rows"].get(f"{trade}|{accident_type}")
 
 
+def all_rows() -> list[dict]:
+    return list(load_json("risk_profile.json")["rows"].values())
+
+
 def by_id(rid: str) -> dict | None:
     return next((r for r in load_json("risk_profile.json")["rows"].values() if r["id"] == rid), None)
 

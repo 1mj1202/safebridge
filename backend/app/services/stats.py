@@ -17,6 +17,18 @@ def weather_fact(code: str) -> dict | None:
             "trade": w["trade"], "source": w["source"]}
 
 
+def by_work(kistec01: str) -> dict | None:
+    b = load_json("accident_stats.json").get("by_work", {})
+    row = b.get("rows", {}).get(kistec01)
+    return {**row, "name": kistec01, "source": b["source"]} if row else None
+
+
+def weight(kistec01: str | None) -> float:
+    """빈도 가중치 w = 1 + 전체 사고 중 그 공종 비중 (예: 철근콘크리트공사 27% → 1.27)."""
+    row = by_work(kistec01) if kistec01 else None
+    return round(1 + row["share_of_all"], 2) if row else 1.0
+
+
 def hourly_peak() -> dict:
     h = load_json("accident_stats.json")["hourly_deaths"]
     return {"peak": h["peak"], "source": h["source"]}

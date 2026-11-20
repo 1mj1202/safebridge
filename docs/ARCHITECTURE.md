@@ -4,10 +4,10 @@
 [데이터]  공공데이터 CSV ─scripts/public_data→ data/accidents·risk_profile·accident_stats·synonyms·kosha_guides.json     샘플 IFC(engine/sample_ifc)     가상 예보 / 기상청     조문 요약
              │                                              │ IfcOpenShell 추출
              ▼                                              ▼
-[도구]   get_accident_patterns   get_schedule(4D)   compute_spatial_risk   check_weather   get_law
+[도구]   get_activities(4D·공종키·구역 팀)  get_spatial_hazards  query_hazard_rules(P·S)  search_cases  get_guides  get_regulation  get_weather  get_accident_stats(w)
              └──────────────┬──────────────────────────────────────────────────────────────┘
                             ▼
-[에이전트] app/agent/runner: LLM tool calling 루프 → 필수 도구 보완 → draft.build(코드: 항목·근거·위험도)
+[에이전트] app/agent/runner: LLM tool calling 루프 → 필수 도구 보완 → draft.build(코드: 항목·근거) → ranking(R = P×S×w + 기상, 상위 5) → briefing(구역별 브리핑 골격)
                             → LLM 이 설명·대책·유의사항 작성(JSON) → 병합
                             ▼
 [관리자]  초안 수정·승인 → 발행: tbm.build_cards(문장 은행, 10개 언어) + 평면도 + 관리자 한마디 번역·역번역 → QR

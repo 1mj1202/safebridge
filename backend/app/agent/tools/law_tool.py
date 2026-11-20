@@ -3,7 +3,7 @@ from app.llm.base import ToolSpec
 from app.services import law
 
 SPEC = ToolSpec(
-    name="get_law",
+    name="get_regulation",
     description="근거 조문 ID(예: LAW-42) 목록으로 산업안전보건기준에 관한 규칙 조문 요약을 조회한다.",
     input_schema={
         "type": "object",

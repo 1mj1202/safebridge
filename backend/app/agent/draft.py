@@ -1,13 +1,14 @@
 """위험성평가 초안 골격 — 도구 결과로 항목·근거·위험도를 코드가 정한다(결정론적).
 
 LLM 은 이 골격의 설명 문장·시공 유의사항만 쓴다. 근거가 없는 항목은 evidence_status='확인 불가'.
-위험도 = 빈도 × 강도 → 상/중/하.
-  빈도·강도: 국토안전관리원 위험요소 프로파일의 공종×사고유형별 사고가능성·심각성(1~5) 평균.
-  프로파일이 없으면 사고사례 내 비중으로 빈도를 정한다. 강도는 위험별 최소값(BASE_SEVERITY) 아래로 내려가지 않는다.
+위험도·순위: ranking.py (R = P × S × w + 기상, 상위 5). 프로파일이 없으면 사고사례 비중과 위험별 최소 강도로 상/중/하.
+구역별 챗봇 브리핑 골격: briefing.py.
 """
 from __future__ import annotations
 
-from app.services import guides, patterns, risk_profile, stats
+from app.services import crosswalk, guides, patterns, risk_profile, stats
+
+from . import briefing, ranking
 
 # 위험 키 → (위험명, 사고유형, 기인물 필터, 영역 판별, 근로자 확인 문장 키, 추가 조문)
 HAZARDS = {
@@ -58,12 +59,12 @@ def _profile(trades: list[str], acc_types: list[str]) -> dict | None:
 
 
 def build(day: str, storey: str | None, results: dict) -> dict:
-    tasks = results.get("get_schedule", {}).get("tasks", [])
+    tasks = results.get("get_activities", {}).get("tasks", [])
     trades = sorted({t["trade"] for t in tasks if t["trade"] != "양생"})
-    zones = results.get("compute_spatial_risk", {}).get("zones", [])
-    pats = results.get("get_accident_patterns", {})  # trade → pattern
-    wx = results.get("check_weather", {})
-    laws = {a["id"]: a for a in results.get("get_law", {}).get("articles", [])}
+    zones = results.get("get_spatial_hazards", {}).get("zones", [])
+    pats = results.get("search_cases", {})  # trade → pattern
+    wx = results.get("get_weather", {})
+    laws = {a["id"]: a for a in results.get("get_regulation", {}).get("articles", [])}
 
     keys: list[str] = []
     for tr in trades:
@@ -142,10 +143,16 @@ def build(day: str, storey: str | None, results: dict) -> dict:
             "evidence_status": "근거 있음", "explanation": "",
         })
 
+    items = ranking.apply(items, wx.get("alerts", []))
+    sched = results.get("get_activities", {})
+    briefings = briefing.build(items, sched.get("zones", []), zones, wx.get("alerts", []))
+
     return {
         "date": day,
         "storey": storey or "/".join(sorted({t["storey"] for t in tasks})),
-        "tasks": [{"id": t["id"], "name": t["name"], "trade": t["trade"], "crew": t["crew"]} for t in tasks],
+        "tasks": [{"id": t["id"], "name": t["name"], "trade": t["trade"], "crew": t["crew"],
+                   "work_key": crosswalk.work_key(t["trade"])} for t in tasks],
+        "briefings": briefings,
         "items": items,
         "laws": [laws[i] for i in sorted({i for it in items for i in it["evidence"]["laws"]}) if i in laws],
         "forecast": wx.get("forecast"),

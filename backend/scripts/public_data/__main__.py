@@ -23,7 +23,11 @@ def main() -> None:
         "kosha_guides.json": lambda: terms.guides(a.src),
     }
     if any(a.src.rglob("*.pdf")):  # 용어 400선 PDF 가 있으면(PyMuPDF 필요)
-        jobs["terms400.json"] = lambda: terms400.build(a.src)
+        try:
+            import fitz  # noqa: F401
+            jobs["terms400.json"] = lambda: terms400.build(a.src)
+        except ImportError:
+            print("terms400.json: 건너뜀(pip install pymupdf 필요)")
     for name, job in jobs.items():
         obj = job()
         write_json(a.out / name, obj, compact=name == "accidents.json")

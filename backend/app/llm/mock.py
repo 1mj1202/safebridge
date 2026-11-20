@@ -48,22 +48,27 @@ class MockConversation(Conversation):
         day = (re.search(r"\d{4}-\d{2}-\d{2}", ctx) or [None])[0]
         storey = re.search(r"(\d+)\s*(?:층|F)", ctx)
         storey = f"{storey.group(1)}F" if storey else None
-        if "get_schedule" not in called:
+        if "get_activities" not in called:
             args = {"date": day} | ({"storey": storey} if storey else {})
-            return StepResult("", [self._call("get_schedule", args)], "tool_use")
-        if "get_accident_patterns" not in called:
-            sched = next(r["data"] for r in self.results if r["name"] == "get_schedule")
+            return StepResult("", [self._call("get_activities", args)], "tool_use")
+        if "search_cases" not in called:
+            sched = next(r["data"] for r in self.results if r["name"] == "get_activities")
             trades = sorted({t["trade"] for t in sched.get("tasks", []) if t["trade"] != "양생"})
-            calls = [self._call("get_accident_patterns", {"trade": t}) for t in trades]
-            calls.append(self._call("compute_spatial_risk", {"date": day} | ({"storey": storey} if storey else {})))
-            calls.append(self._call("check_weather", {"date": day, "trades": trades}))
+            calls = [self._call("search_cases", {"trade": t}) for t in trades]
+            calls.append(self._call("get_spatial_hazards", {"date": day} | ({"storey": storey} if storey else {})))
+            calls.append(self._call("get_weather", {"date": day, "trades": trades}))
+            keys = sorted({t["work_key"] for t in sched.get("tasks", []) if t.get("work_key")})
+            calls += [self._call("query_hazard_rules", {"work_key": k}) for k in keys]
+            calls += [self._call("get_accident_stats", {"work_key": k}) for k in keys]
+            calls.append(self._call("get_guides", {"hazards": ["fall_edge", "fall_opening", "falling_object",
+                                                               "collapse", "caught"]}))
             return StepResult("", calls, "tool_use")
-        if "get_law" not in called:
-            ids = sorted({z["rule"] for r in self.results if r["name"] == "compute_spatial_risk"
+        if "get_regulation" not in called:
+            ids = sorted({z["rule"] for r in self.results if r["name"] == "get_spatial_hazards"
                           for z in r["data"].get("zones", [])}
-                         | {a["rule"] for r in self.results if r["name"] == "check_weather"
+                         | {a["rule"] for r in self.results if r["name"] == "get_weather"
                             for a in r["data"].get("alerts", []) if a.get("rule")})
-            return StepResult("", [self._call("get_law", {"ids": ids})], "tool_use")
+            return StepResult("", [self._call("get_regulation", {"ids": ids})], "tool_use")
         return StepResult(text="도구 결과를 모두 확인했습니다.")
 
     @staticmethod

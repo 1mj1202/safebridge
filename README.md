@@ -16,7 +16,9 @@ LLM은 도구 선택과 설명 문장, 관리자 한마디·근로자 신고 번
 - **위험도 근거**: 국토안전관리원 위험요소 프로파일(철근콘크리트·가설공사)의 공종×사고유형별 사고가능성·심각성 평균으로 빈도×강도 산정, 항목마다 관련 KOSHA GUIDE, 기상 항목에는 날씨별 사고 통계
 - **BIM·4D**: 샘플 IFC 생성기(5층 RC 골조, 개구부 2개/층) → IfcOpenShell 추출 → 공정(층별 골조 사이클) 연결, 날짜별 부재 상태(완료·진행·미시공)
 - **공간 위험**: 슬래브 작업 층 단부 1m 띠·개구부 둘레(추락, 빨강), 작업 슬래브 하부·개구부 직하부·외곽 지상(낙하, 주황), 영역마다 부재 ID·조문 ID
-- **안전 에이전트**: LLM tool calling 도구 5개(공정·재해 패턴·공간 위험·기상·조문), 빠진 필수 도구는 코드가 보완 호출, 근거 없는 항목은 '확인 불가'
+- **안전 에이전트**: LLM tool calling 도구 8개(진행 활동·위험 구역·위험 규칙·유사 사망사고·KOSHA GUIDE·근거 조문·기상·사고 통계), 빠진 필수 도구는 코드가 보완 호출, 근거 없는 항목은 '확인 불가'
+- **위험 순위**: R = 사고가능성 P × 심각성 S × 공종 사고 빈도 w + 기상 보정, 상위 5개. 표준 공종키(RC-FORM·RC-REBAR·RC-POUR·LIFT-CRANE, `data/crosswalk.json`)
+- **구역·팀 배정**: "A동 3F-a" 구역 × 협력업체 팀(`data/site.json`, 개인 정보 없음), 구역별 챗봇 브리핑 골격(날씨·시공·안전)
 - **LLM 공급자 교체**: `SAFEBRIDGE_LLM_PROVIDER=claude | ollama | mock` — 개발은 Claude API, 시연은 Ollama 로컬 모델, 키 없으면 mock
 - **다국어 TBM (10개 언어)**: 한국어·영어·중국어·베트남어·태국어 + 네팔어·몽골어·라오어·테툼어(동티모르)·미얀마어. 새 5개 언어는 안전보건공단 「외국인 노동자 안전보건용어 400선」 용어를 우선 사용(`data/terms400.json`, 약 380개 용어·예문 추출). 안전용어 고정 번역 사전 20개 + 카드 문장 은행, 언어별 핵심 용어 유지율, 관리자 한마디 번역·역번역
 - **근로자 모바일 웹**: QR 접속(로그인 없음), 언어 선택, 평면도·픽토그램 카드 3장, 음성(Web Speech API), 큰 글씨 모드, 이해 확인, 모국어 질문·위험 신고 → 한국어 번역
@@ -35,7 +37,7 @@ safebridge/
 │  │  ├─ core/           설정(SAFEBRIDGE_*) · DB · '오늘'(시간대·시연 고정)
 │  │  ├─ models/         SQLAlchemy 표 (위험성평가 · TBM · 확인 · 신고)
 │  │  ├─ llm/            공급자 인터페이스 + claude · ollama · mock + factory
-│  │  ├─ agent/          에이전트 루프(runner) · 프롬프트 · 초안 골격(draft) · tools/ 도구 5개
+│  │  ├─ agent/          에이전트 루프(runner) · 프롬프트 · 초안 골격(draft) · ranking · briefing · tools/ 도구 8개
 │  │  ├─ services/       bim · schedule · risk · patterns · weather(+kma) · law · glossary · translate · tbm
 │  │  ├─ api/            FastAPI 라우터 (bim · reference · assessments · worker)
 │  │  └─ main.py         API 진입점

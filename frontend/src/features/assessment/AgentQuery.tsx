@@ -4,8 +4,9 @@ import { Button, Panel } from "../../shared/ui";
 import type { TraceStep } from "../../shared/types";
 
 const TOOL_LABEL: Record<string, string> = {
-  get_schedule: "공정 조회", get_accident_patterns: "재해 패턴 조회", compute_spatial_risk: "공간 위험 계산",
-  check_weather: "기상 판정", get_law: "조문 조회",
+  get_activities: "진행 활동", search_cases: "유사 사망사고", get_spatial_hazards: "위험 구역",
+  get_weather: "기상 판정", get_regulation: "근거 조문", query_hazard_rules: "위험 규칙(P·S)",
+  get_accident_stats: "사고 통계", get_guides: "KOSHA GUIDE",
 };
 
 export default function AgentQuery({ busy, onAsk, trace, provider }: {

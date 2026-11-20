@@ -1,9 +1,9 @@
 """도구: 공간 위험 계산 — 날짜(·층) 진행 작업 × BIM → 추락·낙하 위험 영역."""
 from app.llm.base import ToolSpec
-from app.services import risk
+from app.services import risk, site
 
 SPEC = ToolSpec(
-    name="compute_spatial_risk",
+    name="get_spatial_hazards",
     description="BIM 모델과 해당 날짜 공정으로 추락 위험 영역(슬래브 단부·개구부 둘레)과 낙하 위험 영역"
                 "(상부 작업 직하부·외곽 지상)을 계산한다. 각 영역에 부재 ID 와 근거 조문 ID 가 붙는다.",
     input_schema={
@@ -20,5 +20,19 @@ SPEC = ToolSpec(
 def run(args: dict) -> dict:
     zones = risk.zones_on(args["date"], args.get("storey") or None)
     return {"date": args["date"], "zones": [
-        {k: z[k] for k in ("id", "kind", "label", "storey", "element_tags", "rule")} for z in zones
+        {**{k: z[k] for k in ("id", "kind", "label", "storey", "element_tags", "rule")}, "site_zones": site_zones(z)}
+        for z in zones
     ]}
+
+
+def site_zones(z: dict) -> list[str]:
+    """위험 영역 → 근로자 구역. 하부 낙하 영역은 아래층 구역, 외곽 지상은 '외곽 지상'."""
+    if "-GROUND-" in z["id"]:
+        return [f"{site.info()['building']} 외곽 지상"]
+    storey = z["storey"]
+    if z["id"].endswith("-BELOW") or z["id"].endswith("-SHAFT"):
+        n = int(storey.rstrip("F")) - 1
+        if n < 1:
+            return []
+        storey = f"{n}F"
+    return site.zones_for_box(storey, z["min"], z["max"])

@@ -46,7 +46,7 @@ def run(provider: LLMProvider, query: str, today: date, day: str | None = None,
         storey: str | None = None) -> dict:
     day, storey = _resolve(query, day, storey, today)
     trace: list[dict] = []
-    results: dict = {"get_accident_patterns": {}}
+    results: dict = {"search_cases": {}}
 
     def execute(name: str, args: dict, auto: bool = False) -> tuple[str, bool]:
         if name not in TOOLS:
@@ -61,8 +61,11 @@ def run(provider: LLMProvider, query: str, today: date, day: str | None = None,
             log.exception("도구 실패 %s", name)
             trace.append({"tool": name, "input": args, "ok": False, "auto": auto, "error": str(e)})
             return json.dumps({"error": str(e)}, ensure_ascii=False), True
-        if name == "get_accident_patterns":
+        if name == "search_cases":
             results[name][args["trade"]] = out
+        elif name in ("query_hazard_rules", "get_accident_stats"):
+            results.setdefault("_rules" if name == "query_hazard_rules" else "_stats", set()).add(args.get("work_key"))
+            results.setdefault(name, {})[args.get("work_key")] = out
         else:
             results[name] = out
         trace.append({"tool": name, "input": args, "ok": True, "auto": auto})
@@ -86,21 +89,27 @@ def run(provider: LLMProvider, query: str, today: date, day: str | None = None,
         log.warning("에이전트 LLM 오류: %s", e)
 
     # 필수 도구 보완
-    if "get_schedule" not in results:
-        execute("get_schedule", {"storey": storey} if storey else {}, auto=True)
-    trades = sorted({t["trade"] for t in results["get_schedule"]["tasks"] if t["trade"] != "양생"})
+    if "get_activities" not in results:
+        execute("get_activities", {"storey": storey} if storey else {}, auto=True)
+    trades = sorted({t["trade"] for t in results["get_activities"]["tasks"] if t["trade"] != "양생"})
     for tr in trades:
-        if tr not in results["get_accident_patterns"]:
-            execute("get_accident_patterns", {"trade": tr}, auto=True)
-    if "compute_spatial_risk" not in results:
-        execute("compute_spatial_risk", {"storey": storey} if storey else {}, auto=True)
-    if "check_weather" not in results:
-        execute("check_weather", {"trades": trades}, auto=True)
+        if tr not in results["search_cases"]:
+            execute("search_cases", {"trade": tr}, auto=True)
+    if "get_spatial_hazards" not in results:
+        execute("get_spatial_hazards", {"storey": storey} if storey else {}, auto=True)
+    if "get_weather" not in results:
+        execute("get_weather", {"trades": trades}, auto=True)
+    # 위험 순위 근거(P·S·w)도 추적에 남긴다 — 값은 같은 데이터에서 코드가 다시 읽는다
+    for k in sorted({t["work_key"] for t in results["get_activities"]["tasks"] if t.get("work_key")}):
+        if k not in results.get("_rules", set()):
+            execute("query_hazard_rules", {"work_key": k}, auto=True)
+        if k not in results.get("_stats", set()):
+            execute("get_accident_stats", {"work_key": k}, auto=True)
     skeleton = draft.build(day, storey, results)
     need_laws = sorted({i for it in skeleton["items"] for i in it["evidence"]["laws"]})
-    have = {a["id"] for a in results.get("get_law", {}).get("articles", [])}
+    have = {a["id"] for a in results.get("get_regulation", {}).get("articles", [])}
     if set(need_laws) - have:
-        execute("get_law", {"ids": need_laws}, auto=True)
+        execute("get_regulation", {"ids": need_laws}, auto=True)
         skeleton = draft.build(day, storey, results)
 
     # 설명 작성

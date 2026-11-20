@@ -82,6 +82,10 @@ export interface DraftItem {
   checks: string[];
   evidence: { cases: string[]; elements: string[]; zones: string[]; laws: string[]; guides?: string[]; forecast?: Forecast };
   profile?: { id: string; n: number; likelihood: number; severity: number } | null;
+  risk_rank?: number;
+  risk_score?: number;
+  top?: boolean;
+  rank_basis?: { p: number; s: number; p_raw: number; s_raw: number; w: number; weather: number } | null;
   stat?: { weather: string; count: number; total: number; fatal: number; trade: string; source: string } | null;
   evidence_status: string;
   explanation: string;
