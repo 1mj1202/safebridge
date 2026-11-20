@@ -4,21 +4,20 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { api } from "../../shared/api";
 import { useFetch } from "../../shared/hooks";
-import BriefMessage from "./BriefMessage";
+import BriefMessage, { briefSpeech } from "./BriefMessage";
 import ChatInput, { type Mode } from "./ChatInput";
 import type { Brief, ChatMsg, ZonesData } from "./fieldTypes";
 import LangPicker from "./LangPicker";
+import MessageList from "./MessageList";
 import { THANKS } from "./messages";
+import SideMenu from "./SideMenu";
+import { speak } from "./speech";
 import { once, remember } from "./storage";
+import SuggestionChips from "./SuggestionChips";
+import TopBar from "./TopBar";
 import { useIssueReplies } from "./useIssueReplies";
 import { useNfcZone } from "./useNfcZone";
 import ZonePicker from "./ZonePicker";
-
-const BUBBLE = {
-  me: "ml-auto rounded-tr-none bg-blue-600 text-white",
-  bot: "rounded-tl-none bg-white",
-  lead: "rounded-tl-none bg-emerald-50 ring-1 ring-emerald-300",
-} as const;
 
 function loadMsgs(k: string): ChatMsg[] {
   try { return JSON.parse(sessionStorage.getItem(k) ?? "[]") as ChatMsg[]; } catch { return []; }
@@ -33,6 +32,8 @@ export default function WorkerPage() {
   const [big, setBig] = useState(false);
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
+  const [menu, setMenu] = useState(false);
+  const [mode, setMode] = useState<Mode>("ask");
   const { data, error } = useFetch<ZonesData>(`/w/${token}/zones?lang=${lang ?? "ko"}`);
   const { data: brief } = useFetch<Brief>(lang && zone ? `/w/${token}/brief?lang=${lang}&zone=${encodeURIComponent(zone)}` : null);
   const msgKey = `sb-chat-${token}-${zone}-${lang}`;
@@ -57,7 +58,7 @@ export default function WorkerPage() {
   if (!lang) return <LangPicker langs={data.langs} onPick={(l) => setLang(remember(`sb-lang-${token}`, l) ?? l)} />;
   const ui = data.ui;
   if (!zone || (data.zones.length && !data.zones.some((z) => z.zone === zone))) {
-    return <ZonePicker greet={ui.greet} hint={ui.scan_hint} zones={data.zones} onPick={pickZone} nfc={nfc} />;
+    return <ZonePicker greet={ui.greet} zones={data.zones} onPick={pickZone} nfc={nfc} />;
   }
 
   const send = async (mode: Mode, text: string) => {
@@ -70,12 +71,14 @@ export default function WorkerPage() {
         const r = await api.post<{ text: string }>(`/w/${token}/chat`, { lang, zone, message: text });
         add({ id: `bot-${now}`, from: "bot", text: r.text });
       } else {
-        const r = await api.post<{ id: number; key: string; urgency: string; messages: string[] }>(
+        const r = await api.post<{ id: number; key: string; urgency: string; lead?: string; messages: string[] }>(
           `/w/${token}/issue`, { lang, zone, text });
-        r.messages.forEach((m, i) => add({
+        const shown = r.lead ? [...r.messages.slice(0, -1), `✓ ${r.lead}`] : r.messages; // 전달 확인은 짧게
+        setMode("ask");
+        shown.forEach((m, i) => add({
           id: `bot-${now}-${i}`, from: "bot", text: m,
           tone: r.urgency === "urgent" && i === 0 ? "urgent" : "info",
-          issue: i === r.messages.length - 1 ? { id: r.id, key: r.key } : undefined,
+          issue: i === shown.length - 1 ? { id: r.id, key: r.key } : undefined,
         }));
       }
     } catch {
@@ -87,44 +90,27 @@ export default function WorkerPage() {
   // 질문을 보낸 근로자는 '질문 있음'으로 한 번 집계 (관리자 TBM 확인 현황)
   const ack = (status: "understood" | "question") => api.post(`/w/${token}/ack`, { lang, status }).catch(() => undefined);
 
+  const title = brief?.zone === zone ? brief.label : zone;
+  const understood = () => { ack("understood"); setDone(true); };
+
   return (
-    <div className="mx-auto max-w-md space-y-3 bg-slate-100 p-4 pb-64">
-      <header className="flex items-center justify-between gap-2">
-        <div className="min-w-0">
-          <p className="text-xs text-slate-500">{data.work_date}</p>
-          <h1 className="break-words text-lg font-bold leading-tight">📍 {brief?.zone === zone ? brief.label : zone}</h1>
-        </div>
-        <div className="flex shrink-0 gap-2">
-          <button onClick={() => setBig((b) => !b)} aria-pressed={big}
-            className={`rounded-full px-3 py-1.5 text-sm font-bold ${big ? "bg-slate-900 text-white" : "bg-white ring-1 ring-slate-300"}`}>가 A+</button>
-          {nfc.supported && (
-            <button onClick={nfc.start} aria-pressed={nfc.active} aria-label="NFC"
-              className={`rounded-full px-3 py-1.5 text-sm ${nfc.active ? "bg-blue-600 text-white" : "bg-white ring-1 ring-slate-300"}`}>📶</button>
-          )}
-          <button onClick={() => setZone(remember(`sb-zone-${token}`, null))} aria-label={ui.change_zone}
-            className="rounded-full bg-white px-3 py-1.5 text-sm ring-1 ring-slate-300">🔀</button>
-          <button onClick={() => setLang(remember(`sb-lang-${token}`, null))}
-            className="rounded-full bg-white px-3 py-1.5 text-sm ring-1 ring-slate-300">🌐 {data.langs[lang]}</button>
-        </div>
-      </header>
+    <div className="mx-auto min-h-screen max-w-md bg-white">
+      <TopBar title={title} onMenu={() => setMenu(true)} listen={ui.listen}
+        onListen={brief ? () => speak(briefSpeech(brief), lang) : undefined} />
+      <SideMenu open={menu} onClose={() => setMenu(false)} zones={data.zones} zone={zone} onZone={pickZone} nfc={nfc}
+        langs={data.langs} lang={lang} onLang={(l) => setLang(remember(`sb-lang-${token}`, l) ?? l)} big={big} onBig={setBig} />
 
-      {brief ? <BriefMessage brief={brief} lang={lang} big={big} listen={ui.listen} token={token} /> : <p className="text-slate-500">…</p>}
+      <main className="space-y-5 px-4 pb-48 pt-4">
+        {brief ? <BriefMessage brief={brief} big={big} token={token} /> : <p className="text-slate-400">…</p>}
+        <MessageList msgs={msgs} big={big} />
+        {done && <p className={big ? "text-xl" : "text-base"}>{THANKS[lang]}</p>}
+        <div ref={end} />
+      </main>
 
-      {msgs.map((m) => (
-        <p key={m.id} className={`max-w-[85%] whitespace-pre-wrap rounded-2xl p-3 shadow ${BUBBLE[m.from]} ${big ? "text-xl" : "text-base"}
-          ${m.tone === "urgent" ? "!bg-red-600 font-bold text-white" : ""}`}>
-          {m.from === "bot" && "🤖 "}{m.from === "lead" && "👷 "}{m.text}
-        </p>
-      ))}
-      <div ref={end} />
-      {done && <p className="rounded-xl bg-emerald-50 p-3 text-center text-emerald-800">{THANKS[lang]}</p>}
-
-      <div className="fixed inset-x-0 bottom-0 mx-auto max-w-md space-y-2 bg-white/95 p-3 shadow-[0_-2px_8px_rgba(0,0,0,0.08)]">
-        {!done && (
-          <button onClick={() => { ack("understood"); setDone(true); }}
-            className="w-full rounded-xl bg-emerald-600 py-2.5 font-bold text-white">👍 {ui.understood}</button>
-        )}
-        <ChatInput lang={lang} busy={busy} labels={{ ask: ui.question, issue: ui.report }}
+      <div className="fixed inset-x-0 bottom-0 mx-auto max-w-md bg-gradient-to-t from-white via-white to-white/0 px-3 pb-3 pt-4">
+        <SuggestionChips understood={done ? undefined : ui.understood} onUnderstood={understood}
+          report={ui.report} onReport={() => setMode("issue")} />
+        <ChatInput lang={lang} mode={mode} onMode={setMode} busy={busy} labels={{ ask: ui.question, issue: ui.report }}
           hints={{ ask: ui.ask, issue: ui.issue }} onSend={send} />
       </div>
     </div>
