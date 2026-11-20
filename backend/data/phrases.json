@@ -648,6 +648,18 @@
       "lo": "ວິສະວະກອນສະໜາມຂອງຜູ້ຮັບເໝົາຫຼັກ",
       "tet": "enjeñeiru kontratante prinsipál",
       "my": "ပင်မကန်ထရိုက်တာ၏ လုပ်ငန်းခွင် အင်ဂျင်နီယာ"
+    },
+    "chat.scan_hint": {
+      "ko": "구역 입구의 QR이나 NFC를 찍으면 그 구역이 바로 열려요",
+      "en": "Scan the QR or tap the NFC tag at the zone entrance to open that zone",
+      "zh": "扫描区域入口的二维码或触碰NFC标签，即可打开该区域",
+      "vi": "Quét mã QR hoặc chạm thẻ NFC ở lối vào khu vực để mở khu vực đó",
+      "th": "สแกน QR หรือแตะแท็ก NFC ที่ทางเข้าพื้นที่เพื่อเปิดพื้นที่นั้น",
+      "ne": "क्षेत्रको प्रवेशद्वारमा रहेको QR स्क्यान गर्नुहोस् वा NFC ट्यागमा फोन छुवाउनुहोस्",
+      "mn": "Бүсийн орцны QR-ыг уншуулах эсвэл NFC шошгонд утсаа хүргэвэл тухайн бүс нээгдэнэ",
+      "lo": "ສະແກນ QR ຫຼື ແຕະແທັກ NFC ທີ່ທາງເຂົ້າພື້ນທີ່ ເພື່ອເປີດພື້ນທີ່ນັ້ນ",
+      "tet": "Scan QR ka toka etiketa NFC iha área nia entrada atu loke área ne'e",
+      "my": "နေရာဝင်ပေါက်ရှိ QR ကို စကင်ဖတ်ပါ သို့မဟုတ် NFC တဂ်ကို ထိပါ"
     }
   }
 }

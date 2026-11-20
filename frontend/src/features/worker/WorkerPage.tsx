@@ -11,6 +11,7 @@ import LangPicker from "./LangPicker";
 import { THANKS } from "./messages";
 import { once, remember } from "./storage";
 import { useIssueReplies } from "./useIssueReplies";
+import { useNfcZone } from "./useNfcZone";
 import ZonePicker from "./ZonePicker";
 
 const BUBBLE = {
@@ -27,7 +28,8 @@ export default function WorkerPage() {
   const { token = "" } = useParams();
   const [params] = useSearchParams();
   const [lang, setLang] = useState<string | null>(() => remember(`sb-lang-${token}`));
-  const [zone, setZone] = useState<string | null>(() => params.get("zone") ?? remember(`sb-zone-${token}`));
+  const [zone, setZone] = useState<string | null>(
+    () => remember(`sb-zone-${token}`, params.get("zone") ?? undefined)); // 구역 QR·NFC 주소의 zone 이 우선
   const [big, setBig] = useState(false);
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
@@ -40,6 +42,8 @@ export default function WorkerPage() {
   useEffect(() => { try { sessionStorage.setItem(msgKey, JSON.stringify(msgs)); } catch { /* */ } }, [msgKey, msgs]);
   const add = useCallback((m: ChatMsg) => setMsgs((ms) => (ms.some((x) => x.id === m.id) ? ms : [...ms, m])), []);
   useIssueReplies(token, msgs, add);
+  const pickZone = useCallback((z: string) => setZone(remember(`sb-zone-${token}`, z) ?? z), [token]);
+  const nfc = useNfcZone(token, pickZone);
   const end = useRef<HTMLDivElement>(null);
   useEffect(() => { if (msgs.length) end.current?.scrollIntoView?.({ behavior: "smooth" }); }, [msgs.length]);
 
@@ -53,7 +57,7 @@ export default function WorkerPage() {
   if (!lang) return <LangPicker langs={data.langs} onPick={(l) => setLang(remember(`sb-lang-${token}`, l) ?? l)} />;
   const ui = data.ui;
   if (!zone || (data.zones.length && !data.zones.some((z) => z.zone === zone))) {
-    return <ZonePicker greet={ui.greet} zones={data.zones} onPick={(z) => setZone(remember(`sb-zone-${token}`, z) ?? z)} />;
+    return <ZonePicker greet={ui.greet} hint={ui.scan_hint} zones={data.zones} onPick={pickZone} nfc={nfc} />;
   }
 
   const send = async (mode: Mode, text: string) => {
@@ -93,6 +97,10 @@ export default function WorkerPage() {
         <div className="flex shrink-0 gap-2">
           <button onClick={() => setBig((b) => !b)} aria-pressed={big}
             className={`rounded-full px-3 py-1.5 text-sm font-bold ${big ? "bg-slate-900 text-white" : "bg-white ring-1 ring-slate-300"}`}>가 A+</button>
+          {nfc.supported && (
+            <button onClick={nfc.start} aria-pressed={nfc.active} aria-label="NFC"
+              className={`rounded-full px-3 py-1.5 text-sm ${nfc.active ? "bg-blue-600 text-white" : "bg-white ring-1 ring-slate-300"}`}>📶</button>
+          )}
           <button onClick={() => setZone(remember(`sb-zone-${token}`, null))} aria-label={ui.change_zone}
             className="rounded-full bg-white px-3 py-1.5 text-sm ring-1 ring-slate-300">🔀</button>
           <button onClick={() => setLang(remember(`sb-lang-${token}`, null))}
