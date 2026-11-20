@@ -40,3 +40,13 @@ export function groupZones(zones: Zone[]): { key: string; kind: Zone["kind"]; la
   }
   return [...groups.values()];
 }
+
+export const FOCUS_COLOR = 0x16a34a; // 진행 중 부재(파랑)와 구분되는 초록
+
+/** 내 구역이 잘 보이는 카메라: 구역 중심을 보고, 남서쪽 위에서 구역 크기에 맞춘 거리 */
+export function focusCamera(b: Pick<Zone, "min" | "max">): { target: Vec3; position: Vec3 } {
+  const { center, size } = zoneBox(b);
+  const t = ifcToThree(center);
+  const d = Math.max(size[0], size[1], 8) * 2.1;
+  return { target: t, position: [t[0] - d * 0.6, t[1] + d * 0.8, t[2] + d] };
+}

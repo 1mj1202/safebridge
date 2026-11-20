@@ -92,7 +92,7 @@ export default function WorkerPage() {
       <header className="flex items-center justify-between gap-2">
         <div className="min-w-0">
           <p className="text-xs text-slate-500">{data.work_date}</p>
-          <h1 className="truncate text-xl font-bold">📍 {brief?.zone === zone ? brief.label : zone}</h1>
+          <h1 className="break-words text-lg font-bold leading-tight">📍 {brief?.zone === zone ? brief.label : zone}</h1>
         </div>
         <div className="flex shrink-0 gap-2">
           <button onClick={() => setBig((b) => !b)} aria-pressed={big}
@@ -108,7 +108,7 @@ export default function WorkerPage() {
         </div>
       </header>
 
-      {brief ? <BriefMessage brief={brief} lang={lang} big={big} listen={ui.listen} /> : <p className="text-slate-500">…</p>}
+      {brief ? <BriefMessage brief={brief} lang={lang} big={big} listen={ui.listen} token={token} /> : <p className="text-slate-500">…</p>}
 
       {msgs.map((m) => (
         <p key={m.id} className={`max-w-[85%] whitespace-pre-wrap rounded-2xl p-3 shadow ${BUBBLE[m.from]} ${big ? "text-xl" : "text-base"}

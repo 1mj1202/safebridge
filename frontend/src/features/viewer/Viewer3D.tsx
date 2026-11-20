@@ -2,8 +2,8 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-import type { BimModel, Zone } from "../../shared/types";
-import { ZONE_COLOR, ifcToThree, statusStyle, zoneBox, type Status } from "./scene";
+import type { BimModel, Vec3, Zone } from "../../shared/types";
+import { FOCUS_COLOR, ZONE_COLOR, focusCamera, ifcToThree, statusStyle, zoneBox, type Status } from "./scene";
 
 interface Props {
   model: BimModel;
@@ -11,6 +11,8 @@ interface Props {
   zones: Zone[];
   selected: string[];
   onZoneClick?: (zone: Zone) => void;
+  /** 근로자 화면: 내 구역 상자(IFC 좌표)를 파랗게 강조하고 카메라를 그쪽으로 */
+  focus?: { min: Vec3; max: Vec3 } | null;
 }
 
 interface Ctx {
@@ -20,9 +22,10 @@ interface Ctx {
   controls: OrbitControls;
   meshes: Map<string, THREE.Mesh>;
   zoneGroup: THREE.Group;
+  focusGroup: THREE.Group;
 }
 
-export default function Viewer3D({ model, status, zones, selected, onZoneClick }: Props) {
+export default function Viewer3D({ model, status, zones, selected, onZoneClick, focus }: Props) {
   const host = useRef<HTMLDivElement>(null);
   const ctx = useRef<Ctx | null>(null);
   const clickRef = useRef(onZoneClick);
@@ -67,7 +70,9 @@ export default function Viewer3D({ model, status, zones, selected, onZoneClick }
     }
     const zoneGroup = new THREE.Group();
     scene.add(zoneGroup);
-    ctx.current = { renderer, scene, camera, controls, meshes, zoneGroup };
+    const focusGroup = new THREE.Group();
+    scene.add(focusGroup);
+    ctx.current = { renderer, scene, camera, controls, meshes, zoneGroup, focusGroup };
 
     const resize = () => {
       const w = el.clientWidth, h = el.clientHeight;
@@ -157,6 +162,33 @@ export default function Viewer3D({ model, status, zones, selected, onZoneClick }
       c.zoneGroup.add(edges);
     }
   }, [zones, selected, model]);
+
+  // 내 구역 강조
+  useEffect(() => {
+    const c = ctx.current;
+    if (!c) return;
+    for (const o of [...c.focusGroup.children]) {
+      c.focusGroup.remove(o);
+      if (o instanceof THREE.Mesh || o instanceof THREE.LineSegments) {
+        o.geometry.dispose();
+        (o.material as THREE.Material).dispose();
+      }
+    }
+    if (!focus) return;
+    const { center, size } = zoneBox(focus);
+    const geo = new THREE.BoxGeometry(size[0], size[2], size[1]);
+    const box = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: FOCUS_COLOR, transparent: true, opacity: 0.3, depthWrite: false }));
+    const p = ifcToThree(center);
+    box.position.set(p[0], p[1], p[2]);
+    box.renderOrder = 1;
+    const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geo), new THREE.LineBasicMaterial({ color: FOCUS_COLOR }));
+    edges.position.copy(box.position);
+    c.focusGroup.add(box, edges);
+    const cam = focusCamera(focus);
+    c.controls.target.set(...cam.target);
+    c.camera.position.set(...cam.position);
+    c.controls.update();
+  }, [focus, model]);
 
   return <div ref={host} className="h-full w-full overflow-hidden rounded-xl" data-testid="viewer3d" />;
 }

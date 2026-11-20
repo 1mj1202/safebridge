@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { groupZones, ifcToThree, statusStyle, zoneBox } from "./scene";
+import { focusCamera, groupZones, ifcToThree, statusStyle, zoneBox } from "./scene";
 import type { Zone } from "../../shared/types";
 
 const z = (id: string, kind: Zone["kind"] = "fall"): Zone => ({
@@ -22,5 +22,13 @@ describe("scene", () => {
   });
   it("unknown status falls back", () => {
     expect(statusStyle(undefined).opacity).toBe(0.3);
+  });
+});
+
+describe("focusCamera", () => {
+  it("looks at the zone center from above", () => {
+    const c = focusCamera({ min: [0, 0, 9.9], max: [15, 18, 13.2] });
+    expect(c.target).toEqual(ifcToThree([7.5, 9, 11.55]));
+    expect(c.position[1]).toBeGreaterThan(c.target[1]);
   });
 });

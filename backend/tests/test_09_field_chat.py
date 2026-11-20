@@ -79,3 +79,13 @@ def test_chat_retranslates_korean_answer(monkeypatch):
     r = field_chat.answer("Tôi phải đeo gì?", "vi", "위험: 추락")
     assert r == {"text": "Hãy đeo dây đai an toàn", "grounded": True} and len(fake.calls) == 2
     assert translate.looks_korean("안전대를 착용하세요") and not translate.looks_korean("A동 3F-a: Hãy đeo dây đai")
+
+
+def test_scene_for_zone(client, tbm):
+    s = client.get(f"/api/w/{tbm['token']}/scene", params={"zone": "A동 3F-a"}).json()
+    assert s["focus"]["min"][0] == 0.0 and s["focus"]["max"][0] == 15.0 and s["focus"]["min"][2] > 9
+    assert s["zones"] and all(z["storey"] == "3F" for z in s["zones"]) and s["element_status"]["SLB-3F"] == "active"
+    g = client.get(f"/api/w/{tbm['token']}/scene", params={"zone": "A동 외곽 지상"}).json()
+    assert g["focus"]["max"][2] < 1 and all("-GROUND-" in z["id"] for z in g["zones"])
+    below = client.get(f"/api/w/{tbm['token']}/scene", params={"zone": "A동 2F-a"}).json()
+    assert below["zones"] and all(z["kind"] == "drop" for z in below["zones"])
