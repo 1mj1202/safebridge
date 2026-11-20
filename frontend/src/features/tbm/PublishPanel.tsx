@@ -1,6 +1,7 @@
 // TBM 발행 — QR·언어별 카드 미리보기·용어 유지율·관리자 한마디 역번역
 import QRCode from "qrcode";
 import { useEffect, useState } from "react";
+import { splitLangs } from "../../shared/langs";
 import { Button, Panel } from "../../shared/ui";
 import type { Meta, Tbm, ZoneBriefing } from "../../shared/types";
 import ZoneQrList from "./ZoneQrList";
@@ -10,6 +11,7 @@ export default function PublishPanel({ tbm, meta, busy, onPublish, zones }: {
   const [memo, setMemo] = useState("오늘은 바람이 강하니 단부 작업 전 꼭 안전대를 거세요");
   const [qr, setQr] = useState("");
   const [lang, setLang] = useState("vi");
+  const [moreOpen, setMoreOpen] = useState(false);
   useEffect(() => {
     if (tbm) QRCode.toDataURL(tbm.url, { width: 220, margin: 1 }).then(setQr);
   }, [tbm]);
@@ -26,6 +28,7 @@ export default function PublishPanel({ tbm, meta, busy, onPublish, zones }: {
     );
   }
   const check = tbm.translation_check;
+  const { main, more } = splitLangs(Object.keys(tbm.cards));
   const m = check.memo?.[lang];
   return (
     <Panel title="TBM 발행됨">
@@ -35,18 +38,22 @@ export default function PublishPanel({ tbm, meta, busy, onPublish, zones }: {
           <p className="break-all"><a className="text-blue-700 underline" href={tbm.url} target="_blank" rel="noreferrer">{tbm.url}</a></p>
           <p className="mt-2 text-xs font-bold text-slate-500">핵심 용어 유지율 (사전 고정 번역)</p>
           <ul className="mt-1 grid grid-cols-2 gap-x-3 text-xs">
-            {Object.entries(check.phrases).filter(([l]) => l !== "ko").map(([l, c]) => (
+            {Object.entries(check.phrases).filter(([l]) => l !== "ko" && (moreOpen || !more.includes(l))).map(([l, c]) => (
               <li key={l}>{meta.langs[l]}: <b>{Math.round(c.rate * 100)}%</b> ({c.kept}/{c.total})</li>
             ))}
           </ul>
         </div>
       </div>
       <ZoneQrList url={tbm.url} zones={zones} />
-      <div className="mt-3 flex gap-1">
-        {Object.keys(tbm.cards).filter((l) => l !== "ko").map((l) => (
+      <div className="mt-3 flex flex-wrap gap-1">
+        {[...main, ...(moreOpen ? more : [])].filter((l) => l !== "ko").map((l) => (
           <button key={l} onClick={() => setLang(l)}
             className={`rounded px-2 py-1 text-xs ${l === lang ? "bg-slate-900 text-white" : "bg-slate-100"}`}>{meta.langs[l]}</button>
         ))}
+        {more.length > 0 && (
+          <button onClick={() => setMoreOpen((o) => !o)} aria-expanded={moreOpen}
+            className="rounded px-2 py-1 text-xs text-slate-500 ring-1 ring-slate-200">{moreOpen ? "접기 ▲" : `다른 언어 ${more.length}개 ▼`}</button>
+        )}
       </div>
       <div className="mt-2 grid gap-2 text-xs sm:grid-cols-3">
         {tbm.cards[lang].map((c, i) => (
