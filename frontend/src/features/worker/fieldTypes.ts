@@ -33,6 +33,6 @@ export interface ChatMsg {
   id: string;
   from: "bot" | "me" | "lead";
   text: string;
-  tone?: "urgent" | "reply" | "info";
+  tone?: "urgent" | "reply" | "info" | "sent";
   issue?: { id: number; key: string };
 }

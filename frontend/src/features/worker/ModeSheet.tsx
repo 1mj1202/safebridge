@@ -1,4 +1,6 @@
-// + 버튼 → 아래에서 올라오는 선택 창: 💬 질문 / ⚠ 문제 알리기
+// + 버튼 → 아래에서 올라오는 선택 창: 질문 / 문제 알리기
+import { MessageCircle, TriangleAlert } from "lucide-react";
+
 export type Mode = "ask" | "issue";
 
 export default function ModeSheet({ open, mode, labels, onPick, onClose }: {
@@ -11,8 +13,10 @@ export default function ModeSheet({ open, mode, labels, onPick, onClose }: {
         <span className="mx-auto mb-2 h-1 w-10 rounded-full bg-slate-300" />
         {(["ask", "issue"] as const).map((m) => (
           <button key={m} onClick={() => { onPick(m); onClose(); }} aria-pressed={mode === m}
-            className={`rounded-2xl px-4 py-4 text-left text-lg ${mode === m ? "bg-slate-100 font-bold" : ""}`}>
-            {m === "ask" ? "💬" : "⚠"} {labels[m]}</button>
+            className={`flex items-center gap-3 rounded-2xl px-4 py-4 text-left text-base ${mode === m ? "bg-slate-100 font-semibold" : ""}`}>
+            {m === "ask" ? <MessageCircle size={20} strokeWidth={1.75} className="text-slate-600" />
+              : <TriangleAlert size={20} strokeWidth={1.75} className="text-orange-600" />}
+            {labels[m]}</button>
         ))}
       </div>
     </div>

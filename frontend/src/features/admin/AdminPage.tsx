@@ -86,7 +86,7 @@ export default function AdminPage() {
               <div className="absolute bottom-3 left-3 max-w-sm rounded-lg bg-white p-3 text-sm shadow-lg">
                 <b className={zoneInfo.kind === "fall" ? "text-red-700" : "text-orange-600"}>{zoneInfo.label}</b>
                 <p className="text-xs text-slate-500">영역 {zoneInfo.id} · 부재 {zoneInfo.element_tags.join(", ")} · 근거 {zoneInfo.rule}</p>
-                {related.map((i) => <p key={i.id} className="mt-1 text-xs">▶ {i.id} {i.hazard}: {i.explanation}</p>)}
+                {related.map((i) => <p key={i.id} className="mt-1 text-xs"><span className="font-semibold">{i.id}</span> {i.hazard}: {i.explanation}</p>)}
                 {!a && <p className="mt-1 text-xs text-slate-400">에이전트 분석 후 예상 사고·사례·체크리스트가 함께 표시됩니다</p>}
               </div>
             )}

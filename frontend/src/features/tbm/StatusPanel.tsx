@@ -37,7 +37,7 @@ export default function StatusPanel({ tbmId, meta }: { tbmId: number; meta: Meta
         <ul className="mt-1 space-y-1 text-sm">
           {data.reports.map((r) => (
             <li key={r.id} className="rounded bg-orange-50 p-2">
-              <b>{r.kind === "hazard" ? "⚠ 위험 신고" : "❓ 질문"}</b> <span className="text-xs text-slate-500">{meta.langs[r.lang]}</span>
+              <b>{r.kind === "hazard" ? "위험 신고" : "질문"}</b> <span className="text-xs text-slate-500">{meta.langs[r.lang]}</span>
               <p>{r.text_ko}</p>
               {r.lang !== "ko" && <p className="text-xs text-slate-500">원문: {r.text_original}</p>}
             </li>
