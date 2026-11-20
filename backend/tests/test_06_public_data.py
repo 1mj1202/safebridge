@@ -55,10 +55,10 @@ def test_draft_uses_profile_and_guides():
 
 
 def test_new_langs_phrases_keep_terms():
-    """400선 기반 5개 언어 카드 문장도 사전 용어를 100% 유지."""
+    """모든 언어 문장이 사전 용어를 100% 유지."""
     from app.services import glossary
     from app.services.data_store import load_json
 
     for key, p in load_json("phrases.json")["phrases"].items():
-        for lang in ("ne", "mn", "lo", "tet", "my"):
+        for lang in ("en", "zh", "vi", "th", "ne", "mn", "lo", "tet", "my"):
             assert glossary.check_terms(p["ko"], p[lang], lang)["rate"] == 1.0, (key, lang)

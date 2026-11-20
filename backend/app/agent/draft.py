@@ -133,7 +133,7 @@ def build(day: str, storey: str | None, results: dict) -> dict:
         fact = stats.weather_fact(a["code"])
         items.append({
             "id": f"H{len(items) + 1}", "key": f"weather_{a['code']}", "hazard": a["text"],
-            "trades": a.get("affects", trades), "location": "현장 전체", "storeys": [],
+            "trades": a.get("affects", trades), "affects": a.get("affects") or [], "location": "현장 전체", "storeys": [],
             "level": "상" if a["level"] == "stop" else "중" if a["level"] == "warn" else "하",
             "frequency": None, "measures": [], "checks": [],
             "weather": {"phrase": a["phrase"], "value": a["value"]},
@@ -145,7 +145,7 @@ def build(day: str, storey: str | None, results: dict) -> dict:
 
     items = ranking.apply(items, wx.get("alerts", []))
     sched = results.get("get_activities", {})
-    briefings = briefing.build(items, sched.get("zones", []), zones, wx.get("alerts", []))
+    briefings = briefing.build(items, sched.get("zones", []), zones)
 
     return {
         "date": day,

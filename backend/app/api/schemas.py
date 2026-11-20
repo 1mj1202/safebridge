@@ -35,3 +35,19 @@ class ReportRequest(BaseModel):
     lang: str
     kind: str = Field("hazard", pattern="^(question|hazard)$")
     text: str = Field(..., min_length=1, max_length=500)
+
+
+class ChatRequest(BaseModel):
+    lang: str
+    zone: str = Field(..., min_length=1, max_length=40)
+    message: str = Field(..., min_length=1, max_length=500)
+
+
+class IssueRequest(BaseModel):
+    lang: str
+    zone: str = Field("", max_length=40)
+    text: str = Field(..., min_length=1, max_length=500)
+
+
+class AnswerRequest(BaseModel):
+    text_ko: str = Field(..., min_length=1, max_length=500)

@@ -12,7 +12,7 @@
                             ▼
 [관리자]  초안 수정·승인 → 발행: tbm.build_cards(문장 은행, 10개 언어) + 평면도 + 관리자 한마디 번역·역번역 → QR
                             ▼
-[근로자]  /w/<토큰>: 언어 선택 → 카드 3장·음성 → viewed/understood/question(익명) · 신고(모국어 → 한국어)
+[근로자]  /w/<토큰>?zone=: 언어·구역 → 구역 브리핑·음성 → 질문(브리핑 안에서만 답) · 문제 알리기(번역·요약·긴급도 → 반장·공사담당·안전관리자) → 회신 번역
 ```
 
 ## LLM 공급자 (app/llm)
@@ -41,5 +41,5 @@
 
 `GET /api/bim/model` · `GET /api/schedule` · `GET /api/risk?date=` · `POST /api/agent/assess` ·
 `GET|PUT /api/assessments/{id}` · `POST /api/assessments/{id}/approve|publish` · `GET /api/tbms/{id}/status` ·
-`GET /api/w/{token}?lang=` · `POST /api/w/{token}/ack|report` · `GET /api/accidents/{id}` · `GET /api/guides/{id}` · `GET /api/profile/{id}` · `GET /api/law/{id}` · `GET /api/meta`
+`GET /api/w/{token}?lang=` · `POST /api/w/{token}/ack|report` · `GET /api/w/{token}/zones|brief?zone=` · `POST /api/w/{token}/chat|issue` · `GET /api/w/{token}/issues/{id}?key=` · `GET /api/tbms/{id}/issues` · `POST /api/issues/{id}/answer` · `GET /api/accidents/{id}` · `GET /api/guides/{id}` · `GET /api/profile/{id}` · `GET /api/law/{id}` · `GET /api/meta`
 FastAPI 문서: http://localhost:8000/docs
