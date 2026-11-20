@@ -10,7 +10,7 @@ def test_full_tbm_flow(client):
     client.post(f"/api/assessments/{a['id']}/approve")
     assert client.put(f"/api/assessments/{a['id']}", json={"summary": "x"}).status_code == 409
     t = client.post(f"/api/assessments/{a['id']}/publish", json={"memo": "안전대 꼭 거세요"}).json()
-    assert set(t["cards"]) == {"ko", "en", "zh", "vi", "th"}
+    assert set(t["cards"]) == {"ko", "en", "zh", "vi", "th", "ne", "mn", "lo", "tet", "my"}
     assert all(v["rate"] == 1.0 for v in t["translation_check"]["phrases"].values())
 
     w = client.get(f"/api/w/{t['token']}", params={"lang": "th"}).json()

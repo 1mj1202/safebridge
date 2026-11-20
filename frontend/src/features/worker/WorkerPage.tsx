@@ -4,6 +4,7 @@ import { useParams } from "react-router-dom";
 import { api } from "../../shared/api";
 import { useFetch } from "../../shared/hooks";
 import type { Card } from "../../shared/types";
+import { NO_PII, SENT, THANKS } from "./messages";
 import WorkerCard from "./WorkerCard";
 
 interface WorkerData {
@@ -14,20 +15,6 @@ interface WorkerData {
   cards: Card[];
   ui: Record<"understood" | "question" | "report" | "listen", string>;
 }
-
-const SENT: Record<string, string> = {
-  ko: "관리자에게 전달했어요", en: "Sent to the site manager", zh: "已发送给管理人员",
-  vi: "Đã gửi cho quản lý", th: "ส่งถึงผู้จัดการแล้ว",
-};
-const NO_PII: Record<string, string> = {
-  ko: "이름·전화번호 같은 개인정보는 쓰지 마세요", en: "Do not write personal info (name, phone)",
-  zh: "请勿填写姓名、电话等个人信息", vi: "Không ghi thông tin cá nhân (tên, số điện thoại)",
-  th: "ห้ามเขียนข้อมูลส่วนตัว (ชื่อ เบอร์โทร)",
-};
-const THANKS: Record<string, string> = {
-  ko: "확인 고마워요. 안전하게 일하세요!", en: "Thank you. Work safely!", zh: "谢谢确认, 注意安全!",
-  vi: "Cảm ơn. Hãy làm việc an toàn!", th: "ขอบคุณ ทำงานอย่างปลอดภัย!",
-};
 
 function storeLang(token: string, lang?: string): string | null {
   try {

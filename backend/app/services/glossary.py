@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from .data_store import load_json
 
-LANGS = ("ko", "en", "zh", "vi", "th")
+LANGS = ("ko", "en", "zh", "vi", "th", "ne", "mn", "lo", "tet", "my")
 
 
 def terms() -> list[dict]:

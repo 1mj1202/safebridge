@@ -1,5 +1,9 @@
 // 음성 안내 — 브라우저 내장 Web Speech API (설치·외부 전송 없음)
-export const VOICE_LANG: Record<string, string> = { ko: "ko-KR", en: "en-US", zh: "zh-CN", vi: "vi-VN", th: "th-TH" };
+// 테툼어는 브라우저 음성이 없어 포르투갈어 음성으로 읽는다(철자 대부분이 포르투갈어식이라 발음이 비슷함)
+export const VOICE_LANG: Record<string, string> = {
+  ko: "ko-KR", en: "en-US", zh: "zh-CN", vi: "vi-VN", th: "th-TH",
+  ne: "ne-NP", mn: "mn-MN", lo: "lo-LA", tet: "pt-PT", my: "my-MM",
+};
 
 export function canSpeak(): boolean {
   return typeof window !== "undefined" && "speechSynthesis" in window;

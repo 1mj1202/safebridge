@@ -4,7 +4,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from . import cases, profile, stats, terms
+from . import cases, profile, stats, terms, terms400
 from .common import write_json
 
 OUT = Path(__file__).resolve().parents[2] / "data"
@@ -22,10 +22,12 @@ def main() -> None:
         "synonyms.json": lambda: terms.synonyms(a.src),
         "kosha_guides.json": lambda: terms.guides(a.src),
     }
+    if any(a.src.rglob("*.pdf")):  # 용어 400선 PDF 가 있으면(PyMuPDF 필요)
+        jobs["terms400.json"] = lambda: terms400.build(a.src)
     for name, job in jobs.items():
         obj = job()
         write_json(a.out / name, obj, compact=name == "accidents.json")
-        size = len(obj.get("cases") or obj.get("rows") or obj.get("groups") or obj.get("guides") or [1])
+        size = len(obj.get("cases") or obj.get("rows") or obj.get("groups") or obj.get("guides") or obj.get("terms") or [1])
         print(f"{name}: {size}건")
 
 

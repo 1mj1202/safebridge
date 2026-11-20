@@ -10,7 +10,7 @@
 [에이전트] app/agent/runner: LLM tool calling 루프 → 필수 도구 보완 → draft.build(코드: 항목·근거·위험도)
                             → LLM 이 설명·대책·유의사항 작성(JSON) → 병합
                             ▼
-[관리자]  초안 수정·승인 → 발행: tbm.build_cards(문장 은행, 5개 언어) + 평면도 + 관리자 한마디 번역·역번역 → QR
+[관리자]  초안 수정·승인 → 발행: tbm.build_cards(문장 은행, 10개 언어) + 평면도 + 관리자 한마디 번역·역번역 → QR
                             ▼
 [근로자]  /w/<토큰>: 언어 선택 → 카드 3장·음성 → viewed/understood/question(익명) · 신고(모국어 → 한국어)
 ```
