@@ -53,8 +53,11 @@ def run(provider: LLMProvider, query: str, today: date, day: str | None = None,
             trace.append({"tool": name, "input": args, "ok": False, "auto": auto})
             return json.dumps({"error": f"알 수 없는 도구 {name}"}, ensure_ascii=False), True
         # 날짜·층은 화면에서 고른 값을 우선한다(모델이 다른 날짜를 넣는 실수 방지)
-        if "date" in TOOLS[name][0].input_schema["properties"]:
+        props = TOOLS[name][0].input_schema["properties"]
+        if "date" in props:
             args = {**args, "date": day}
+        if storey and "storey" in props:  # 모델이 다른 층을 다시 불러 결과를 덮어쓰는 것 방지
+            args = {**args, "storey": storey}
         try:
             out = TOOLS[name][1](args)
         except Exception as e:  # 도구 오류는 모델에게 돌려준다
