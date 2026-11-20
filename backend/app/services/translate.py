@@ -12,7 +12,8 @@ from app.llm.factory import get_provider
 from . import glossary
 
 log = logging.getLogger(__name__)
-NAMES = {"ko": "Korean", "en": "English", "zh": "Simplified Chinese", "vi": "Vietnamese", "th": "Thai"}
+NAMES = {"ko": "Korean", "en": "English", "zh": "Simplified Chinese", "vi": "Vietnamese", "th": "Thai",
+         "ne": "Nepali", "mn": "Mongolian (Cyrillic)", "lo": "Lao", "tet": "Tetum (Timor-Leste)", "my": "Burmese (Myanmar)"}
 
 SYSTEM = ("You are a construction-site safety translator. Translate exactly, in short plain sentences a worker "
           "with little schooling understands. Output only the translation, nothing else.")
