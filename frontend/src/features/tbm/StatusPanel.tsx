@@ -1,4 +1,4 @@
-// 언어별 이해 확인 현황 + 근로자 질문·신고 (3초마다 갱신)
+// 언어별 이해 확인 현황 (3초마다 갱신). 현장 이슈는 IssueInbox, 예전 카드 화면 신고만 여기
 import { useFetch, usePoll } from "../../shared/hooks";
 import { Panel } from "../../shared/ui";
 import type { Meta, TbmStatus } from "../../shared/types";
@@ -24,8 +24,8 @@ export default function StatusPanel({ tbmId, meta }: { tbmId: number; meta: Meta
       {follow.length > 0 && (
         <p className="mt-2 rounded bg-red-50 px-2 py-1 text-xs text-red-700">대면 재설명 필요: {follow.join(", ")} 그룹</p>
       )}
-      <h3 className="mt-3 text-xs font-bold text-slate-500">질문·위험 신고 (한국어 자동 번역)</h3>
-      {data.reports.length === 0 ? <p className="text-xs text-slate-400">아직 없음</p> : (
+      {data.reports.length > 0 && <h3 className="mt-3 text-xs font-bold text-slate-500">카드 화면 신고 (한국어 자동 번역)</h3>}
+      {data.reports.length > 0 && (
         <ul className="mt-1 space-y-1 text-sm">
           {data.reports.map((r) => (
             <li key={r.id} className="rounded bg-orange-50 p-2">

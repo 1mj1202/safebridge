@@ -2,10 +2,11 @@
 import QRCode from "qrcode";
 import { useEffect, useState } from "react";
 import { Button, Panel } from "../../shared/ui";
-import type { Meta, Tbm } from "../../shared/types";
+import type { Meta, Tbm, ZoneBriefing } from "../../shared/types";
+import ZoneQrList from "./ZoneQrList";
 
-export default function PublishPanel({ tbm, meta, busy, onPublish }: {
-  tbm: Tbm | null; meta: Meta; busy: boolean; onPublish: (memo: string) => void }) {
+export default function PublishPanel({ tbm, meta, busy, onPublish, zones }: {
+  tbm: Tbm | null; meta: Meta; busy: boolean; onPublish: (memo: string) => void; zones: ZoneBriefing[] }) {
   const [memo, setMemo] = useState("오늘은 바람이 강하니 단부 작업 전 꼭 안전대를 거세요");
   const [qr, setQr] = useState("");
   const [lang, setLang] = useState("vi");
@@ -29,7 +30,7 @@ export default function PublishPanel({ tbm, meta, busy, onPublish }: {
   return (
     <Panel title="TBM 발행됨">
       <div className="flex flex-wrap gap-4">
-        {qr && <img src={qr} alt="근로자 접속 QR" className="h-44 w-44 rounded-lg ring-1 ring-slate-200" />}
+        {qr && <img src={qr} alt="근로자 접속 QR (구역 선택)" className="h-44 w-44 rounded-lg ring-1 ring-slate-200" />}
         <div className="min-w-0 flex-1 text-sm">
           <p className="break-all"><a className="text-blue-700 underline" href={tbm.url} target="_blank" rel="noreferrer">{tbm.url}</a></p>
           <p className="mt-2 text-xs font-bold text-slate-500">핵심 용어 유지율 (사전 고정 번역)</p>
@@ -40,6 +41,7 @@ export default function PublishPanel({ tbm, meta, busy, onPublish }: {
           </ul>
         </div>
       </div>
+      <ZoneQrList url={tbm.url} zones={zones} />
       <div className="mt-3 flex gap-1">
         {Object.keys(tbm.cards).filter((l) => l !== "ko").map((l) => (
           <button key={l} onClick={() => setLang(l)}
