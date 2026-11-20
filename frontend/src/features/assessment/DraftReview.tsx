@@ -49,7 +49,7 @@ export default function DraftReview({ a, busy, onSave, onApprove, onFocusZones }
                     {(["상", "중", "하"] as Level[]).map((l) => <option key={l}>{l}</option>)}
                   </select>
                 )}
-                {it.frequency && <span className="text-xs text-slate-500">과거 사례 {it.frequency.count}/{it.frequency.of}건</span>}
+                {it.frequency && <span className="text-xs text-slate-500">사망사고 사례 {it.frequency.count}/{it.frequency.of}건</span>}
                 {it.evidence_status === "확인 불가" && <Chip tone="red">근거 확인 불가</Chip>}
               </div>
               <p className="mt-1 text-xs text-slate-500">📍 {it.location}</p>
@@ -69,11 +69,29 @@ export default function DraftReview({ a, busy, onSave, onApprove, onFocusZones }
                 )}
                 {it.evidence.elements.slice(0, 3).map((e) => <Chip key={e}>부재 {e}</Chip>)}
                 {it.evidence.forecast && <Chip>예보 풍속 {it.evidence.forecast.wind_gust}m/s</Chip>}
+                {it.profile && (
+                  <Chip tone="red" onClick={() => setEv({ kind: "profile", id: it.profile!.id })}>
+                    위험요소 프로파일 가능성 {it.profile.likelihood} · 심각성 {it.profile.severity}</Chip>
+                )}
+                {(it.evidence.guides ?? []).map((g) => <Chip key={g} tone="blue" onClick={() => setEv({ kind: "guide", id: g })}>KOSHA {g}</Chip>)}
               </div>
+              {it.stat && (
+                <p className="mt-1 text-xs text-slate-500">
+                  통계: {it.stat.trade} 사고 {it.stat.total.toLocaleString()}건 중 {it.stat.weather} 때 {it.stat.count}건
+                  (사망 {it.stat.fatal}건) · {it.stat.source}
+                </p>
+              )}
             </li>
           );
         })}
       </ul>
+
+      {d.sources && (
+        <p className="mt-3 text-xs text-slate-400">
+          근거 데이터: {d.sources.cases}; {d.sources.profile}.
+          사망사고가 가장 많은 시간대는 {d.sources.hourly.peak.join(", ")}예요({d.sources.hourly.source}).
+        </p>
+      )}
 
       <label className="mt-3 block text-xs font-bold text-slate-500">시공 유의사항</label>
       <textarea className="w-full rounded-lg border border-slate-200 p-2 text-sm" rows={3} value={notes} disabled={locked}

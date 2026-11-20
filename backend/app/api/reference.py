@@ -4,7 +4,7 @@ from fastapi import APIRouter, HTTPException
 from app.core.clock import today
 from app.core.config import get_settings
 from app.llm.factory import get_provider
-from app.services import glossary, law, patterns
+from app.services import glossary, guides, law, patterns, risk_profile
 
 router = APIRouter(prefix="/api", tags=["reference"])
 
@@ -26,6 +26,22 @@ def accident(case_id: str):
 @router.get("/patterns/{trade}")
 def pattern(trade: str):
     return patterns.pattern(trade)
+
+
+@router.get("/guides/{guide_id}")
+def guide(guide_id: str):
+    g = guides.get(guide_id)
+    if not g:
+        raise HTTPException(404, "지침 없음")
+    return g
+
+
+@router.get("/profile/{profile_id}")
+def profile(profile_id: str):
+    r = risk_profile.by_id(profile_id)
+    if not r:
+        raise HTTPException(404, "위험요소 프로파일 없음")
+    return {**r, "source": risk_profile.source()}
 
 
 @router.get("/law/{article_id}")

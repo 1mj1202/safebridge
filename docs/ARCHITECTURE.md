@@ -1,7 +1,7 @@
 # 아키텍처
 
 ```
-[데이터]  사고사례 CSV ─LLM 구조화→ data/accidents.json     샘플 IFC(engine/sample_ifc)     가상 예보 / 기상청     조문 요약
+[데이터]  공공데이터 CSV ─scripts/public_data→ data/accidents·risk_profile·accident_stats·synonyms·kosha_guides.json     샘플 IFC(engine/sample_ifc)     가상 예보 / 기상청     조문 요약
              │                                              │ IfcOpenShell 추출
              ▼                                              ▼
 [도구]   get_accident_patterns   get_schedule(4D)   compute_spatial_risk   check_weather   get_law
@@ -41,5 +41,5 @@
 
 `GET /api/bim/model` · `GET /api/schedule` · `GET /api/risk?date=` · `POST /api/agent/assess` ·
 `GET|PUT /api/assessments/{id}` · `POST /api/assessments/{id}/approve|publish` · `GET /api/tbms/{id}/status` ·
-`GET /api/w/{token}?lang=` · `POST /api/w/{token}/ack|report` · `GET /api/accidents/{id}` · `GET /api/law/{id}` · `GET /api/meta`
+`GET /api/w/{token}?lang=` · `POST /api/w/{token}/ack|report` · `GET /api/accidents/{id}` · `GET /api/guides/{id}` · `GET /api/profile/{id}` · `GET /api/law/{id}` · `GET /api/meta`
 FastAPI 문서: http://localhost:8000/docs
