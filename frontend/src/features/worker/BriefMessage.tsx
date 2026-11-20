@@ -27,8 +27,10 @@ export default function BriefMessage({ brief, big, token }: { brief: Brief; big:
               {l.rank ? <span className="w-6 shrink-0 text-center text-sm font-bold text-red-600">{l.rank}</span>
                 : !l.pictogram && ICON[s.type] && <Icon of={ICON[s.type]!} />}
               {l.pictogram && (
-                <Pictogram name={l.pictogram}
-                  className={`${big ? "h-12 w-12" : "h-9 w-9"} shrink-0 ${l.level === "상" ? "text-red-600" : "text-orange-500"}`} />
+                <span className="flex w-6 shrink-0 justify-center">
+                  <Pictogram name={l.pictogram}
+                    className={`${big ? "h-6 w-6" : "h-5 w-5"} ${s.type === "weather" ? "text-slate-500" : l.level === "상" ? "text-red-600" : "text-orange-500"}`} />
+                </span>
               )}
               <span className={l.level === "상" ? "font-semibold" : ""}>{l.text}</span>
             </li>
