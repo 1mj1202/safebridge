@@ -1,9 +1,13 @@
 """위험성평가 초안 골격 — 도구 결과로 항목·근거·위험도를 코드가 정한다(결정론적).
 
 LLM 은 이 골격의 설명 문장·시공 유의사항만 쓴다. 근거가 없는 항목은 evidence_status='확인 불가'.
-위험도 = 빈도(패턴 내 비중) × 강도(사망 비율, 위험별 최소 강도) → 상/중/하 (시연용 단순 기준).
+위험도 = 빈도 × 강도 → 상/중/하.
+  빈도·강도: 국토안전관리원 위험요소 프로파일의 공종×사고유형별 사고가능성·심각성(1~5) 평균.
+  프로파일이 없으면 사고사례 내 비중으로 빈도를 정한다. 강도는 위험별 최소값(BASE_SEVERITY) 아래로 내려가지 않는다.
 """
 from __future__ import annotations
+
+from app.services import guides, patterns, risk_profile, stats
 
 # 위험 키 → (위험명, 사고유형, 기인물 필터, 영역 판별, 근로자 확인 문장 키, 추가 조문)
 HAZARDS = {
@@ -28,11 +32,29 @@ TRADE_HAZARDS = {
 BASE_SEVERITY = {"fall_edge": 3, "fall_opening": 3, "collapse": 3, "falling_object": 2, "caught": 2}
 
 
-def _level(freq: float, fatal_ratio: float, base: int = 1) -> str:
-    f = 3 if freq >= 0.4 else 2 if freq >= 0.15 else 1
-    s = max(base, 3 if fatal_ratio >= 0.4 else 2 if fatal_ratio >= 0.2 else 1)
-    score = f * s
+def _grade3(v: float, hi: float, mid: float) -> int:
+    return 3 if v >= hi else 2 if v >= mid else 1
+
+
+def _level(freq: float, profile: dict | None, base: int = 1) -> str:
+    if profile:
+        f = _grade3(profile["likelihood"], 3.0, 2.3)
+        s = _grade3(profile["severity"], 3.7, 3.0)
+    else:
+        f, s = _grade3(freq, 0.4, 0.15), 1
+    score = f * max(base, s)
     return "상" if score >= 6 else "중" if score >= 3 else "하"
+
+
+def _dup(m: str, seen: list[str]) -> bool:
+    """실제 사례의 대책 문장은 표현만 조금 다른 것이 많아 앞부분·포함 관계로 중복을 거른다."""
+    return any(m in x or x in m or m[:12] == x[:12] for x in seen)
+
+
+def _profile(trades: list[str], acc_types: list[str]) -> dict | None:
+    """관련 공종 중 가장 위험한(가능성×심각성 최대) 프로파일."""
+    rows = [r for tr in trades for t in acc_types if (r := risk_profile.get(tr, t))]
+    return max(rows, key=lambda r: r["likelihood"] * r["severity"], default=None)
 
 
 def build(day: str, storey: str | None, results: dict) -> dict:
@@ -54,7 +76,7 @@ def build(day: str, storey: str | None, results: dict) -> dict:
         name, acc_type, obj, zone_pred, checks, extra_laws = HAZARDS[k]
         rel_trades = [tr for tr in trades if k in TRADE_HAZARDS.get(tr, [])]
         hz_zones = [z for z in zones if zone_pred and zone_pred(z)]
-        case_ids, measures, count, fatal, total = [], [], 0, 0, 0
+        case_ids, measures, count, total = [], [], 0, 0
         for tr in rel_trades:
             p = pats.get(tr)
             if not p:
@@ -66,12 +88,11 @@ def build(day: str, storey: str | None, results: dict) -> dict:
                 # 기인물이 정해진 위험(단부·개구부)은 그 기인물 사례 수만 센다
                 n = dict(t["top_objects"]).get(obj, 0) if obj else t["count"]
                 count += n
-                fatal += round(t["fatal"] * n / t["count"]) if t["count"] else 0
                 for c in t.get("similar_cases", []):
                     if (obj is None or c["cause_object"] == obj) and c["case_id"] not in case_ids:
                         case_ids.append(c["case_id"])
                 for m, _n in t["top_measures"]:
-                    if m not in measures:
+                    if not _dup(m, measures):
                         measures.append(m)
         if count == 0 and not hz_zones:
             continue  # 근거가 전혀 없으면 항목을 만들지 않는다
@@ -81,6 +102,7 @@ def build(day: str, storey: str | None, results: dict) -> dict:
         if k == "fall_edge" and hz_zones:
             sides = "·".join(z["id"].rsplit("-", 1)[-1].removesuffix("측") for z in hz_zones)
             locs = [f"{hz_zones[0]['storey']} 슬래브 외곽 단부({sides}측)"]
+        prof = _profile(rel_trades, [acc_type] + (["충돌"] if k == "caught" else []))
         storeys = sorted({z["storey"] for z in hz_zones}) or sorted({t["storey"] for t in tasks})
         items.append({
             "id": f"H{len(items) + 1}",
@@ -90,7 +112,8 @@ def build(day: str, storey: str | None, results: dict) -> dict:
             "location": ", ".join(locs[:3]) + (f" 외 {len(locs) - 3}곳" if len(locs) > 3 else "")
                         if locs else f"{'/'.join(storeys)} 작업 구간",
             "storeys": storeys,
-            "level": _level(count / total if total else 0, fatal / count if count else 0, BASE_SEVERITY.get(k, 1)),
+            "level": _level(count / total if total else 0, prof, BASE_SEVERITY.get(k, 1)),
+            "profile": {k2: prof[k2] for k2 in ("id", "n", "likelihood", "severity")} if prof else None,
             "frequency": {"count": count, "of": total},
             "measures": measures[:4],
             "checks": checks + (["check.signal"] if k == "falling_object" and "양중" in trades else []),
@@ -99,20 +122,23 @@ def build(day: str, storey: str | None, results: dict) -> dict:
                 "elements": elements[:6],
                 "zones": [z["id"] for z in hz_zones],
                 "laws": rule_ids,
+                "guides": guides.for_hazard(k),
             },
-            "evidence_status": "근거 있음" if (case_ids or hz_zones) else "확인 불가",
+            "evidence_status": "근거 있음" if (case_ids or hz_zones or prof) else "확인 불가",
             "explanation": "",
         })
 
     for a in wx.get("alerts", []):
+        fact = stats.weather_fact(a["code"])
         items.append({
             "id": f"H{len(items) + 1}", "key": f"weather_{a['code']}", "hazard": a["text"],
             "trades": a.get("affects", trades), "location": "현장 전체", "storeys": [],
             "level": "상" if a["level"] == "stop" else "중" if a["level"] == "warn" else "하",
             "frequency": None, "measures": [], "checks": [],
             "weather": {"phrase": a["phrase"], "value": a["value"]},
+            "stat": fact,
             "evidence": {"cases": [], "elements": [], "zones": [], "laws": [a["rule"]] if a.get("rule") else [],
-                         "forecast": wx.get("forecast")},
+                         "guides": [], "forecast": wx.get("forecast")},
             "evidence_status": "근거 있음", "explanation": "",
         })
 
@@ -126,4 +152,5 @@ def build(day: str, storey: str | None, results: dict) -> dict:
         "summary": "",
         "notes": [],
         "data_note": "사고사례는 가상 데이터(시연용)입니다." if any(p.get("virtual") for p in pats.values()) else "",
+        "sources": {"cases": patterns.source(), "profile": risk_profile.source(), "hourly": stats.hourly_peak()},
     }

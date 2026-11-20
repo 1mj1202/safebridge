@@ -12,7 +12,7 @@ from datetime import date
 from app.llm.base import LLMError, LLMProvider
 
 from . import draft, prompts
-from .registry import TOOLS, specs
+from .registry import BRIEF, TOOLS, specs
 
 log = logging.getLogger(__name__)
 MAX_STEPS = 8
@@ -66,7 +66,8 @@ def run(provider: LLMProvider, query: str, today: date, day: str | None = None,
         else:
             results[name] = out
         trace.append({"tool": name, "input": args, "ok": True, "auto": auto})
-        return json.dumps(out, ensure_ascii=False), False
+        view = BRIEF[name](out) if name in BRIEF else out
+        return json.dumps(view, ensure_ascii=False), False
 
     conv = provider.conversation(prompts.SYSTEM, specs())
     conv.add_user(f"기준일(오늘): {today.isoformat()}\n작업일: {day}\n구역: {storey or '전체'}\n요청: {query}")

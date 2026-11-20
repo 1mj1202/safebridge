@@ -27,3 +27,23 @@ def run(args: dict) -> dict:
                                       cause_object=obj)
         ]
     return p
+
+
+def _cut(text: str, n: int = 40) -> str:
+    return text if len(text) <= n else text[:n] + "…"
+
+
+def brief(p: dict) -> dict:
+    """실제 사례 문장이 길어 로컬 모델이 느려지므로 상위 3개 유형·짧은 문장만 보낸다."""
+    return {
+        "trade": p["trade"], "total": p["total"], "note": p["note"],
+        "accident_types": [
+            {"type": t["type"], "count": t["count"],
+             "top_objects": t["top_objects"],
+             "top_causes": [_cut(c) for c, _n in t["top_causes"][:2]],
+             "top_measures": [_cut(m) for m, _n in t["top_measures"][:2]],
+             "similar_cases": [{"case_id": c["case_id"], "cause_object": c["cause_object"], "summary": _cut(c["summary"], 50)}
+                               for c in t.get("similar_cases", [])[:4]]}
+            for t in p["accident_types"][:3]
+        ],
+    }

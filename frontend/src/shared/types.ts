@@ -80,7 +80,9 @@ export interface DraftItem {
   frequency: { count: number; of: number } | null;
   measures: string[];
   checks: string[];
-  evidence: { cases: string[]; elements: string[]; zones: string[]; laws: string[]; forecast?: Forecast };
+  evidence: { cases: string[]; elements: string[]; zones: string[]; laws: string[]; guides?: string[]; forecast?: Forecast };
+  profile?: { id: string; n: number; likelihood: number; severity: number } | null;
+  stat?: { weather: string; count: number; total: number; fatal: number; trade: string; source: string } | null;
   evidence_status: string;
   explanation: string;
   included?: boolean;
@@ -107,6 +109,7 @@ export interface Draft {
   notes: string[];
   data_note: string;
   llm_note: string;
+  sources?: { cases: string; profile: string; hourly: { peak: string[]; source: string } };
 }
 
 export interface TraceStep {
@@ -187,6 +190,9 @@ export interface Meta {
 export interface Accident {
   case_id: string;
   virtual: boolean;
+  source?: string;
+  category?: string;
+  cause_object_raw?: string;
   date: string;
   trade: string;
   work: string;
@@ -197,4 +203,22 @@ export interface Accident {
   severity: string;
   confidence: number;
   raw_text: string;
+}
+
+export interface Guide {
+  id: string;
+  title: string;
+  year: string;
+  source: string;
+}
+
+export interface RiskProfile {
+  id: string;
+  trade: string;
+  accident_type: string;
+  n: number;
+  likelihood: number;
+  severity: number;
+  top_causes: string[];
+  source: string;
 }
