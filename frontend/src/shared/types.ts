@@ -107,6 +107,7 @@ export interface Draft {
   storey: string;
   tasks: { id: string; name: string; trade: string; crew: number }[];
   items: DraftItem[];
+  briefings?: ZoneBriefing[];
   laws: LawArticle[];
   forecast: Forecast | null;
   summary: string;
@@ -225,4 +226,35 @@ export interface RiskProfile {
   severity: number;
   top_causes: string[];
   source: string;
+}
+
+/** 구역별 챗봇 브리핑 (초안 v5) */
+export interface ZoneBriefing {
+  zone: string;
+  storey: string;
+  teams: { team: string; company: string; lead: string; trade: string }[];
+  langs: string[];
+  restricted: boolean;
+  weather: { item_id: string; text: string; level: Level }[];
+  build: string[];
+  safety: { item_id: string; key: string; hazard: string; level: Level; rank: number | null }[];
+  items: string[];
+}
+
+/** 근로자 현장 이슈 */
+export interface FieldIssue {
+  id: number;
+  zone: string;
+  lang: string;
+  text_original: string;
+  text_ko: string;
+  summary_ko: string;
+  urgency: "urgent" | "normal";
+  safety: boolean;
+  translated: boolean;
+  route: string[];
+  status: "open" | "answered";
+  answer_ko: string;
+  answer_translated: string;
+  created_at: string;
 }

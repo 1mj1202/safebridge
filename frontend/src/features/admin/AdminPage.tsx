@@ -5,6 +5,8 @@ import { useFetch } from "../../shared/hooks";
 import type { Assessment, BimModel, DraftItem, Meta, RiskResponse, Task, Tbm, Zone } from "../../shared/types";
 import AgentQuery from "../assessment/AgentQuery";
 import DraftReview from "../assessment/DraftReview";
+import ZoneBriefings from "../assessment/ZoneBriefings";
+import IssueInbox from "../tbm/IssueInbox";
 import PublishPanel from "../tbm/PublishPanel";
 import StatusPanel from "../tbm/StatusPanel";
 import Legend from "../viewer/Legend";
@@ -98,7 +100,13 @@ export default function AdminPage() {
           <AgentQuery busy={busy} onAsk={ask} trace={a?.trace ?? null} provider={meta?.provider ?? ""} />
           {a && <DraftReview a={a} busy={busy} onSave={save} onApprove={approve}
             onFocusZones={(ids) => { setSelected(ids); setZoneInfo(zones.find((z) => z.id === ids[0]) ?? null); }} />}
-          {a?.status === "approved" && meta && <PublishPanel tbm={tbm} meta={meta} busy={busy} onPublish={publish} />}
+          {a?.draft.briefings && meta && (
+            <ZoneBriefings briefings={a.draft.briefings} items={a.draft.items} meta={meta} approved={a.status === "approved"} />
+          )}
+          {a?.status === "approved" && meta && (
+            <PublishPanel tbm={tbm} meta={meta} busy={busy} onPublish={publish} zones={a.draft.briefings ?? []} />
+          )}
+          {tbm && meta && <IssueInbox tbmId={tbm.id} meta={meta} />}
           {tbm && meta && <StatusPanel tbmId={tbm.id} meta={meta} />}
         </div>
       </main>
