@@ -9,6 +9,7 @@ from fastapi.middleware.gzip import GZipMiddleware
 from app.api import assessments, bim, reference, worker
 from app.core.config import get_settings
 from app.core.db import init_db
+from app.services import bim as bim_service
 
 logging.basicConfig(level=logging.INFO)
 
@@ -17,6 +18,7 @@ logging.basicConfig(level=logging.INFO)
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     init_db()
+    bim_service.get_model()  # 요청 받기 전에 IFC 를 미리 읽어 둔다
     yield
 
 
