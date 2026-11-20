@@ -1,6 +1,6 @@
-// 챗봇 첫 메시지: 구역 브리핑 (날씨 · 시공 · 안전 순위 · 확인할 것) + 음성
-import FloorPlan from "./FloorPlan";
+// 챗봇 첫 메시지: 구역 브리핑 (3D/평면도 · 날씨 · 시공 · 안전 순위 · 확인할 것) + 음성
 import Pictogram from "./Pictogram";
+import ZoneView from "./ZoneView";
 import type { Brief } from "./fieldTypes";
 import { canSpeak, cardSpeech, speak } from "./speech";
 
@@ -11,7 +11,8 @@ export function briefSpeech(b: Brief): string {
     .filter(Boolean));
 }
 
-export default function BriefMessage({ brief, lang, big, listen }: { brief: Brief; lang: string; big: boolean; listen: string }) {
+export default function BriefMessage({ brief, lang, big, listen, token }: {
+  brief: Brief; lang: string; big: boolean; listen: string; token: string }) {
   return (
     <div className={`rounded-2xl rounded-tl-none bg-white p-4 shadow ${brief.restricted ? "ring-2 ring-red-500" : ""}`}>
       <div className="flex items-center justify-between gap-2">
@@ -21,7 +22,7 @@ export default function BriefMessage({ brief, lang, big, listen }: { brief: Brie
             className="shrink-0 rounded-full bg-slate-900 px-3 py-1.5 text-sm font-semibold text-white">🔊 {listen}</button>
         )}
       </div>
-      {brief.plan && <div className="mt-3"><FloorPlan plan={brief.plan} /></div>}
+      <ZoneView key={brief.zone} token={token} zone={brief.zone} plan={brief.plan} />
       {brief.sections.filter((s) => s.lines.length).map((s) => (
         <section key={s.type} className="mt-3">
           <h3 className="text-sm font-bold text-slate-500">{ICON[s.type]} {s.title}</h3>

@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.core.db import get_db
 from app.models import Issue
-from app.services import field_chat, glossary, issues, names, zone_brief
+from app.services import field_chat, glossary, issues, names, risk, schedule, site, zone_brief
 
 from .schemas import ChatRequest, IssueRequest
 from .worker import _lang, _tbm
@@ -79,3 +79,12 @@ def issue_status(token: str, iid: int, key: str, db: Session = Depends(get_db)):
         raise HTTPException(404, "이슈 없음")
     return {"id": it.id, "status": it.status, "answer": it.answer_translated or it.answer_ko,
             "title": glossary.phrase("chat.reply", it.lang)}
+
+
+@router.get("/{token}/scene")
+def scene(token: str, zone: str, db: Session = Depends(get_db)):
+    """근로자 3D 화면: 공정 상태 + 내 구역 상자 + 내 구역에 걸린 위험 영역 (모델 형상은 /api/bim/model)."""
+    t = _zone(db, token, zone)
+    day = t.assessment.draft["date"]
+    zs = [z for z in risk.zones_on(day) if zone in site.zones_of_hazard(z)]
+    return {"date": day, "focus": site.zone_box(zone), "element_status": schedule.element_status(day), "zones": zs}

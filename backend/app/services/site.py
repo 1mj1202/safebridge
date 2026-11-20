@@ -45,3 +45,47 @@ def assignments(tasks: list[dict]) -> list[dict]:
                 row["teams"].append({k: team[k] for k in ("team", "company", "lead", "trade")})
                 row["langs"] += [lg for lg in team["langs"] if lg not in row["langs"]]
     return sorted(by_zone.values(), key=lambda r: r["zone"])
+
+
+def zones_of_hazard(z: dict) -> list[str]:
+    """위험 영역 → 근로자 구역. 하부 낙하 영역은 아래층 구역, 외곽 지상은 '외곽 지상'."""
+    if "-GROUND-" in z["id"]:
+        return [f"{info()['building']} 외곽 지상"]
+    storey = z["storey"]
+    if z["id"].endswith("-BELOW") or z["id"].endswith("-SHAFT"):
+        n = int(storey.rstrip("F")) - 1
+        if n < 1:
+            return []
+        storey = f"{n}F"
+    return zones_for_box(storey, z["min"], z["max"])
+
+
+def zone_box(zone: str) -> dict | None:
+    """근로자 구역의 3D 상자(IFC 좌표, m) — 그 층 슬래브 윗면부터 윗층 슬래브 아랫면까지, 분할선으로 반쪽."""
+    from .bim import get_model
+
+    s = info()
+    m = get_model()
+    slabs = sorted((e for e in m.elements if e.ifc_class == "IfcSlab"), key=lambda e: e.bbox_min[2])
+    if not slabs:
+        return None
+    if zone == f"{s['building']} 외곽 지상":
+        lo = [min(e.bbox_min[i] for e in slabs) - 2.0 for i in (0, 1)]
+        hi = [max(e.bbox_max[i] for e in slabs) + 2.0 for i in (0, 1)]
+        return {"min": [*lo, 0.0], "max": [*hi, 0.3]}
+    storey = next((w for w in zone.split() if w[:1].isdigit()), "").split("-")[0]
+    names = zone_names(storey)
+    if zone not in names:
+        return None
+    slab = next((e for e in slabs if e.storey == storey), None)
+    if slab is None:
+        return None
+    above = next((e for e in slabs if e.bbox_min[2] > slab.bbox_max[2]), None)
+    top = above.bbox_min[2] if above else slab.bbox_max[2] + 3.0
+    lo, hi = list(slab.bbox_min), list(slab.bbox_max)
+    i = 0 if s["zone_split"]["axis"] == "x" else 1
+    if names.index(zone) == 0:
+        hi[i] = s["zone_split"]["at"]
+    else:
+        lo[i] = s["zone_split"]["at"]
+    return {"min": [lo[0], lo[1], slab.bbox_max[2]], "max": [hi[0], hi[1], top]}

@@ -26,13 +26,4 @@ def run(args: dict) -> dict:
 
 
 def site_zones(z: dict) -> list[str]:
-    """위험 영역 → 근로자 구역. 하부 낙하 영역은 아래층 구역, 외곽 지상은 '외곽 지상'."""
-    if "-GROUND-" in z["id"]:
-        return [f"{site.info()['building']} 외곽 지상"]
-    storey = z["storey"]
-    if z["id"].endswith("-BELOW") or z["id"].endswith("-SHAFT"):
-        n = int(storey.rstrip("F")) - 1
-        if n < 1:
-            return []
-        storey = f"{n}F"
-    return site.zones_for_box(storey, z["min"], z["max"])
+    return site.zones_of_hazard(z)
