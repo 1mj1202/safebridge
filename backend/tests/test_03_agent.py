@@ -2,7 +2,7 @@
 from datetime import date
 
 from app.agent import runner
-from app.llm.base import Conversation, LLMProvider, StepResult
+from app.llm.base import Conversation, LLMProvider, StepResult, ToolCall
 from app.llm.mock import MockProvider
 
 
@@ -46,3 +46,32 @@ def test_runner_fills_missing_tools_and_default_text():
     r = runner.run(LazyProvider(), "위험 알려줘", date(2026, 11, 23), day="2026-11-24", storey="3F")
     assert {t["tool"] for t in r["trace"] if t["auto"]} >= {"get_activities", "get_spatial_hazards", "get_weather"}
     assert r["draft"]["items"] and r["draft"]["llm_note"]
+
+
+class _WrongStorey(Conversation):
+    """3F 를 부른 뒤 1F 를 다시 부르는 모델 (Ollama 에서 실제로 본 순서)."""
+
+    def __init__(self): self.n = 0
+    def add_user(self, text): pass
+    def add_tool_results(self, results): pass
+
+    def step(self):
+        self.n += 1
+        if self.n == 1:
+            return StepResult(text="", tool_calls=[ToolCall("1", "get_activities", {"storey": "3F"})], stop_reason="tool_use")
+        if self.n == 2:
+            return StepResult(text="", tool_calls=[ToolCall("2", "get_activities", {"storey": "1F"})], stop_reason="tool_use")
+        return StepResult(text="끝")
+
+
+class WrongStoreyProvider(LLMProvider):
+    name = "wrong"
+
+    def conversation(self, system, tools): return _WrongStorey()
+
+
+def test_runner_keeps_requested_storey():
+    r = runner.run(WrongStoreyProvider(), "내일 3층 작업 위험 알려줘", date(2026, 11, 23))
+    d = r["draft"]
+    assert d["tasks"] and d["briefings"]
+    assert all(t["input"].get("storey") == "3F" for t in r["trace"] if t["tool"] == "get_activities")
