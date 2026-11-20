@@ -65,3 +65,29 @@ class Report(Base):
     text_ko: Mapped[str] = mapped_column(Text, default="")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
     tbm: Mapped[Tbm] = relationship(back_populates="reports")
+
+
+class Issue(Base):
+    """현장 이슈 — 근로자 모국어 원문 → 한국어 번역·요약·긴급도 → 구역 반장·공사담당(·안전관리자) → 회신 번역.
+
+    누가 보냈는지는 저장하지 않는다. 회신은 발급한 key 를 가진 화면에서만 볼 수 있다.
+    """
+
+    __tablename__ = "issues"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    tbm_id: Mapped[int] = mapped_column(ForeignKey("tbms.id"), index=True)
+    key: Mapped[str] = mapped_column(String(32))
+    zone: Mapped[str] = mapped_column(String(40), default="")
+    lang: Mapped[str] = mapped_column(String(5))
+    text_original: Mapped[str] = mapped_column(Text)
+    text_ko: Mapped[str] = mapped_column(Text, default="")
+    summary_ko: Mapped[str] = mapped_column(Text, default="")
+    urgency: Mapped[str] = mapped_column(String(10), default="normal")  # urgent | normal
+    safety: Mapped[bool] = mapped_column(default=False)
+    translated: Mapped[bool] = mapped_column(default=False)
+    route: Mapped[list] = mapped_column(JSON, default=list)  # 전달 대상(직책·팀 단위)
+    status: Mapped[str] = mapped_column(String(10), default="open")  # open | answered
+    answer_ko: Mapped[str] = mapped_column(Text, default="")
+    answer_translated: Mapped[str] = mapped_column(Text, default="")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+    answered_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)

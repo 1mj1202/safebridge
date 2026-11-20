@@ -14,7 +14,11 @@ BUILD_NOTE = {
 }
 
 
-def build(items: list[dict], assignments: list[dict], hazard_zones: list[dict], alerts: list[dict]) -> list[dict]:
+def _build_keys(z_items: list[dict]) -> list[str]:
+    return list(dict.fromkeys(i["key"] for i in z_items if i["key"] in BUILD_NOTE))[:2]
+
+
+def build(items: list[dict], assignments: list[dict], hazard_zones: list[dict]) -> list[dict]:
     zone_site = {z["id"]: z.get("site_zones", []) for z in hazard_zones}
     rows: dict[str, dict] = {a["zone"]: {**a, "items": []} for a in assignments}
     for it in items:
@@ -27,13 +31,14 @@ def build(items: list[dict], assignments: list[dict], hazard_zones: list[dict], 
             storey = next((w for w in s.split() if w[:1].isdigit()), "").split("-")[0]
             row = rows.setdefault(s, {"zone": s, "storey": storey, "teams": [], "tasks": [], "langs": ["ko"], "items": []})
             row["items"].append(it)
+    weather_items = [i for i in items if i["key"].startswith("weather_")]
     out = []
     for z in sorted(rows.values(), key=lambda r: (not r["teams"], r["zone"])):
         z_items = sorted(z["items"], key=lambda i: i.get("risk_rank", 99))
         trades = {t["trade"] for t in z["teams"]}
         # 작업 팀이 없는 통제 구역에는 공종과 무관한 기상(한파 등)만
-        weather = [a["text"] for a in alerts
-                   if (set(a.get("affects") or trades) & trades if z["teams"] else not a.get("affects"))]
+        weather = [{"item_id": w["id"], "text": w["hazard"], "level": w["level"]} for w in weather_items
+                   if (set(w.get("affects") or trades) & trades if z["teams"] else not w.get("affects"))]
         out.append({
             "zone": z["zone"],
             "storey": z["storey"],
@@ -41,7 +46,8 @@ def build(items: list[dict], assignments: list[dict], hazard_zones: list[dict], 
             "langs": z["langs"],
             "restricted": not z["teams"],  # 작업 팀이 없는데 위험이 걸린 구역 → 출입 통제 안내
             "weather": weather,
-            "build": list(dict.fromkeys(BUILD_NOTE[i["key"]] for i in z_items if i["key"] in BUILD_NOTE))[:2],
+            "build": [BUILD_NOTE[k] for k in _build_keys(z_items)],
+            "build_keys": _build_keys(z_items),  # 근로자 화면은 문장 은행 build.<key> 로 번역
             "safety": [{"item_id": i["id"], "key": i["key"], "hazard": i["hazard"], "level": i["level"],
                         "rank": i.get("risk_rank")} for i in z_items[:3]],
             "items": [i["id"] for i in z_items],
