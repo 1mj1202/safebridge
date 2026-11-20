@@ -52,7 +52,7 @@ export default function PublishPanel({ tbm, meta, busy, onPublish, zones }: {
         ))}
         {more.length > 0 && (
           <button onClick={() => setMoreOpen((o) => !o)} aria-expanded={moreOpen}
-            className="rounded px-2 py-1 text-xs text-slate-500 ring-1 ring-slate-200">{moreOpen ? "접기 ▲" : `다른 언어 ${more.length}개 ▼`}</button>
+            className="rounded px-2 py-1 text-xs text-slate-500 ring-1 ring-slate-200">{moreOpen ? "접기" : `다른 언어 ${more.length}개`}</button>
         )}
       </div>
       <div className="mt-2 grid gap-2 text-xs sm:grid-cols-3">

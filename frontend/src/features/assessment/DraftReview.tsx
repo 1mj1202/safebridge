@@ -1,4 +1,5 @@
 // 위험성평가 초안 검토·수정·승인 — 각 항목에 근거(사례·부재·영역·조문·예보) 표시
+import { MapPin } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button, Chip, LevelBadge, Panel } from "../../shared/ui";
 import type { Assessment, DraftItem, Level } from "../../shared/types";
@@ -60,7 +61,7 @@ export default function DraftReview({ a, busy, onSave, onApprove, onFocusZones }
                 {it.frequency && <span className="text-xs text-slate-500">사망사고 사례 {it.frequency.count}/{it.frequency.of}건</span>}
                 {it.evidence_status === "확인 불가" && <Chip tone="red">근거 확인 불가</Chip>}
               </div>
-              <p className="mt-1 text-xs text-slate-500">📍 {it.location}</p>
+              <p className="mt-1 flex items-center gap-1 text-xs text-slate-500"><MapPin size={12} />{it.location}</p>
               <textarea className="mt-2 w-full rounded border border-slate-200 p-2 text-sm" rows={2} disabled={locked}
                 value={it.explanation} aria-label="설명" onChange={(e) => upd(it.id, { explanation: e.target.value })} />
               {it.measures.length > 0 && (

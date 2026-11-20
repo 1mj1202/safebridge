@@ -73,11 +73,11 @@ export default function WorkerPage() {
       } else {
         const r = await api.post<{ id: number; key: string; urgency: string; lead?: string; messages: string[] }>(
           `/w/${token}/issue`, { lang, zone, text });
-        const shown = r.lead ? [...r.messages.slice(0, -1), `✓ ${r.lead}`] : r.messages; // 전달 확인은 짧게
+        const shown = r.lead ? [...r.messages.slice(0, -1), r.lead] : r.messages; // 전달 확인은 짧게(반장 이름만)
         setMode("ask");
         shown.forEach((m, i) => add({
           id: `bot-${now}-${i}`, from: "bot", text: m,
-          tone: r.urgency === "urgent" && i === 0 ? "urgent" : "info",
+          tone: r.urgency === "urgent" && i === 0 ? "urgent" : r.lead && i === shown.length - 1 ? "sent" : "info",
           issue: i === shown.length - 1 ? { id: r.id, key: r.key } : undefined,
         }));
       }

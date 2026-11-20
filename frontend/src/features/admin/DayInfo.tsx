@@ -18,7 +18,7 @@ export default function DayInfo({ risk }: { risk: RiskResponse }) {
         <div className="mb-1 text-xs font-bold text-slate-500">기상 ({fc.source})</div>
         <p>{fc.sky} · 순간풍속 {fc.wind_gust}m/s · 강수 {fc.rain_mm_h}mm/h · {fc.temp_min}~{fc.temp_max}℃</p>
         {risk.weather.alerts.map((a) => (
-          <p key={a.code} className={a.level === "info" ? "text-slate-600" : "font-semibold text-red-700"}>⚠ {a.text}</p>
+          <p key={a.code} className={a.level === "info" ? "text-slate-600" : "font-semibold text-red-700"}>{a.text}</p>
         ))}
       </div>
     </div>

@@ -32,7 +32,7 @@ export default function ZoneView({ token, zone, plan }: { token: string; zone: s
           {(["3d", "2d"] as const).filter((m) => m === "3d" || plan).map((m) => (
             <button key={m} onClick={() => setMode(m)} aria-pressed={mode === m}
               className={`rounded-full px-3 py-1 text-xs font-bold ${mode === m ? "bg-slate-900 text-white" : "bg-slate-100"}`}>
-              {m === "3d" ? "🧊 3D" : "🗺️ 2D"}</button>
+              {m === "3d" ? "3D" : "2D"}</button>
           ))}
         </div>
       )}
