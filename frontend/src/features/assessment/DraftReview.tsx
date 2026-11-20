@@ -29,6 +29,7 @@ export default function DraftReview({ a, busy, onSave, onApprove, onFocusZones }
   return (
     <Panel title={<>위험성평가 초안 <span className="font-normal text-slate-500">· {d.date} {d.storey}</span></>}
       right={locked ? <Chip tone="blue">승인됨</Chip> : <Chip tone="amber">검토 중</Chip>}>
+      <p className="mb-2 text-xs text-slate-400">순위 = 사고가능성 × 심각성 × 공종 사고 빈도 + 기상 (확률 예측이 아닌 위험도·빈도 순위)</p>
       {d.data_note && <p className="mb-2 rounded bg-amber-50 px-2 py-1 text-xs text-amber-800">{d.data_note}</p>}
       {d.llm_note && <p className="mb-2 rounded bg-slate-100 px-2 py-1 text-xs text-slate-600">{d.llm_note}</p>}
       <textarea className="w-full rounded-lg border border-slate-200 p-2 text-sm" rows={2} value={summary}
@@ -42,7 +43,14 @@ export default function DraftReview({ a, busy, onSave, onApprove, onFocusZones }
               <div className="flex flex-wrap items-center gap-2">
                 <input type="checkbox" checked={!off} disabled={locked} aria-label={`${it.hazard} 포함`}
                   onChange={(e) => upd(it.id, { included: e.target.checked })} />
+                {it.risk_rank && <span className={`rounded px-1.5 text-xs font-bold ${it.top ? "bg-slate-900 text-white" : "bg-slate-200"}`}>
+                  {it.risk_rank}순위</span>}
                 <b className="text-sm">{it.id}. {it.hazard}</b>
+                {it.rank_basis && (
+                  <span className="text-xs text-slate-600" title={`R = P ${it.rank_basis.p_raw} × S ${it.rank_basis.s_raw} × w ${it.rank_basis.w} + 기상 ${it.rank_basis.weather}`}>
+                    {it.rank_basis.p}×{it.rank_basis.s}{it.rank_basis.weather ? " · 강풍 +" + it.rank_basis.weather : ""}
+                  </span>
+                )}
                 {locked ? <LevelBadge level={it.level} /> : (
                   <select value={it.level} className="rounded border text-xs" aria-label="위험도"
                     onChange={(e) => upd(it.id, { level: e.target.value as Level })}>

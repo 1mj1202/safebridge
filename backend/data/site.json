@@ -1,0 +1,13 @@
+{
+ "_note": "현장·구역·팀 배정 (가상). 개인 없이 구역–공종–협력업체 팀 단위로만 관리한다.",
+ "site": "○○ 공공청사 신축공사 (가상)",
+ "building": "A동",
+ "zone_split": {"axis": "x", "at": 15.0, "names": ["a", "b"]},
+ "teams": [
+  {"trade": "거푸집", "team": "형틀팀", "company": "(가상) 한빛형틀", "langs": ["vi", "zh", "ko"], "lead": "형틀팀 반장"},
+  {"trade": "철근", "team": "철근팀", "company": "(가상) 대한철근", "langs": ["th", "ko"], "lead": "철근팀 반장"},
+  {"trade": "타설", "team": "타설팀", "company": "(가상) 새벽콘크리트", "langs": ["ko", "en"], "lead": "타설팀 반장"},
+  {"trade": "양중", "team": "양중팀", "company": "원청 직영", "langs": ["ko"], "lead": "양중 신호수 반장"}
+ ],
+ "contacts": {"construction": "원청 공사담당", "safety": "안전관리자"}
+}

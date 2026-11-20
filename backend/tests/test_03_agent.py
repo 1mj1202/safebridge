@@ -11,12 +11,21 @@ def test_mock_agent_builds_evidence_backed_draft():
     d = r["draft"]
     assert d["date"] == "2026-11-24" and d["storey"] == "3F"
     keys = [i["key"] for i in d["items"]]
-    assert keys[:2] == ["fall_edge", "fall_opening"] and "weather_wind_high" in keys
-    edge = d["items"][0]
+    assert "weather_wind_high" in keys
+    ranks = [i["risk_rank"] for i in d["items"] if "risk_rank" in i]
+    assert ranks == sorted(ranks) and ranks[0] == 1
+    edge = next(i for i in d["items"] if i["key"] == "fall_edge")
+    assert edge["rank_basis"]["p"] == 3 and edge["rank_basis"]["s"] == 4 and edge["rank_basis"]["w"] == 1.27
     assert edge["evidence"]["cases"] and "SLB-3F" in edge["evidence"]["elements"]
     assert set(edge["evidence"]["laws"]) == {"LAW-42", "LAW-13"}
     assert all(i["explanation"] for i in d["items"])
-    assert not any(t["auto"] for t in r["trace"] if t["tool"] != "get_law")
+    assert not any(t["auto"] for t in r["trace"] if t["tool"] != "get_regulation")
+    assert {t["tool"] for t in r["trace"]} >= {"get_activities", "get_spatial_hazards", "query_hazard_rules",
+                                               "search_cases", "get_guides", "get_regulation", "get_weather",
+                                               "get_accident_stats"}
+    zones = {b["zone"]: b for b in d["briefings"]}
+    assert zones["A동 3F-a"]["teams"] and zones["A동 2F-a"]["restricted"]
+    assert any(s["key"] == "falling_object" for s in zones["A동 2F-a"]["safety"])
 
 
 class _Lazy(Conversation):
@@ -35,5 +44,5 @@ class LazyProvider(LLMProvider):
 
 def test_runner_fills_missing_tools_and_default_text():
     r = runner.run(LazyProvider(), "위험 알려줘", date(2026, 11, 23), day="2026-11-24", storey="3F")
-    assert {t["tool"] for t in r["trace"] if t["auto"]} >= {"get_schedule", "compute_spatial_risk", "check_weather"}
+    assert {t["tool"] for t in r["trace"] if t["auto"]} >= {"get_activities", "get_spatial_hazards", "get_weather"}
     assert r["draft"]["items"] and r["draft"]["llm_note"]

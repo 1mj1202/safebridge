@@ -20,9 +20,24 @@ def build(src: Path) -> dict:
         hourly.append({"slot": r["재해시간"].replace(" 시전", "시"),
                        "deaths": sum(int(v) for k, v in r.items() if k != "재해시간" and v.isdigit())})
     peak = sorted(hourly, key=lambda h: -h["deaths"])[:2]
+    by_work = {}
+    for name in ("철근콘크리트공사", "가설공사"):
+        rs = [r for r in rows if r["공종(소분류)"] == name]
+        n = lambda r, k: int(r.get(k) or 0)  # noqa: E731
+        dead = sum(n(r, "사망자") for r in rs)
+        hurt = sum(n(r, "부상자") for r in rs)
+        by_work[name] = {
+            "accidents": len(rs), "deaths": dead, "injured": hurt,
+            "share_of_all": round(len(rs) / len(rows), 3),
+            "age60_deaths": round(sum(n(r, "60이상 사망자") for r in rs) / dead, 3) if dead else None,
+            "age60_all": round(sum(n(r, "60이상 사망자") + n(r, "60이상 부상자") for r in rs) / (dead + hurt), 3),
+            "foreign_deaths": round(sum(n(r, "외국인 사망자") for r in rs) / dead, 3) if dead else None,
+            "foreign_all": round(sum(n(r, "외국인 사망자") + n(r, "외국인 부상자") for r in rs) / (dead + hurt), 3),
+        }
     return {
         "_note": f"출처: {KISTEC}; {KOSHA_TIME}",
         "rc_weather": {"source": KISTEC, "trade": "철근콘크리트공사", "total": sum(weather.values()),
                        "by_weather": dict(weather.most_common()), "fatal_by_weather": dict(fatal.most_common())},
+        "by_work": {"source": KISTEC, "total_accidents": len(rows), "rows": by_work},
         "hourly_deaths": {"source": KOSHA_TIME, "slots": hourly, "peak": [p["slot"] for p in peak]},
     }
