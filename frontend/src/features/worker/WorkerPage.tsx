@@ -154,7 +154,7 @@ export default function WorkerPage() {
         langs={data.langs} lang={lang} onLang={(l) => setLang(remember(`sb-lang-${token}`, l) ?? l)} big={big} onBig={setBig}
         account={auth.worker ? { name: auth.worker.name, company: auth.worker.company, logout: ui.logout, onLogout: auth.logout } : undefined} />
 
-      <main className="space-y-5 px-4 pb-48 pt-4">
+      <main className="space-y-5 px-4 pb-64 pt-4">
         {brief ? <BriefMessage brief={brief} big={big} token={token} ui={ui}
           photo={{ done: msgs.some((m) => m.image), busy, onShoot: shoot }} /> : <p className="text-slate-400">…</p>}
         <MessageList msgs={msgs} big={big} />
