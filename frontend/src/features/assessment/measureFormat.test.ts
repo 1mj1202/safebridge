@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { plainEnding, splitMeasure } from "./measureText";
+import { plainEnding, splitMeasure } from "./measureFormat";
 
-describe("measureText", () => {
+describe("measureFormat", () => {
   it("splits condition and action", () => {
     expect(splitMeasure("철근조립이나 데크플레이트 설치 구간 등 실족위험이 있는 경우 작업장 바닥에 실족방지망 또는 작업발판 및 안전난간 설치"))
       .toEqual({ cond: "철근조립이나 데크플레이트 설치 구간 등 실족위험이 있는 경우", action: "작업장 바닥에 실족방지망 또는 작업발판 및 안전난간 설치" });
