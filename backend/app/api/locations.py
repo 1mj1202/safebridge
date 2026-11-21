@@ -15,7 +15,7 @@ router = APIRouter(prefix="/api", tags=["locations"])
 
 @router.post("/w/{token}/checkin")
 def checkin(token: str, body: CheckInRequest, request: Request, db: Session = Depends(get_db)):
-    """QR·NFC·직접 선택으로 구역에 들어오면 호출. 가입 없이 보기는 401(위치 기록 안 함)."""
+    """QR·NFC 태그로 구역에 들어오면 호출(직접 고른 구역은 호출하지 않음). 가입 없이 보기는 401(위치 기록 안 함)."""
     w = worker_auth.require(request, db)
     t = _tbm(db, token)
     if zone_brief.find(t.assessment.draft, body.zone) is None:

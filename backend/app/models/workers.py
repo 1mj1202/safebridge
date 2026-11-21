@@ -1,7 +1,7 @@
 """근로자 계정·구역 태그 기록.
 
 받는 정보는 이름·소속 업체·언어·4자리 PIN(해시만)뿐이다. 전화번호·GPS 는 받지 않는다.
-위치는 '마지막으로 태그한 구역'이다(QR·NFC·직접 선택).
+위치는 '마지막으로 태그한 구역'이다(QR·NFC 만, 직접 고른 구역은 교육만 열고 위치는 그대로).
 """
 from datetime import datetime, timezone
 
@@ -37,7 +37,7 @@ class CheckIn(Base):
     worker_id: Mapped[int] = mapped_column(ForeignKey("workers.id"), index=True)
     tbm_id: Mapped[int] = mapped_column(ForeignKey("tbms.id"), index=True)
     zone: Mapped[str] = mapped_column(String(40))
-    source: Mapped[str] = mapped_column(String(5), default="qr")  # qr | nfc | pick
+    source: Mapped[str] = mapped_column(String(5), default="qr")  # qr | nfc
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
     seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)  # 같은 구역 재태그 시각
     understood_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)

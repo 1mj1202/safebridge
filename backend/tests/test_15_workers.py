@@ -50,6 +50,7 @@ def test_checkin_updates_location_and_understood(client, tbm):
     assert client.post(f"/api/w/{tok}/checkin", json={"zone": "A동 3F-a"}).status_code == 401  # 가입 없이 보기
     client.post("/api/workers/signup", json={"name": "Somchai", "company": "(가상) 대한철근", "lang": "th", "pin": "4321"})
     assert client.post(f"/api/w/{tok}/checkin", json={"zone": "없는곳"}).status_code == 404
+    assert client.post(f"/api/w/{tok}/checkin", json={"zone": "A동 3F-a", "source": "pick"}).status_code == 422
     assert client.post(f"/api/w/{tok}/checkin", json={"zone": "A동 3F-a", "source": "qr"}).json() == \
         {"zone": "A동 3F-a", "understood": False}
     r = client.post(f"/api/w/{tok}/ack", json={"lang": "th", "status": "understood", "zone": "A동 3F-a"}).json()
