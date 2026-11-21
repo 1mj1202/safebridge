@@ -10,6 +10,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
+from app.core.admin_auth import require_admin
 from app.core.db import get_db
 from app.models import Photo, Tbm
 from app.services import glossary, photo_check, photos, zone_brief
@@ -56,7 +57,7 @@ def upload(token: str, body: PhotoRequest, db: Session = Depends(get_db)):
     return {"id": p.id, "message": glossary.phrase("chat.photo_sent", lang)}
 
 
-@router.get("/tbms/{tid}/photos")
+@router.get("/tbms/{tid}/photos", dependencies=[Depends(require_admin)])
 def list_photos(tid: int, db: Session = Depends(get_db)):
     t = db.get(Tbm, tid)
     if not t:
@@ -67,7 +68,7 @@ def list_photos(tid: int, db: Session = Depends(get_db)):
     return {"photos": [photo_out(p) for p in rows], "missing": [z for z in asked if z not in have]}
 
 
-@router.get("/photos/{pid}/image")
+@router.get("/photos/{pid}/image", dependencies=[Depends(require_admin)])
 def image(pid: int, db: Session = Depends(get_db)):
     p = db.get(Photo, pid)
     if not p:
@@ -75,7 +76,7 @@ def image(pid: int, db: Session = Depends(get_db)):
     return FileResponse(get_settings().photo_dir / str(p.tbm_id) / p.file, media_type="image/jpeg")
 
 
-@router.post("/photos/{pid}/confirm")
+@router.post("/photos/{pid}/confirm", dependencies=[Depends(require_admin)])
 def confirm(pid: int, db: Session = Depends(get_db)):
     p = db.get(Photo, pid)
     if not p:

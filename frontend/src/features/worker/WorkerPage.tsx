@@ -14,7 +14,7 @@ import { THANKS } from "./messages";
 import { pickPhoto, preparePhoto } from "./photoUpload";
 import SideMenu from "./SideMenu";
 import { speak } from "./speech";
-import { once, remember } from "./storage";
+import { once, remember, seen } from "./storage";
 import SuggestionChips from "./SuggestionChips";
 import TopBar from "./TopBar";
 import { useIssueReplies } from "./useIssueReplies";
@@ -33,12 +33,14 @@ export default function WorkerPage() {
     () => remember(`sb-zone-${token}`, params.get("zone") ?? undefined)); // 구역 QR·NFC 주소의 zone 이 우선
   const [big, setBig] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [done, setDone] = useState(false);
   const [menu, setMenu] = useState(false);
   const [mode, setMode] = useState<Mode>("ask");
   const { data, error } = useFetch<ZonesData>(`/w/${token}/zones?lang=${lang ?? "ko"}`);
   const { data: brief } = useFetch<Brief>(lang && zone ? `/w/${token}/brief?lang=${lang}&zone=${encodeURIComponent(zone)}` : null);
   const msgKey = `sb-chat-${token}-${zone}-${lang}`;
+  const doneKey = `sb-understood-${token}-${lang}`; // '이해했어요'는 기기·언어당 한 번만 집계
+  const [done, setDone] = useState(() => seen(doneKey));
+  useEffect(() => setDone(seen(doneKey)), [doneKey]);
   const [msgs, setMsgs] = useState<ChatMsg[]>(() => loadMsgs(msgKey));
 
   useEffect(() => setMsgs(loadMsgs(msgKey)), [msgKey]);
@@ -112,7 +114,7 @@ export default function WorkerPage() {
   const ack = (status: "understood" | "question") => api.post(`/w/${token}/ack`, { lang, status }).catch(() => undefined);
 
   const title = brief?.zone === zone ? brief.label : zone;
-  const understood = () => { ack("understood"); setDone(true); };
+  const understood = () => { if (once(doneKey)) ack("understood"); setDone(true); };
 
   return (
     <div className="mx-auto min-h-screen max-w-md bg-white">

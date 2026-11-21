@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 
-from app.api import assessments, bim, field, issues, launch, photos, reference, worker
+from app.api import admin, assessments, bim, field, issues, launch, photos, reference, worker
 from app.core.config import get_settings
 from app.core.db import init_db
 from app.services import bim as bim_service
@@ -27,7 +27,7 @@ app = FastAPI(title="SafeBridge API", version="0.1.0", lifespan=lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=get_settings().cors_origins, allow_methods=["*"],
                    allow_headers=["*"])
 app.add_middleware(GZipMiddleware, minimum_size=2048)
-for r in (bim.router, reference.router, assessments.router, field.router, issues.router, photos.router, worker.router,
+for r in (admin.router, bim.router, reference.router, assessments.router, field.router, issues.router, photos.router, worker.router,
           launch.router):
     app.include_router(r)
 

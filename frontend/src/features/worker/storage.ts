@@ -9,11 +9,16 @@ export function remember(key: string, value?: string | null): string | null {
   }
 }
 
-/** 같은 기기에서 처음 한 번만 true */
+/** 같은 기기에서 처음 한 번만 true (새로고침·앱 다시 열기에도 다시 세지 않는다) */
 export function once(key: string): boolean {
   try {
-    if (sessionStorage.getItem(key)) return false;
-    sessionStorage.setItem(key, "1");
+    if (localStorage.getItem(key)) return false;
+    localStorage.setItem(key, "1");
   } catch { /* 저장소 차단 시 그냥 기록 */ }
   return true;
+}
+
+/** once 로 이미 기록했는지 (기록하지 않고 확인만) */
+export function seen(key: string): boolean {
+  try { return !!localStorage.getItem(key); } catch { return false; }
 }

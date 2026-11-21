@@ -16,6 +16,7 @@ import { groupZones } from "../viewer/scene";
 import DateSlider from "./DateSlider";
 import DayInfo from "./DayInfo";
 import { addDays } from "./dates";
+import { useRestore } from "./useRestore";
 
 export default function AdminPage() {
   const { data: meta } = useFetch<Meta>("/meta");
@@ -37,8 +38,13 @@ export default function AdminPage() {
     try { return await f(); } catch (e) { setErr((e as Error).message); } finally { setBusy(false); }
   }, []);
 
+  useRestore(useCallback((ra: Assessment, rt: Tbm | null) => {
+    setA((cur) => cur ?? ra); setTbm((cur) => cur ?? rt); setDay(ra.work_date);
+  }, []));
+
+  // 분석 날짜는 슬라이더에서 고른 날 (질문 문장의 날짜 표현보다 우선, 문장에서는 층만 읽는다)
   const ask = (q: string) => run(async () => {
-    const r = await api.post<Assessment>("/agent/assess", { query: q });
+    const r = await api.post<Assessment>("/agent/assess", { query: q, ...(day ? { date: day } : {}) });
     setA(r); setTbm(null); setDay(r.work_date); setSelected([]);
   });
   const save = (items: DraftItem[], summary: string, notes: string[]) => a && run(async () => {
@@ -98,7 +104,7 @@ export default function AdminPage() {
         </div>
 
         <div className="min-h-0 space-y-4 overflow-y-auto pb-8">
-          <AgentQuery busy={busy} onAsk={ask} trace={a?.trace ?? null} provider={meta?.provider ?? ""} />
+          <AgentQuery busy={busy} onAsk={ask} day={day} today={meta?.today} trace={a?.trace ?? null} provider={meta?.provider ?? ""} />
           {a && <DraftReview a={a} busy={busy} onSave={save} onApprove={approve}
             onFocusZones={(ids) => { setSelected(ids); setZoneInfo(zones.find((z) => z.id === ids[0]) ?? null); }} />}
           {a?.draft.briefings && meta && (
