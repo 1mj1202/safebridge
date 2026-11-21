@@ -1,10 +1,11 @@
 """근거 조회 API — 사고사례·조문·재해 패턴·메타."""
 from fastapi import APIRouter, HTTPException
+from fastapi.responses import RedirectResponse
 
 from app.core.clock import today
 from app.core.config import get_settings
 from app.llm.factory import get_provider
-from app.services import glossary, guides, law, patterns, risk_profile, site
+from app.services import glossary, kosha_media, guides, law, patterns, risk_profile, site
 
 router = APIRouter(prefix="/api", tags=["reference"])
 
@@ -14,6 +15,15 @@ def meta():
     return {"today": today().isoformat(), "provider": get_provider().name,
             "langs": glossary.lang_names(), "public_web_url": get_settings().public_web_url,
             "site": f"{site.info()['site']} · {site.info()['building']}"}
+
+
+@router.get("/kosha/video/{seq}")
+def kosha_video(seq: str):
+    """KOSHA 영상 재생 — 그때 받은 포털 스트림 주소로 넘긴다 (토큰 만료 대비, 영상 파일은 우리 서버를 거치지 않음)."""
+    p = kosha_media.playable(f"?medSeq={seq}") if seq.isdigit() else None
+    if not p or p["kind"] != "mp4":
+        raise HTTPException(404, "영상 없음")
+    return RedirectResponse(p["src"], status_code=302)
 
 
 @router.get("/accidents/{case_id}")

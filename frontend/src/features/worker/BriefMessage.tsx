@@ -2,7 +2,7 @@
 import { CircleCheck, Construction, MessageSquareText, Wind } from "lucide-react";
 import Pictogram from "./Pictogram";
 import PhotoRequest from "./PhotoRequest";
-import VideoLinks from "./VideoLinks";
+import KoshaVideos from "./KoshaVideos";
 import ZoneView from "./ZoneView";
 import type { Brief } from "./fieldTypes";
 import { cardSpeech } from "./speech";
@@ -25,7 +25,7 @@ export default function BriefMessage({ brief, big, token, ui, photo }: {
   return (
     <div className={`space-y-3 ${size} ${brief.restricted ? "rounded-2xl p-2 ring-2 ring-red-500" : ""}`}>
       <ZoneView key={brief.zone} token={token} zone={brief.zone} plan={brief.plan} video={ui.video} captions={captions} sims={brief.sims} />
-      <VideoLinks links={brief.videos} />
+      <KoshaVideos videos={brief.videos} />
       {brief.sections.filter((s) => s.lines.length).map((s) => (
         <ul key={s.type} className="space-y-2">
           {s.lines.map((l, i) => (
