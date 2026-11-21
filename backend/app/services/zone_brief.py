@@ -57,7 +57,21 @@ def brief(draft: dict, zone: str, lang: str) -> dict | None:
         "checks": [glossary.phrase(c, lang) for c in checks[:5]],
         "photo": None if b["restricted"] else photo_request(hazard_keys, lang),
         "videos": videos.kosha_links(hazard_keys) if hazard_keys else [],
+        "sims": sims(hazard_keys, lang),
     }
+
+
+SIM_KINDS = ("fall_edge", "fall_opening", "falling_object", "collapse")
+
+
+def sims(hazard_keys: list[str], lang: str) -> list[dict]:
+    """예방 영상(3D 사고 재현) 장면 — 위험 순위대로 사고 장면 + 대책 장면 자막(문장 은행 고정 번역)."""
+    out = []
+    for k in hazard_keys:
+        if k in SIM_KINDS and k not in [x["kind"] for x in out]:
+            out.append({"kind": k, "accident": glossary.phrase(f"hazard.{k}", lang),
+                        "measure": glossary.phrase(f"build.{k}", lang)})
+    return out
 
 
 def photo_request(hazard_keys: list[str], lang: str) -> dict | None:

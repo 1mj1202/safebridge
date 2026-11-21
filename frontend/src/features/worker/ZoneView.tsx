@@ -1,9 +1,10 @@
-// 내 구역 보기: 3D 모델(내 구역 초록 + 추락 빨강·낙하 주황 영역) ↔ 평면도 전환. three.js 는 3D 를 열 때만 받는다
+// 내 구역 보기: 예방 영상(3D 사고 재현) ↔ 3D 모델(내 구역 초록 + 추락 빨강·낙하 주황 영역) ↔ 평면도. three.js 는 3D 를 열 때만 받는다
 import { lazy, Suspense, useState } from "react";
 import { useFetch } from "../../shared/hooks";
 import type { BimModel, Vec3, Zone } from "../../shared/types";
 import type { Status } from "../viewer/scene";
 import FloorPlan, { type Plan } from "./FloorPlan";
+import SimPlayer, { type Sim } from "../sim/SimPlayer";
 import ReplayFrame from "./ReplayFrame";
 import { canWebGL } from "./webgl";
 
@@ -22,25 +23,31 @@ function Zone3D({ token, zone }: { token: string; zone: string }) {
   );
 }
 
-export default function ZoneView({ token, zone, plan, video, captions }: {
-  token: string; zone: string; plan: Plan | null; video: string; captions: string[] }) {
+type Mode = "sim" | "3d" | "2d";
+
+export default function ZoneView({ token, zone, plan, video, captions, sims = [] }: {
+  token: string; zone: string; plan: Plan | null; video: string; captions: string[]; sims?: Sim[] }) {
   const webgl = canWebGL();
-  const [mode, setMode] = useState<"3d" | "2d">(webgl ? "3d" : "2d");
+  const hasSim = webgl && sims.length > 0;
+  const [mode, setMode] = useState<Mode>(hasSim ? "sim" : webgl ? "3d" : "2d");
   if (!webgl && !plan) return null;
+  const modes: Mode[] = [...(hasSim ? ["sim" as const] : []), "3d", ...(plan ? ["2d" as const] : [])];
+  const name = { sim: video, "3d": "3D", "2d": "2D" };
   return (
     <div className="mt-3">
       {webgl && (
         <div className="mb-1 flex justify-end gap-1" role="group" aria-label="view">
-          {(["3d", "2d"] as const).filter((m) => m === "3d" || plan).map((m) => (
+          {modes.map((m) => (
             <button key={m} onClick={() => setMode(m)} aria-pressed={mode === m}
               className={`rounded-full px-3 py-1 text-xs font-bold ${mode === m ? "bg-slate-900 text-white" : "bg-slate-100"}`}>
-              {m === "3d" ? "3D" : "2D"}</button>
+              {name[m]}</button>
           ))}
         </div>
       )}
-      {mode === "3d" && webgl
-        ? <ReplayFrame label={video} captions={captions}>{() => <Zone3D token={token} zone={zone} />}</ReplayFrame>
-        : plan && <FloorPlan plan={plan} />}
+      {mode === "sim" && hasSim ? <SimPlayer sims={sims} label={video} />
+        : mode === "3d" && webgl
+          ? <ReplayFrame captions={captions}>{() => <Zone3D token={token} zone={zone} />}</ReplayFrame>
+          : plan && <FloorPlan plan={plan} />}
     </div>
   );
 }
