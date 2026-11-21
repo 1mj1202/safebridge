@@ -34,6 +34,9 @@ class Settings(BaseSettings):
     # 안전시설 사진 증빙 저장 위치 (얼굴 흐림·촬영정보 제거 후)
     photo_dir: Path = BACKEND_DIR / "var" / "photos"
 
+    # 관리자 화면 비밀번호. 비우면 잠그지 않는다(개발·테스트). 공개 배포 때는 꼭 넣는다
+    admin_password: str = ""
+
     # 근로자 화면 주소(QR) — 배포 시 공개 주소로 바꾼다
     public_web_url: str = "http://localhost:5173"
 

@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Button, Panel } from "../../shared/ui";
 import type { TraceStep } from "../../shared/types";
+import { label } from "../admin/dates";
 
 const TOOL_LABEL: Record<string, string> = {
   get_activities: "진행 활동", search_cases: "유사 사망사고", get_spatial_hazards: "위험 구역",
@@ -9,9 +10,9 @@ const TOOL_LABEL: Record<string, string> = {
   get_accident_stats: "사고 통계", get_guides: "KOSHA GUIDE",
 };
 
-export default function AgentQuery({ busy, onAsk, trace, provider }: {
-  busy: boolean; onAsk: (q: string) => void; trace: TraceStep[] | null; provider: string }) {
-  const [q, setQ] = useState("내일 3층 작업 위험 알려줘");
+export default function AgentQuery({ busy, onAsk, trace, provider, day, today }: {
+  busy: boolean; onAsk: (q: string) => void; trace: TraceStep[] | null; provider: string; day: string | null; today?: string }) {
+  const [q, setQ] = useState("3층 작업 위험 알려줘");
   return (
     <Panel title="안전 에이전트에게 묻기" right={<span className="text-xs text-slate-400">LLM: {provider}</span>}>
       <form className="flex gap-2" onSubmit={(e) => { e.preventDefault(); if (q.trim()) onAsk(q.trim()); }}>
@@ -19,6 +20,7 @@ export default function AgentQuery({ busy, onAsk, trace, provider }: {
           className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none" />
         <Button type="submit" disabled={busy}>{busy ? "분석 중…" : "위험 분석"}</Button>
       </form>
+      {day && <p className="mt-1 text-xs text-slate-500">분석 날짜 <b>{label(day, today)}</b> · 아래 날짜 슬라이더에서 바꿔요</p>}
       {trace && (
         <ol className="mt-3 flex flex-wrap gap-1.5 text-xs">
           {trace.map((t, i) => (

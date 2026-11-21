@@ -96,6 +96,7 @@ docker compose --profile local-llm up --build      # + Ollama
 | `OLLAMA_URL` / `OLLAMA_MODEL` | `http://127.0.0.1:11434` / `qwen3:8b` | 로컬 LLM |
 | `DEMO_TODAY` | (비움) | 시연 '오늘' 고정. `2026-11-23`이면 '내일' = 3F 거푸집 설치일(강풍 예보) |
 | `PUBLIC_WEB_URL` | `http://localhost:5173` | 근로자 QR 주소 |
+| `ADMIN_PASSWORD` | (비움) | 관리자 화면 비밀번호. 넣으면 관리자 화면·API(분석·승인·발행·이슈함·사진함)는 로그인해야 열림. 근로자 화면은 그대로 |
 | `KMA_SERVICE_KEY` | (비움) | 기상청 단기예보 서비스키. 없으면 가상 예보 |
 | `LAW_API_OC` | (비움) | 법제처 Open API OC. 없으면 팀 요약 조문 |
 | `DATABASE_URL` | `sqlite:///backend/var/safebridge.db` | DB |

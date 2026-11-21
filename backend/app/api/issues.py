@@ -5,13 +5,14 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.core.admin_auth import require_admin
 from app.core.db import get_db
 from app.models import Issue, Tbm
 from app.services import issues
 
 from .schemas import AnswerRequest
 
-router = APIRouter(prefix="/api", tags=["issues"])
+router = APIRouter(prefix="/api", dependencies=[Depends(require_admin)], tags=["issues"])
 
 
 def issue_out(i: Issue) -> dict:

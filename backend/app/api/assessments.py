@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from app.agent import runner
 from app.core.clock import today
 from app.core.config import get_settings
+from app.core.admin_auth import require_admin
 from app.core.db import get_db
 from app.llm.factory import get_provider
 from app.models import Assessment, Tbm
@@ -17,7 +18,7 @@ from app.services import glossary, tbm, translate
 
 from .schemas import AssessRequest, DraftEdit, PublishRequest
 
-router = APIRouter(prefix="/api", tags=["assessments"])
+router = APIRouter(prefix="/api", dependencies=[Depends(require_admin)], tags=["assessments"])
 
 
 def _out(a: Assessment) -> dict:
@@ -139,7 +140,7 @@ def tbm_status(tid: int, db: Session = Depends(get_db)):
         understood = sum(1 for k in acks if k.status == "understood")
         question = sum(1 for k in acks if k.status == "question")
         langs[lang] = {"viewed": viewed, "understood": understood, "question": question,
-                       "rate": round(understood / viewed, 2) if viewed else None,
+                       "rate": min(1.0, round(understood / viewed, 2)) if viewed else None,
                        "needs_followup": question > 0 or (viewed > 0 and understood < viewed)}
     return {
         "tbm_id": t.id, "langs": langs,
