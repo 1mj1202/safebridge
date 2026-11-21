@@ -29,6 +29,8 @@ class PublishRequest(BaseModel):
 class AckRequest(BaseModel):
     lang: str
     status: str = Field(..., pattern="^(viewed|understood|question)$")
+    zone: str = Field("", max_length=40)  # 로그인한 근로자면 그 구역 태그에 '이해함'을 남긴다
+    tally: bool = True  # False: 언어별 익명 집계는 이미 했음(같은 기기 두 번째 구역부터)
 
 
 class ReportRequest(BaseModel):
@@ -58,3 +60,24 @@ class PhotoRequest(BaseModel):
     zone: str = Field(..., min_length=1, max_length=40)
     request: str = Field("", max_length=40)
     image: str = Field(..., min_length=10, max_length=12_000_000)  # base64 (data URL 가능)
+
+
+PIN = Field(..., pattern=r"^\d{4}$")
+
+
+class SignupRequest(BaseModel):
+    name: str = Field(..., min_length=1, max_length=40)
+    company: str = Field(..., min_length=1, max_length=60)
+    lang: str
+    pin: str = PIN
+
+
+class WorkerLoginRequest(BaseModel):
+    name: str = Field(..., min_length=1, max_length=40)
+    company: str = Field(..., min_length=1, max_length=60)
+    pin: str = PIN
+
+
+class CheckInRequest(BaseModel):
+    zone: str = Field(..., min_length=1, max_length=40)
+    source: str = Field("qr", pattern="^(qr|nfc|pick)$")

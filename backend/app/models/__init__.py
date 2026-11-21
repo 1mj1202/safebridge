@@ -1,4 +1,4 @@
-"""DB 표 — 근로자 개인정보(이름·연락처·위치)는 저장하지 않는다. 확인·신고는 언어별 익명 집계만."""
+"""DB 표 — 확인·신고·이슈·사진은 익명. 가입한 근로자만 이름·소속 업체·마지막 태그 구역을 남긴다(workers.py)."""
 from datetime import datetime, timezone
 
 from sqlalchemy import JSON, DateTime, ForeignKey, Integer, String, Text
@@ -108,3 +108,6 @@ class Photo(Base):
     status: Mapped[str] = mapped_column(String(10), default="pending")  # pending | confirmed
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
     confirmed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+from .workers import CheckIn, Worker  # noqa: E402,F401  (표 등록)
