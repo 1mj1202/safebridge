@@ -23,3 +23,20 @@ def test_clean_draft_copies():
     out = clean_draft(d)
     assert out["items"][0]["explanation"] == "위험이 있습니다."
     assert d["items"][0]["explanation"].endswith("LAW-43입니다.")
+
+
+def test_clean_draft_attaches_measure_short():
+    src = "자재 운반시 낙하위험이 없도록 2줄걸이 실시 및 훅 해지장치 설치"
+    out = clean_draft({"items": [{"explanation": "x", "measures": [src, "직접 쓴 대책"]}]})
+    assert out["items"][0]["measure_short"] == {src: "자재 운반 시 2줄걸이·훅 해지장치 사용"}
+
+
+def test_merge_keeps_only_source_measures():
+    from app.agent.runner import _merge
+    sk = {"date": "d", "items": [{"id": "H1", "location": "L", "hazard": "h",
+                                  "measures": ["A 설치"], "measure_options": ["A 설치", "B 실시"]}]}
+    _merge(sk, {"items": [{"id": "H1", "explanation": "e", "measures": ["B 실시", "새로 쓴 문장입니다."]}]})
+    assert sk["items"][0]["measures"] == ["B 실시"]
+    sk["items"][0]["measures"] = ["A 설치"]
+    _merge(sk, {"items": [{"id": "H1", "explanation": "e", "measures": ["전부 새 문장"]}]})
+    assert sk["items"][0]["measures"] == ["A 설치"]

@@ -1,6 +1,7 @@
 // 오늘 적용할 대책: 평소엔 목록 + 직접 추가 칸, '수정'일 때는 후보 목록에서 체크로 고른다
 // 후보 = 지금 들어간 대책 + 오늘 조건에 맞는 유사사례 대책 + 직접 추가 (조건이 다른 참고 대책은 ReferenceMeasures에 따로 접어 둔다)
 import MeasureAdd from "./MeasureAdd";
+import MeasureText from "./MeasureText";
 import type { DraftItem } from "../../shared/types";
 
 interface Props {
@@ -34,7 +35,7 @@ export default function MeasurePicker({ it, editing, locked = false, onChange }:
     return (
       <>
         {chosen.length
-          ? <ul className="list-disc space-y-0.5 pl-5 text-sm text-slate-800">{chosen.map((m) => <li key={m}>{m}</li>)}</ul>
+          ? <ul className="list-disc space-y-0.5 pl-5 text-sm text-slate-800">{chosen.map((m) => <li key={m}><MeasureText text={m} short={it.measure_short?.[m]} /></li>)}</ul>
           : <p className="text-sm text-slate-400">(선택된 대책 없음)</p>}
         {!locked && <MeasureAdd onAdd={addCustom} />}
       </>
@@ -57,7 +58,7 @@ export default function MeasurePicker({ it, editing, locked = false, onChange }:
             <label className="flex cursor-pointer items-start gap-2 text-sm">
               <input type="checkbox" className="mt-1" checked={chosen.includes(o.text)}
                 onChange={(e) => toggle(o.text, e.target.checked)} />
-              <span className="text-slate-800">{o.text}</span>
+              <MeasureText text={o.text} short={it.measure_short?.[o.text]} />
             </label>
           </li>
         ))}
