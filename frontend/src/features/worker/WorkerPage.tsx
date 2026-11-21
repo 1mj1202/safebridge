@@ -2,6 +2,7 @@
 // 언어 → 구역(?zone=) → 구역 브리핑 + 음성 → 질문(브리핑 안에서 답) / 문제 알리기(번역·긴급도·반장 전달) → 회신
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
+import { saveLastVisit } from "../app/lastVisit";
 import { api } from "../../shared/api";
 import { useFetch } from "../../shared/hooks";
 import BriefMessage, { briefSpeech } from "./BriefMessage";
@@ -46,6 +47,7 @@ export default function WorkerPage() {
   useIssueReplies(token, msgs, add);
   const pickZone = useCallback((z: string) => setZone(remember(`sb-zone-${token}`, z) ?? z), [token]);
   const nfc = useNfcZone(token, pickZone);
+  useEffect(() => saveLastVisit(lang, zone), [lang, zone]); // 홈 화면 앱이 다음에 이어서 열 언어·구역
   const end = useRef<HTMLDivElement>(null);
   useEffect(() => { if (msgs.length) end.current?.scrollIntoView?.({ behavior: "smooth" }); }, [msgs.length]);
 
