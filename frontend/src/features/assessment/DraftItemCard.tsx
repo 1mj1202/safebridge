@@ -6,7 +6,7 @@ import type { Assessment, DraftItem, Level } from "../../shared/types";
 import BasisTag from "../admin/BasisTag";
 import LegalNote from "../admin/LegalNote";
 import EditableText from "./EditableText";
-import EvidenceChips from "./EvidenceChips";
+import EvidenceFolds from "./EvidenceFolds";
 import type { Evidence } from "./EvidenceModal";
 import MeasurePicker from "./MeasurePicker";
 import ReferenceMeasures from "./ReferenceMeasures";
@@ -59,14 +59,14 @@ export default function DraftItemCard({ it, laws, locked, onChange, onEvidence, 
       )}
       <EditableText className="mt-2" label="설명" editing={edit} locked={locked} value={it.explanation}
         onChange={(v) => onChange({ explanation: v })} />
-      {(edit || it.measures.length > 0 || (it.measure_options?.length ?? 0) > 0) && (<>
+      {(!locked || it.measures.length > 0) && (<>
         <div className="mt-2 text-xs font-bold text-slate-500">오늘 적용할 대책</div>
-        <MeasurePicker it={it} editing={edit} onChange={(measures) => onChange({ measures })} />
+        <MeasurePicker it={it} editing={edit} locked={locked} onChange={(measures) => onChange({ measures })} />
       </>)}
       {(it.reference_measures?.length ?? 0) > 0 && (
         <ReferenceMeasures refs={it.reference_measures!} onCase={(id) => onEvidence({ kind: "case", id })} />
       )}
-      <EvidenceChips it={it} laws={laws} onEvidence={onEvidence} onFocusZones={onFocusZones} />
+      <EvidenceFolds it={it} laws={laws} onEvidence={onEvidence} onFocusZones={onFocusZones} />
       {it.stat && (
         <p className="mt-1 text-xs text-slate-500">
           통계: {it.stat.trade} 사고 {it.stat.total.toLocaleString()}건 중 {it.stat.weather} 때 {it.stat.count}건
