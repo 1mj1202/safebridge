@@ -18,7 +18,9 @@ def test_zones_and_brief(client, tbm):
     b = client.get(f"/api/w/{tbm['token']}/brief", params={"zone": "A동 3F-a", "lang": "vi"}).json()
     assert [s["type"] for s in b["sections"]] == ["weather", "build", "safety"]
     safety = b["sections"][2]["lines"]
-    assert safety and [s["rank"] for s in safety] == sorted(s["rank"] for s in safety)
+    assert safety and [s["rank"] for s in safety] == list(range(1, len(safety) + 1))  # 구역 안 순위
+    assert any(s["measure"] for s in safety)  # 위험 바로 밑 대책
+    assert not b["sections"][1]["lines"]  # 따로 있던 작업 순서 줄은 위험 밑으로 합침
     assert b["teams"] and b["checks"]
     r = client.get(f"/api/w/{tbm['token']}/brief", params={"zone": "A동 2F-a", "lang": "ko"}).json()
     assert r["restricted"] and r["sections"][1]["lines"][0]["text"].startswith("이 구역은")
