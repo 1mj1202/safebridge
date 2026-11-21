@@ -1,10 +1,12 @@
 """기상 판정 — 예보값(기상청 또는 가상) × 작업중지 기준(결정론적).
 
-기준(시연용, 근거 조문 ID 포함):
-- 순간풍속 10m/s 초과: 타워크레인 설치·해체 중지, 고소·양중 작업 중지 검토 (LAW-37)
-- 순간풍속 20m/s 초과: 타워크레인 운전 중지 (LAW-37)
-- 강수 1mm/h 이상: 고소작업 주의, 타설 일정 재검토 (LAW-37)
-- 최저기온 0℃ 이하: 결빙·미끄럼 주의, 한중 콘크리트 관리
+경고마다 근거 종류를 나눈다(basis):
+- 법령: 산업안전보건기준에 관한 규칙 제37조
+  ① 비·눈·바람 등 기상 불안정으로 위험이 예상되면 작업 중지(수치 없음)
+  ② 순간풍속 10m/s 초과 타워크레인 설치·수리·점검·해체 중지, 20m/s 초과 타워크레인 운전 중지
+- 현장 기준: 현장이 정한 관리 기준(법령 아님). 기본값은 아래 SITE_LIMITS, site.json "site_limits" 로 바꿀 수 있다.
+  순간풍속 10m/s 초과 양중·단부 작업중지 검토 / 강수 1mm/h 이상 미끄럼 주의·타설 재검토
+- 최저기온 0℃ 이하: 결빙·미끄럼 주의(참고)
 """
 from __future__ import annotations
 
@@ -15,6 +17,14 @@ from app.core.config import get_settings
 from .data_store import load_json
 
 log = logging.getLogger(__name__)
+
+
+SITE_LIMITS = {"wind_ms": 10.0, "rain_mm_h": 1.0}
+LAW_WIND_NOTE = "법령(제37조②): 타워크레인 설치·수리·점검·해체는 순간풍속 10m/s 초과, 운전은 20m/s 초과 시 중지"
+
+
+def site_limits() -> dict:
+    return {**SITE_LIMITS, **load_json("site.json").get("site_limits", {})}
 
 
 def forecast(day: str) -> dict:
@@ -34,20 +44,27 @@ def forecast(day: str) -> dict:
 
 def judge(day: str, trades: list[str]) -> dict:
     fc = forecast(day)
+    lim = site_limits()
     alerts = []
     gust, rain, tmin = fc["wind_gust"], fc["rain_mm_h"], fc["temp_min"]
     if gust > 20:
         alerts.append({"code": "wind_crane_stop", "level": "stop", "phrase": "weather.wind", "value": gust,
-                       "text": f"순간풍속 {gust}m/s: 타워크레인 운전 작업중지", "rule": "LAW-37"})
-    elif gust > 10:
+                       "text": f"순간풍속 {gust}m/s: 타워크레인 운전 작업중지 (법령 기준 20m/s 초과)", "rule": "LAW-37",
+                       "basis": "법령", "legal": LAW_WIND_NOTE + " — 오늘 법정 중지 대상"})
+    elif gust > lim["wind_ms"]:
+        legal = LAW_WIND_NOTE + (" — 크레인 운전(양중)은 법정 중지 대상 아님, 설치·해체 작업이 있으면 중지 대상"
+                                 if gust > 10 else " — 오늘 법정 중지 대상 아님")
         alerts.append({"code": "wind_high", "level": "warn", "phrase": "weather.wind", "value": gust,
-                       "text": f"순간풍속 {gust}m/s(10m/s 초과): 양중·단부 작업중지 검토", "rule": "LAW-37",
+                       "text": f"순간풍속 {gust}m/s · 현장 기준 {lim['wind_ms']:g}m/s 초과: 양중·단부 작업중지 검토",
+                       "rule": "LAW-37", "basis": "현장 기준", "legal": legal,
                        "affects": [t for t in trades if t in ("양중", "거푸집", "철근")]})
-    if rain >= 1:
+    if rain >= lim["rain_mm_h"]:
         alerts.append({"code": "rain", "level": "warn", "phrase": "weather.rain", "value": rain,
-                       "text": f"시간당 강수 {rain}mm: 미끄럼 주의, 타설 일정 재검토", "rule": "LAW-37",
+                       "text": f"시간당 강수 {rain}mm · 현장 기준 {lim['rain_mm_h']:g}mm 이상: 미끄럼 주의, 타설 일정 재검토",
+                       "rule": "LAW-37", "basis": "현장 기준",
+                       "legal": "법령(제37조①): 기상 불안정으로 위험이 예상되면 작업 중지 (강수 수치 기준은 없음)",
                        "affects": [t for t in trades if t in ("타설", "거푸집", "철근")]})
     if tmin <= 0:
         alerts.append({"code": "cold", "level": "info", "phrase": "weather.cold", "value": tmin,
-                       "text": f"최저기온 {tmin}℃: 결빙·미끄럼 주의", "rule": None})
+                       "text": f"최저기온 {tmin}℃: 결빙·미끄럼 주의", "rule": None, "basis": "참고", "legal": None})
     return {"forecast": fc, "alerts": alerts}

@@ -136,7 +136,7 @@ def build(day: str, storey: str | None, results: dict) -> dict:
             "trades": a.get("affects", trades), "affects": a.get("affects") or [], "location": "현장 전체", "storeys": [],
             "level": "상" if a["level"] == "stop" else "중" if a["level"] == "warn" else "하",
             "frequency": None, "measures": [], "checks": [],
-            "weather": {"phrase": a["phrase"], "value": a["value"]},
+            "weather": {"phrase": a["phrase"], "value": a["value"], "basis": a.get("basis"), "legal": a.get("legal")},
             "stat": fact,
             "evidence": {"cases": [], "elements": [], "zones": [], "laws": [a["rule"]] if a.get("rule") else [],
                          "guides": [], "forecast": wx.get("forecast")},
