@@ -25,6 +25,11 @@ describe("홈 화면 앱 이어 열기", () => {
     expect(localStorage.getItem("sb-lang-new")).toBe("vi");
   });
 
+  it("고정 구역 QR(/app?zone=)로 열면 그 구역을 태그로 연다", () => {
+    saveLastVisit("vi", "A동 3F-a");
+    expect(workerPath("new", "A동 2F-b")).toBe("/w/new?zone=A%EB%8F%99%202F-b");
+  });
+
   it("그 TBM 에서 이미 고른 언어는 덮어쓰지 않는다", () => {
     saveLastVisit("vi", null);
     localStorage.setItem("sb-lang-new", "th");

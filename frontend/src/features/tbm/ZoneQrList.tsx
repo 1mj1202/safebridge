@@ -5,8 +5,9 @@ import { nfcSupported } from "../../shared/nfc";
 import type { ZoneBriefing } from "../../shared/types";
 import NfcWriteButton from "./NfcWriteButton";
 
-export function zoneUrl(base: string, zone: string): string {
-  return `${base}?zone=${encodeURIComponent(zone)}`;
+/** 고정 구역 주소: TBM 이 매일 새로 발행돼도 붙여 둔 QR·NFC 는 그대로 쓴다 (/app 이 최신 TBM 으로 넘김) */
+export function zoneUrl(tbmUrl: string, zone: string): string {
+  return `${tbmUrl.replace(/\/w\/[^/?#]+$/, "/app")}?zone=${encodeURIComponent(zone)}`;
 }
 
 export default function ZoneQrList({ url, zones }: { url: string; zones: ZoneBriefing[] }) {

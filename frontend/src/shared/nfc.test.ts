@@ -6,6 +6,7 @@ describe("nfc", () => {
     expect(zoneFromUrl("http://x/w/abc?zone=A%EB%8F%99%203F-a", "abc")).toBe("A동 3F-a");
     expect(zoneFromUrl("http://x/w/other?zone=A", "abc")).toBeNull();
     expect(zoneFromUrl("not a url", "abc")).toBeNull();
+    expect(zoneFromUrl("https://x/app?zone=A%EB%8F%99%202F-b", "abc")).toBe("A동 2F-b"); // 고정 구역 주소
   });
   it("is unsupported outside android chrome", () => {
     expect(nfcSupported()).toBe(false);
