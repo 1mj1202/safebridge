@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Button, Chip, LevelBadge, Panel } from "../../shared/ui";
 import type { Assessment, DraftItem, Level } from "../../shared/types";
 import BasisTag from "../admin/BasisTag";
+import EvidenceChips from "./EvidenceChips";
 import EvidenceModal, { type Evidence } from "./EvidenceModal";
 import ReferenceMeasures from "./ReferenceMeasures";
 
@@ -81,21 +82,7 @@ export default function DraftReview({ a, busy, onSave, onApprove, onFocusZones, 
               {(it.reference_measures?.length ?? 0) > 0 && (
                 <ReferenceMeasures refs={it.reference_measures!} onCase={(id) => setEv({ kind: "case", id })} />
               )}
-              <div className="mt-2 flex flex-wrap gap-1">
-                {it.evidence.cases.map((c) => <Chip key={c} tone="amber" onClick={() => setEv({ kind: "case", id: c })}>사례 {c}</Chip>)}
-                {it.evidence.laws.map((l) => <Chip key={l} tone="blue" onClick={() => setEv({ kind: "law", id: l })}>
-                  {d.laws.find((x) => x.id === l)?.article ?? l}</Chip>)}
-                {it.evidence.zones.length > 0 && (
-                  <Chip tone="red" onClick={() => onFocusZones(it.evidence.zones)}>3D 영역 {it.evidence.zones.length}곳</Chip>
-                )}
-                {it.evidence.elements.slice(0, 3).map((e) => <Chip key={e}>부재 {e}</Chip>)}
-                {it.evidence.forecast && <Chip>예보 풍속 {it.evidence.forecast.wind_gust}m/s</Chip>}
-                {it.profile && (
-                  <Chip tone="red" onClick={() => setEv({ kind: "profile", id: it.profile!.id })}>
-                    위험요소 프로파일 가능성 {it.profile.likelihood} · 심각성 {it.profile.severity}</Chip>
-                )}
-                {(it.evidence.guides ?? []).map((g) => <Chip key={g} tone="blue" onClick={() => setEv({ kind: "guide", id: g })}>KOSHA {g}</Chip>)}
-              </div>
+              <EvidenceChips it={it} laws={d.laws} onEvidence={setEv} onFocusZones={onFocusZones} />
               {it.stat && (
                 <p className="mt-1 text-xs text-slate-500">
                   통계: {it.stat.trade} 사고 {it.stat.total.toLocaleString()}건 중 {it.stat.weather} 때 {it.stat.count}건
