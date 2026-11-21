@@ -83,8 +83,7 @@ export default function AdminPage() {
     <div className="flex h-full flex-col">
       <header className="flex items-center gap-3 bg-slate-900 px-5 py-3 text-white">
         <img src="/favicon.svg" alt="" className="h-7 w-7" />
-        <h1 className="text-lg font-bold">SafeBridge <span className="font-normal text-slate-300">세이프브릿지</span></h1>
-        <span className="text-sm text-slate-400">재해 데이터 × BIM 안전 TBM 에이전트</span>
+        <h1 className="text-lg font-bold">SafeBridge</h1>
         <span className="ml-auto text-xs text-slate-400">오늘 {meta?.today} · 가상 현장 데이터</span>
         <StaffBadge />
       </header>
