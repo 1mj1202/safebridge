@@ -91,3 +91,20 @@ class Issue(Base):
     answer_translated: Mapped[str] = mapped_column(Text, default="")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
     answered_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class Photo(Base):
+    """안전시설 사진 증빙 — 시설만 찍는다. 얼굴은 흐리고 촬영정보(EXIF·위치)는 지운 사본만 저장, 누가 찍었는지는 저장하지 않는다."""
+
+    __tablename__ = "photos"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    tbm_id: Mapped[int] = mapped_column(ForeignKey("tbms.id"), index=True)
+    zone: Mapped[str] = mapped_column(String(40))
+    request: Mapped[str] = mapped_column(String(40), default="")  # 요청 키 (photo.fall_opening 등)
+    file: Mapped[str] = mapped_column(String(80))
+    faces_blurred: Mapped[int] = mapped_column(Integer, default=0)
+    ai_status: Mapped[str] = mapped_column(String(10), default="skipped")  # ok | check | skipped
+    ai_note: Mapped[str] = mapped_column(Text, default="")
+    status: Mapped[str] = mapped_column(String(10), default="pending")  # pending | confirmed
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+    confirmed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)

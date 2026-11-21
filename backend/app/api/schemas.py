@@ -51,3 +51,10 @@ class IssueRequest(BaseModel):
 
 class AnswerRequest(BaseModel):
     text_ko: str = Field(..., min_length=1, max_length=500)
+
+
+class PhotoRequest(BaseModel):
+    lang: str
+    zone: str = Field(..., min_length=1, max_length=40)
+    request: str = Field("", max_length=40)
+    image: str = Field(..., min_length=10, max_length=12_000_000)  # base64 (data URL 가능)

@@ -28,6 +28,10 @@ class Settings(BaseSettings):
     # 외부 API (없으면 가상 데이터로 대체)
     kma_service_key: str = ""      # 기상청 단기예보 (공공데이터포털)
     law_api_oc: str = ""           # 법제처 국가법령정보 Open API OC
+    kosha_service_key: str = ""    # 안전보건공단 안전보건자료 링크 서비스 (공공데이터포털, 영상 링크)
+
+    # 안전시설 사진 증빙 저장 위치 (얼굴 흐림·촬영정보 제거 후)
+    photo_dir: Path = BACKEND_DIR / "var" / "photos"
 
     # 근로자 화면 주소(QR) — 배포 시 공개 주소로 바꾼다
     public_web_url: str = "http://localhost:5173"

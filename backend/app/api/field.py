@@ -22,7 +22,7 @@ def zones(token: str, lang: str = "ko", db: Session = Depends(get_db)):
     lang = _lang(lang)
     a = t.assessment
     ui = {k: glossary.phrase(f"chat.{k}", lang) for k in UI_KEYS}
-    ui.update({k: glossary.phrase(f"ui.{k}", lang) for k in ("understood", "question", "report", "listen")})
+    ui.update({k: glossary.phrase(f"ui.{k}", lang) for k in ("understood", "question", "report", "listen", "photo", "video")})
     return {"lang": lang, "langs": glossary.lang_names(), "work_date": a.work_date,
             "zones": zone_brief.zones(a.draft, lang), "ui": ui}
 
