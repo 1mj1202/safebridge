@@ -31,7 +31,7 @@ export default function BriefMessage({ brief, big, token, ui, photo }: {
         <ul key={s.type} className="space-y-2">
           {s.lines.map((l, i) => (
             <li key={i} className={`flex gap-3 ${l.measure ? "items-start" : "items-center"}`}>
-              {l.rank ? <span className="w-6 shrink-0 text-center text-sm font-bold text-red-600">{l.rank}</span>
+              {l.rank ? <span aria-hidden className="w-6 shrink-0 text-center text-lg font-bold leading-none text-red-600">•</span>
                 : !l.pictogram && ICON[s.type] && <Icon of={ICON[s.type]!} />}
               {l.pictogram && (
                 <span className="flex w-6 shrink-0 justify-center">
