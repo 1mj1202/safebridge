@@ -19,6 +19,8 @@ interface Props {
   replay?: boolean;
   /** 관리자 화면: 구역마다 지금 있는 근로자 수 (교육 미확인이 있으면 주황) */
   markers?: PeopleMarker[];
+  /** 관리자 층 버튼: 이 층까지만 보이고 윗층 부재는 숨긴다 (null 이면 전체) */
+  upTo?: string | null;
 }
 
 interface Ctx {
@@ -61,7 +63,7 @@ function badge(text: string, warn: boolean): THREE.Sprite {
   return s;
 }
 
-export default function Viewer3D({ model, status, zones, selected, onZoneClick, focus, replay = false, markers }: Props) {
+export default function Viewer3D({ model, status, zones, selected, onZoneClick, focus, replay = false, markers, upTo = null }: Props) {
   const host = useRef<HTMLDivElement>(null);
   const ctx = useRef<Ctx | null>(null);
   const clickRef = useRef(onZoneClick);
@@ -105,6 +107,7 @@ export default function Viewer3D({ model, status, zones, selected, onZoneClick, 
       g.computeVertexNormals();
       const m = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ transparent: true, roughness: 0.8 }));
       m.userData.tag = e.tag;
+      m.userData.storey = e.storey;
       scene.add(m);
       meshes.set(e.tag, m);
     }
@@ -168,18 +171,21 @@ export default function Viewer3D({ model, status, zones, selected, onZoneClick, 
     };
   }, [model]);
 
-  // 공정 상태 색
+  // 공정 상태 색 + 층 버튼(윗층 숨김)
   useEffect(() => {
     const c = ctx.current;
     if (!c) return;
+    const elev = new Map(model.storeys.map((s) => [s.name, s.elevation]));
+    const top = upTo ? elev.get(upTo) ?? Infinity : Infinity;
     for (const [tag, m] of c.meshes) {
+      m.visible = (elev.get(m.userData.storey as string) ?? 0) <= top;
       const s = statusStyle(status[tag]);
       const mat = m.material as THREE.MeshStandardMaterial;
       mat.color.setHex(s.color);
       mat.opacity = s.opacity;
       mat.depthWrite = s.opacity > 0.5;
     }
-  }, [status, model]);
+  }, [status, model, upTo]);
 
   // 위험 영역
   useEffect(() => {

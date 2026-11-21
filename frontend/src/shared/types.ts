@@ -201,6 +201,8 @@ export interface Meta {
   provider: string;
   langs: Record<string, string>;
   public_web_url: string;
+  /** 현장명 · 동 (머리글) */
+  site?: string;
 }
 
 export interface Accident {

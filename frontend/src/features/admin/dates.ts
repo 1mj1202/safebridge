@@ -22,3 +22,9 @@ export function label(day: string, today?: string): string {
 export function otherDay(draftDay: string | null | undefined, viewDay: string | null | undefined): boolean {
   return !!draftDay && !!viewDay && draftDay !== viewDay;
 }
+
+/** "2026-11-24" → "11/24" (머리글 기상 배지) */
+export function shortDay(iso: string): string {
+  const [, m, d] = iso.split("-");
+  return m && d ? `${Number(m)}/${Number(d)}` : iso;
+}
