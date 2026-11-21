@@ -6,9 +6,9 @@ import ModeSheet, { type Mode } from "./ModeSheet";
 
 export type { Mode };
 
-export default function ChatInput({ lang, mode, onMode, labels, hints, busy, onSend }: {
+export default function ChatInput({ lang, mode, onMode, labels, hints, busy, onSend, photo }: {
   lang: string; mode: Mode; onMode: (m: Mode) => void; labels: Record<Mode, string>; hints: Record<Mode, string>;
-  busy: boolean; onSend: (mode: Mode, text: string) => void }) {
+  busy: boolean; onSend: (mode: Mode, text: string) => void; photo?: { label: string; onShoot: () => void } }) {
   const [text, setText] = useState("");
   const [sheet, setSheet] = useState(false);
   const send = () => {
@@ -29,7 +29,7 @@ export default function ChatInput({ lang, mode, onMode, labels, hints, busy, onS
           className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-900 text-lg text-white disabled:bg-slate-300">
           {busy ? <Loader2 size={18} className="animate-spin" /> : <ArrowUp size={20} strokeWidth={2.25} />}</button>
       </div>
-      <ModeSheet open={sheet} mode={mode} labels={labels} onPick={onMode} onClose={() => setSheet(false)} />
+      <ModeSheet open={sheet} mode={mode} labels={labels} onPick={onMode} onClose={() => setSheet(false)} photo={photo} />
     </>
   );
 }

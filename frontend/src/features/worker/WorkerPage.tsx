@@ -10,6 +10,7 @@ import type { Brief, ChatMsg, ZonesData } from "./fieldTypes";
 import LangPicker from "./LangPicker";
 import MessageList from "./MessageList";
 import { THANKS } from "./messages";
+import { pickPhoto, preparePhoto } from "./photoUpload";
 import SideMenu from "./SideMenu";
 import { speak } from "./speech";
 import { once, remember } from "./storage";
@@ -87,6 +88,24 @@ export default function WorkerPage() {
       setBusy(false);
     }
   };
+  const shoot = async () => {
+    const file = await pickPhoto();
+    if (!file) return;
+    const now = Date.now();
+    setBusy(true);
+    try {
+      const { upload, thumb } = await preparePhoto(file);
+      add({ id: `me-${now}`, from: "me", text: "", image: thumb });
+      const r = await api.post<{ message: string }>(`/w/${token}/photos`,
+        { lang, zone, request: brief?.photo?.key ?? "", image: upload });
+      add({ id: `bot-${now}`, from: "bot", text: r.message, tone: "sent" });
+    } catch {
+      add({ id: `bot-${now}`, from: "bot", text: ui.ask_lead });
+    } finally {
+      setBusy(false);
+    }
+  };
+  const photo = { label: ui.photo, onShoot: shoot };
   // 질문을 보낸 근로자는 '질문 있음'으로 한 번 집계 (관리자 TBM 확인 현황)
   const ack = (status: "understood" | "question") => api.post(`/w/${token}/ack`, { lang, status }).catch(() => undefined);
 
@@ -101,7 +120,8 @@ export default function WorkerPage() {
         langs={data.langs} lang={lang} onLang={(l) => setLang(remember(`sb-lang-${token}`, l) ?? l)} big={big} onBig={setBig} />
 
       <main className="space-y-5 px-4 pb-48 pt-4">
-        {brief ? <BriefMessage brief={brief} big={big} token={token} /> : <p className="text-slate-400">…</p>}
+        {brief ? <BriefMessage brief={brief} big={big} token={token} ui={ui}
+          photo={{ done: msgs.some((m) => m.image), busy, onShoot: shoot }} /> : <p className="text-slate-400">…</p>}
         <MessageList msgs={msgs} big={big} />
         {done && <p className={big ? "text-xl" : "text-base"}>{THANKS[lang]}</p>}
         <div ref={end} />
@@ -111,7 +131,7 @@ export default function WorkerPage() {
         <SuggestionChips understood={done ? undefined : ui.understood} onUnderstood={understood}
           report={ui.report} onReport={() => setMode("issue")} />
         <ChatInput lang={lang} mode={mode} onMode={setMode} busy={busy} labels={{ ask: ui.question, issue: ui.report }}
-          hints={{ ask: ui.ask, issue: ui.issue }} onSend={send} />
+          hints={{ ask: ui.ask, issue: ui.issue }} onSend={send} photo={photo} />
       </div>
     </div>
   );

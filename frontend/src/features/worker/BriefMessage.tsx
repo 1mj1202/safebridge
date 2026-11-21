@@ -1,6 +1,8 @@
 // 챗봇 첫 메시지: 구역 브리핑 — 제목·소제목 없이 3D/평면도 · 날씨 · 시공 · 위험 순위 · 확인할 것
 import { CircleCheck, Construction, MessageSquareText, Wind } from "lucide-react";
 import Pictogram from "./Pictogram";
+import PhotoRequest from "./PhotoRequest";
+import VideoLinks from "./VideoLinks";
 import ZoneView from "./ZoneView";
 import type { Brief } from "./fieldTypes";
 import { cardSpeech } from "./speech";
@@ -15,11 +17,15 @@ export function briefSpeech(b: Brief): string {
   return cardSpeech(b.title, [...b.sections.flatMap((s) => s.lines.map((l) => l.text)), ...b.checks, b.memo].filter(Boolean));
 }
 
-export default function BriefMessage({ brief, big, token }: { brief: Brief; big: boolean; token: string }) {
+export default function BriefMessage({ brief, big, token, ui, photo }: {
+  brief: Brief; big: boolean; token: string; ui: { video: string; photo: string };
+  photo: { done: boolean; busy: boolean; onShoot: () => void } }) {
+  const captions = [...brief.sections.find((s) => s.type === "safety")?.lines.map((l) => l.text) ?? [], ...brief.checks];
   const size = big ? "text-xl" : "text-base";
   return (
     <div className={`space-y-3 ${size} ${brief.restricted ? "rounded-2xl p-2 ring-2 ring-red-500" : ""}`}>
-      <ZoneView key={brief.zone} token={token} zone={brief.zone} plan={brief.plan} />
+      <ZoneView key={brief.zone} token={token} zone={brief.zone} plan={brief.plan} video={ui.video} captions={captions} />
+      <VideoLinks links={brief.videos} />
       {brief.sections.filter((s) => s.lines.length).map((s) => (
         <ul key={s.type} className="space-y-2">
           {s.lines.map((l, i) => (
@@ -47,6 +53,7 @@ export default function BriefMessage({ brief, big, token }: { brief: Brief; big:
       {brief.memo && (
         <p className="flex items-start gap-2"><MessageSquareText size={18} strokeWidth={1.75} className="mt-0.5 shrink-0 text-slate-500" />{brief.memo}</p>
       )}
+      {brief.photo && <PhotoRequest text={brief.photo.text} label={ui.photo} {...photo} />}
     </div>
   );
 }

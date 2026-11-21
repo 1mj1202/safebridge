@@ -258,3 +258,15 @@ export interface FieldIssue {
   answer_translated: string;
   created_at: string;
 }
+
+export interface SitePhoto {
+  id: number;
+  zone: string;
+  request: string;
+  faces_blurred: number;
+  ai_status: "ok" | "check" | "skipped";
+  ai_note: string;
+  status: "pending" | "confirmed";
+  created_at: string;
+  image: string;
+}

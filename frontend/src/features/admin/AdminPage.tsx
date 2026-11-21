@@ -7,6 +7,7 @@ import AgentQuery from "../assessment/AgentQuery";
 import DraftReview from "../assessment/DraftReview";
 import ZoneBriefings from "../assessment/ZoneBriefings";
 import IssueInbox from "../tbm/IssueInbox";
+import PhotoInbox from "../tbm/PhotoInbox";
 import PublishPanel from "../tbm/PublishPanel";
 import StatusPanel from "../tbm/StatusPanel";
 import Legend from "../viewer/Legend";
@@ -107,6 +108,7 @@ export default function AdminPage() {
             <PublishPanel tbm={tbm} meta={meta} busy={busy} onPublish={publish} zones={a.draft.briefings ?? []} />
           )}
           {tbm && meta && <IssueInbox tbmId={tbm.id} meta={meta} />}
+          {tbm && <PhotoInbox tbmId={tbm.id} />}
           {tbm && meta && <StatusPanel tbmId={tbm.id} meta={meta} />}
         </div>
       </main>
