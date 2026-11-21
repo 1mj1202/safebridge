@@ -9,10 +9,15 @@ export function canSpeak(): boolean {
   return typeof window !== "undefined" && "speechSynthesis" in window;
 }
 
-export function speak(text: string, lang: string, rate = 0.9): void {
+export function stopSpeaking(): void {
+  if (canSpeak()) window.speechSynthesis.cancel();
+}
+
+export function speak(text: string, lang: string, rate = 0.9, onEnd?: () => void): void {
   if (!canSpeak()) return;
   window.speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text);
+  if (onEnd) { u.onend = onEnd; u.onerror = onEnd; }
   u.lang = VOICE_LANG[lang] ?? lang;
   u.rate = rate;
   const v = window.speechSynthesis.getVoices().find((x) => x.lang.replace("_", "-").startsWith(u.lang.slice(0, 2)));
