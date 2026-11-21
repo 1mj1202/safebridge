@@ -19,14 +19,16 @@ log = logging.getLogger(__name__)
 
 def forecast(day: str) -> dict:
     s = get_settings()
-    if s.kma_service_key:
+    data = load_json("weather_mock.json")
+    # 시연 날짜를 고정해 둔 동안에는 시나리오 날짜(강풍 등)를 가상 예보로 유지한다
+    scenario = bool(s.demo_today) and day in data["days"]
+    if s.kma_service_key and not scenario:
         try:
             from . import kma
 
             return kma.daily_forecast(day, s.kma_service_key)
         except Exception as e:  # 외부 API 실패 시 가상값으로
             log.warning("기상청 조회 실패, 가상 예보 사용: %s", e)
-    data = load_json("weather_mock.json")
     return {"date": day, "source": "가상 예보", **data["days"].get(day, data["default"])}
 
 
