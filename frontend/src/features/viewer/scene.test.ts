@@ -32,3 +32,10 @@ describe("focusCamera", () => {
     expect(c.position[1]).toBeGreaterThan(c.target[1]);
   });
 });
+
+describe("인원 배지 자리", () => {
+  it("구역 윗면 가운데 위", async () => {
+    const { markerPosition } = await import("./scene");
+    expect(markerPosition({ min: [0, 0, 6], max: [10, 4, 9] })).toEqual([5, 10.2, -2]);
+  });
+});
