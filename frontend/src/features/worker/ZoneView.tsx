@@ -4,6 +4,7 @@ import { useFetch } from "../../shared/hooks";
 import type { BimModel, Vec3, Zone } from "../../shared/types";
 import type { Status } from "../viewer/scene";
 import FloorPlan, { type Plan } from "./FloorPlan";
+import ReplayFrame from "./ReplayFrame";
 import { canWebGL } from "./webgl";
 
 const Viewer3D = lazy(() => import("../viewer/Viewer3D"));
@@ -16,12 +17,13 @@ function Zone3D({ token, zone }: { token: string; zone: string }) {
   if (!model || !scene) return <div className="flex h-full items-center justify-center text-slate-400">3D …</div>;
   return (
     <Suspense fallback={<div className="flex h-full items-center justify-center text-slate-400">3D …</div>}>
-      <Viewer3D model={model} status={scene.element_status} zones={scene.zones} selected={[]} focus={scene.focus} />
+      <Viewer3D model={model} status={scene.element_status} zones={scene.zones} selected={[]} focus={scene.focus} replay />
     </Suspense>
   );
 }
 
-export default function ZoneView({ token, zone, plan }: { token: string; zone: string; plan: Plan | null }) {
+export default function ZoneView({ token, zone, plan, video, captions }: {
+  token: string; zone: string; plan: Plan | null; video: string; captions: string[] }) {
   const webgl = canWebGL();
   const [mode, setMode] = useState<"3d" | "2d">(webgl ? "3d" : "2d");
   if (!webgl && !plan) return null;
@@ -37,7 +39,7 @@ export default function ZoneView({ token, zone, plan }: { token: string; zone: s
         </div>
       )}
       {mode === "3d" && webgl
-        ? <div className="h-64 touch-none"><Zone3D token={token} zone={zone} /></div>
+        ? <ReplayFrame label={video} captions={captions}>{() => <Zone3D token={token} zone={zone} />}</ReplayFrame>
         : plan && <FloorPlan plan={plan} />}
     </div>
   );

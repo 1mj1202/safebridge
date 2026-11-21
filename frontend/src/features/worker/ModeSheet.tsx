@@ -1,10 +1,11 @@
-// + 버튼 → 아래에서 올라오는 선택 창: 질문 / 문제 알리기
-import { MessageCircle, TriangleAlert } from "lucide-react";
+// + 버튼 → 아래에서 올라오는 선택 창: 질문 / 문제 알리기 / 사진 증빙
+import { Camera, MessageCircle, TriangleAlert } from "lucide-react";
 
 export type Mode = "ask" | "issue";
 
-export default function ModeSheet({ open, mode, labels, onPick, onClose }: {
-  open: boolean; mode: Mode; labels: Record<Mode, string>; onPick: (m: Mode) => void; onClose: () => void }) {
+export default function ModeSheet({ open, mode, labels, onPick, onClose, photo }: {
+  open: boolean; mode: Mode; labels: Record<Mode, string>; onPick: (m: Mode) => void; onClose: () => void;
+  photo?: { label: string; onShoot: () => void } }) {
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-30" role="dialog" aria-modal="true">
@@ -18,6 +19,10 @@ export default function ModeSheet({ open, mode, labels, onPick, onClose }: {
               : <TriangleAlert size={20} strokeWidth={1.75} className="text-orange-600" />}
             {labels[m]}</button>
         ))}
+        {photo && (
+          <button onClick={() => { onClose(); photo.onShoot(); }} className="flex items-center gap-3 rounded-2xl px-4 py-4 text-left text-base">
+            <Camera size={20} strokeWidth={1.75} className="text-slate-600" />{photo.label}</button>
+        )}
       </div>
     </div>
   );

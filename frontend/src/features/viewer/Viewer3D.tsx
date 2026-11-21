@@ -13,6 +13,8 @@ interface Props {
   onZoneClick?: (zone: Zone) => void;
   /** 근로자 화면: 내 구역 상자(IFC 좌표)를 파랗게 강조하고 카메라를 그쪽으로 */
   focus?: { min: Vec3; max: Vec3 } | null;
+  /** 예방 영상(BIM 재현): 천천히 돌면서 위험 영역이 깜빡인다 */
+  replay?: boolean;
 }
 
 interface Ctx {
@@ -25,11 +27,13 @@ interface Ctx {
   focusGroup: THREE.Group;
 }
 
-export default function Viewer3D({ model, status, zones, selected, onZoneClick, focus }: Props) {
+export default function Viewer3D({ model, status, zones, selected, onZoneClick, focus, replay = false }: Props) {
   const host = useRef<HTMLDivElement>(null);
   const ctx = useRef<Ctx | null>(null);
   const clickRef = useRef(onZoneClick);
   clickRef.current = onZoneClick;
+  const replayRef = useRef(replay);
+  replayRef.current = replay;
 
   // 장면·모델 (모델이 바뀔 때만)
   useEffect(() => {
@@ -95,8 +99,14 @@ export default function Viewer3D({ model, status, zones, selected, onZoneClick, 
     renderer.domElement.addEventListener("click", onClick);
 
     let raf = 0;
-    const loop = () => {
+    const loop = (t = 0) => {
       raf = requestAnimationFrame(loop);
+      controls.autoRotate = replayRef.current;
+      controls.autoRotateSpeed = 1.5;
+      if (replayRef.current) {
+        const k = 0.35 + 0.35 * (1 + Math.sin(t / 350)) / 2; // 위험 영역 깜빡임
+        for (const o of zoneGroup.children) if (o instanceof THREE.Mesh) (o.material as THREE.MeshBasicMaterial).opacity = k;
+      }
       controls.update();
       renderer.render(scene, camera);
     };

@@ -2,7 +2,7 @@
 import type { Plan } from "./FloorPlan";
 
 export type UiKey = "greet" | "ask" | "issue" | "urgent" | "reply" | "change_zone" | "ask_lead"
-  | "scan_hint" | "understood" | "question" | "report" | "listen";
+  | "scan_hint" | "understood" | "question" | "report" | "listen" | "photo" | "video";
 
 export interface ZoneRow { zone: string; label: string; storey: string; restricted: boolean; teams: string[]; langs: string[] }
 
@@ -27,6 +27,8 @@ export interface Brief {
   checks: string[];
   plan: Plan | null;
   memo: string;
+  photo: { key: string; text: string } | null;
+  videos: { title: string; url: string; source: string }[];
 }
 
 export interface ChatMsg {
@@ -35,4 +37,5 @@ export interface ChatMsg {
   text: string;
   tone?: "urgent" | "reply" | "info" | "sent";
   issue?: { id: number; key: string };
+  image?: string; // 내가 보낸 사진 미리보기(작은 사본)
 }
