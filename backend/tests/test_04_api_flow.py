@@ -31,3 +31,12 @@ def test_risk_and_model_endpoints(client):
     assert client.get("/api/risk", params={"date": "bad"}).status_code == 422
     m = client.get("/api/bim/model").json()
     assert m["elements"][0]["vertices"]
+
+
+def test_approve_rejects_other_work_date(client):
+    a = client.post("/api/agent/assess", json={"query": "3층 작업 위험", "date": "2026-11-24"}).json()
+    r = client.post(f"/api/assessments/{a['id']}/approve", json={"work_date": "2026-11-23"})
+    assert r.status_code == 409
+    assert client.get(f"/api/assessments/{a['id']}").json()["status"] == "draft"
+    ok = client.post(f"/api/assessments/{a['id']}/approve", json={"work_date": a["work_date"]})
+    assert ok.status_code == 200 and ok.json()["status"] == "approved"

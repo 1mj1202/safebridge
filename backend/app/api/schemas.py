@@ -22,6 +22,11 @@ class DraftEdit(BaseModel):
     items: list[ItemEdit] = []
 
 
+class ApproveRequest(BaseModel):
+    # 관리자 화면에서 보고 있던 작업일. 초안 날짜와 다르면 승인하지 않는다(다른 날 초안 잘못 승인 방지)
+    work_date: str | None = Field(None, pattern=r"^\d{4}-\d{2}-\d{2}$")
+
+
 class PublishRequest(BaseModel):
     memo: str = Field("", max_length=300)  # 관리자 한마디(자유 문장 → 번역·역번역)
 

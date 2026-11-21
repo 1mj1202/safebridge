@@ -17,3 +17,8 @@ export function label(day: string, today?: string): string {
   const rel = today ? { 0: " (오늘)", 1: " (내일)", [-1]: " (어제)" }[daysBetween(today, day)] ?? "" : "";
   return `${m}월 ${d}일 (${wd})${rel}`;
 }
+
+/** 검토 중인 초안의 작업일이 지금 보고 있는 날짜와 다른가 (다르면 승인·발행을 막는다) */
+export function otherDay(draftDay: string | null | undefined, viewDay: string | null | undefined): boolean {
+  return !!draftDay && !!viewDay && draftDay !== viewDay;
+}
