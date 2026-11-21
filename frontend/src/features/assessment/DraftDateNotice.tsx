@@ -5,7 +5,7 @@ import { label } from "../admin/dates";
 
 export default function DraftDateNotice({ draftDay, viewDay, today, noWork, busy, onBack, onReanalyze }: {
   draftDay: string; viewDay: string; today?: string; noWork: boolean; busy: boolean;
-  onBack: () => void; onReanalyze: () => void }) {
+  onBack: () => void; onReanalyze?: () => void }) {
   return (
     <div role="alert" className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
       <p className="flex items-center gap-1.5 font-semibold"><CalendarX size={16} />
@@ -15,7 +15,7 @@ export default function DraftDateNotice({ draftDay, viewDay, today, noWork, busy
         {noWork ? " 이 날은 분석할 위험 작업이 없어요." : ""} 날짜가 다른 동안에는 수정·승인·발행이 잠겨요.</p>
       <div className="mt-2 flex flex-wrap gap-2">
         <Button kind="ghost" onClick={onBack}>{label(draftDay, today)}로 돌아가기</Button>
-        {!noWork && <Button disabled={busy} onClick={onReanalyze}>{label(viewDay, today)} 새로 분석</Button>}
+        {!noWork && onReanalyze && <Button disabled={busy} onClick={onReanalyze}>{label(viewDay, today)} 새로 분석</Button>}
       </div>
     </div>
   );

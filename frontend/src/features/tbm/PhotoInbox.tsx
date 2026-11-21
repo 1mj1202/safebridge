@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { api } from "../../shared/api";
 import { useFetch, usePoll } from "../../shared/hooks";
+import { useStaff } from "../../shared/staff";
 import { Button, Chip, Panel } from "../../shared/ui";
 import type { SitePhoto } from "../../shared/types";
 
@@ -10,6 +11,7 @@ const AI = { ok: { tone: "blue", text: "AI: 시설 보임" }, check: { tone: "am
 
 function PhotoRow({ p, onDone }: { p: SitePhoto; onDone: () => void }) {
   const [busy, setBusy] = useState(false);
+  const canConfirm = useStaff().can("photo");
   const confirm = async () => {
     setBusy(true);
     try { await api.post(`/photos/${p.id}/confirm`, {}); onDone(); } finally { setBusy(false); }
@@ -28,7 +30,8 @@ function PhotoRow({ p, onDone }: { p: SitePhoto; onDone: () => void }) {
         <p className="text-xs text-slate-500">{p.request}{p.ai_note && ` · ${p.ai_note}`}</p>
       </div>
       {p.status === "confirmed" ? <span className="self-center text-xs font-semibold text-emerald-700">확인됨</span>
-        : <Button disabled={busy} onClick={confirm}>확인</Button>}
+        : canConfirm ? <Button disabled={busy} onClick={confirm}>확인</Button>
+        : <span className="self-center text-xs text-slate-400">확인 대기</span>}
     </li>
   );
 }

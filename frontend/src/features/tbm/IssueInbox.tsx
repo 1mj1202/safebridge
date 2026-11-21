@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { api } from "../../shared/api";
 import { useFetch, usePoll } from "../../shared/hooks";
+import { useStaff } from "../../shared/staff";
 import { Button, Chip, Panel } from "../../shared/ui";
 import type { FieldIssue, Meta } from "../../shared/types";
 
@@ -13,6 +14,7 @@ function IssueRow({ it, meta, onDone }: { it: FieldIssue; meta: Meta; onDone: ()
     setBusy(true);
     try { await api.post(`/issues/${it.id}/answer`, { text_ko: text.trim() }); setText(""); onDone(); } finally { setBusy(false); }
   };
+  const canReply = useStaff().can("reply");
   const urgent = it.urgency === "urgent";
   return (
     <li className={`rounded-lg p-2 text-sm ${urgent && it.status === "open" ? "bg-red-50 ring-2 ring-red-400" : "bg-slate-50"}`}>
@@ -29,7 +31,7 @@ function IssueRow({ it, meta, onDone }: { it: FieldIssue; meta: Meta; onDone: ()
           <b>회신</b> {it.answer_ko}
           {it.lang !== "ko" && <span className="block text-slate-500">{it.answer_translated ? `→ ${it.answer_translated}` : "(번역 안 됨: 한국어로 전달)"}</span>}
         </div>
-      ) : (
+      ) : canReply && (
         <div className="mt-1 flex gap-1">
           <input value={text} onChange={(e) => setText(e.target.value)} maxLength={500} aria-label={`이슈 ${it.id} 회신`}
             placeholder="한국어로 회신 (근로자 언어로 자동 번역)" className="min-w-0 flex-1 rounded border border-slate-300 px-2 py-1 text-sm"
