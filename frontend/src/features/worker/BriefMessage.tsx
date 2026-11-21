@@ -24,7 +24,7 @@ export default function BriefMessage({ brief, big, token, ui, photo }: {
   const size = big ? "text-xl" : "text-base";
   return (
     <div className={`space-y-3 ${size} ${brief.restricted ? "rounded-2xl p-2 ring-2 ring-red-500" : ""}`}>
-      <ZoneView key={brief.zone} token={token} zone={brief.zone} plan={brief.plan} video={ui.video} captions={captions} />
+      <ZoneView key={brief.zone} token={token} zone={brief.zone} plan={brief.plan} video={ui.video} captions={captions} sims={brief.sims} />
       <VideoLinks links={brief.videos} />
       {brief.sections.filter((s) => s.lines.length).map((s) => (
         <ul key={s.type} className="space-y-2">

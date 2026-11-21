@@ -28,6 +28,8 @@ export interface Brief {
   plan: Plan | null;
   memo: string;
   photo: { key: string; text: string } | null;
+  /** 예방 영상(3D 사고 재현) 장면: 위험 순위 순 */
+  sims?: { kind: "fall_edge" | "fall_opening" | "falling_object" | "collapse"; accident: string; measure: string }[];
   videos: { title: string; url: string; source: string }[];
 }
 
