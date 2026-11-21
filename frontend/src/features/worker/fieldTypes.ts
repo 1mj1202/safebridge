@@ -30,8 +30,11 @@ export interface Brief {
   photo: { key: string; text: string } | null;
   /** 예방 영상(3D 사고 재현) 장면: 위험 순위 순 */
   sims?: { kind: "fall_edge" | "fall_opening" | "falling_object" | "collapse"; accident: string; measure: string }[];
-  videos: { title: string; url: string; source: string }[];
+  videos: KoshaVideo[];
 }
+
+/** 화면 안에서 재생할 KOSHA 영상 (url 은 포털 상세, src 는 재생 주소) */
+export interface KoshaVideo { title: string; url: string; source: string; kind: "mp4" | "youtube"; src: string }
 
 export interface ChatMsg {
   id: string;

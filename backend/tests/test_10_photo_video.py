@@ -49,7 +49,7 @@ def test_blur_regions_changes_only_box():
 def test_brief_has_photo_request_and_videos(client, tbm):
     b = client.get(f"/api/w/{tbm['token']}/brief", params={"zone": "A동 3F-a", "lang": "vi"}).json()
     assert b["photo"]["key"].startswith("photo.") and b["photo"]["text"]
-    assert b["videos"] == [videos.HOME]  # 인증키 없으면 KOSHA 누리집 링크만
+    assert b["videos"] == []  # 인증키 없으면 KOSHA 영상 없음 (볼 수 없는 링크는 안 보여 준다)
     r = client.get(f"/api/w/{tbm['token']}/brief", params={"zone": "A동 2F-a", "lang": "ko"}).json()
     assert r["photo"] is None  # 출입 통제 구역은 사진 요청 없음
 
@@ -95,9 +95,19 @@ def test_kosha_real_format_and_match(monkeypatch):
     calls = []
     monkeypatch.setattr(videos.httpx, "get", lambda url, params, timeout: calls.append((url, params)) or R())
     monkeypatch.setattr(videos, "get_settings", lambda: type("S", (), {"kosha_service_key": "k"})())
+    monkeypatch.setattr(videos.kosha_media, "playable", lambda url: {"kind": "mp4", "src": "https://x/stream"})
     videos._cache.clear()
     got = videos.kosha_links(["fall_edge", "fall_opening"])
     assert [g["url"] for g in got] == ["https://portal.kosha.or.kr/a?medSeq=2"]
+    assert got[0]["kind"] == "mp4" and got[0]["src"] == "/api/kosha/video/2"
     assert calls[0][0].endswith("/selectMediaList01/getselectMediaList01") and len(calls) == 1
-    assert videos.kosha_links(["collapse"]) == [videos.HOME]  # 맞는 자료 없으면 누리집
+    assert videos.kosha_links(["collapse"]) == []  # 맞는 자료 없으면 없음
+    monkeypatch.setattr(videos.kosha_media, "playable", lambda url: None)
+    assert videos.kosha_links(["fall_edge"]) == []  # 영상이 아닌 자료(PDF 등)는 빼 준다
     videos._cache.clear()
+
+
+def test_kosha_candidates_skip_off_site_and_prefer_video():
+    rows = [{"title": "철도 스패너 떨어짐 사고", "url": "u1"}, {"title": "개구부 추락 키메시지", "url": "u2"},
+            {"title": "[실제상황: 그날의 CCTV] 위태로운 발판, 예견된 추락", "url": "u3"}]
+    assert [r["url"] for r in videos.candidates(rows, ["fall_edge"])] == ["u3", "u2"]
