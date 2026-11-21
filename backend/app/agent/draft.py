@@ -123,6 +123,8 @@ def build(day: str, storey: str | None, results: dict) -> dict:
             "profile": {k2: prof[k2] for k2 in ("id", "n", "likelihood", "severity")} if prof else None,
             "frequency": {"count": count, "of": total},
             "measures": measures[:4],
+            # 관리자가 목록에서 골라 넣는 대책 후보 (오늘 작업 단계·장비에 맞는 것 전부)
+            "measure_options": measures[:10],
             "reference_measures": refs[:4],
             "checks": checks + (["check.signal"] if k == "falling_object" and "양중" in trades else []),
             "evidence": {
