@@ -1,6 +1,7 @@
 // 선택 날짜의 진행 작업·기상 판정
 import type { RiskResponse } from "../../shared/types";
 import BasisTag from "./BasisTag";
+import LegalNote from "./LegalNote";
 
 export default function DayInfo({ risk }: { risk: RiskResponse }) {
   const fc = risk.weather.forecast;
@@ -22,7 +23,7 @@ export default function DayInfo({ risk }: { risk: RiskResponse }) {
           <div key={a.code} className="mt-1">
             <p className={a.level === "info" ? "text-slate-600" : "font-semibold text-red-700"}>
               {a.basis && <BasisTag basis={a.basis} />}{a.text}</p>
-            {a.legal && <p className="text-xs text-slate-500">{a.legal}</p>}
+            <LegalNote text={a.legal} />
           </div>
         ))}
       </div>
