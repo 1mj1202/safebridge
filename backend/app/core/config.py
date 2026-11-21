@@ -36,6 +36,8 @@ class Settings(BaseSettings):
 
     # 관리자 화면 비밀번호. 비우면 잠그지 않는다(개발·테스트). 공개 배포 때는 꼭 넣는다
     admin_password: str = ""
+    # 관리자 화면을 이 시간(분) 동안 쓰지 않으면 자동 로그아웃 (마지막 사용 시각부터 셈)
+    admin_idle_minutes: int = 15
 
     # 근로자 화면 주소(QR) — 배포 시 공개 주소로 바꾼다
     public_web_url: str = "http://localhost:5173"

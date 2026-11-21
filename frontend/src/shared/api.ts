@@ -5,6 +5,9 @@ export class ApiError extends Error {
   }
 }
 
+/** 401 응답이 오면 알리는 이벤트 이름 (관리자 화면이 듣고 로그인 확인) */
+export const UNAUTHORIZED = "sb:unauthorized";
+
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
   const res = await fetch(`/api${path}`, {
     method,
@@ -12,6 +15,7 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
     body: body === undefined ? undefined : JSON.stringify(body),
   });
   if (!res.ok) {
+    if (res.status === 401) window.dispatchEvent(new CustomEvent(UNAUTHORIZED, { detail: path }));
     let msg = res.statusText;
     try {
       const j = await res.json();
