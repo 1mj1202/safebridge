@@ -5,6 +5,7 @@ import { Button, Chip, LevelBadge, Panel } from "../../shared/ui";
 import type { Assessment, DraftItem, Level } from "../../shared/types";
 import BasisTag from "../admin/BasisTag";
 import EvidenceModal, { type Evidence } from "./EvidenceModal";
+import ReferenceMeasures from "./ReferenceMeasures";
 
 interface Props {
   a: Assessment;
@@ -71,10 +72,14 @@ export default function DraftReview({ a, busy, onSave, onApprove, onFocusZones, 
               )}
               <textarea className="mt-2 w-full rounded border border-slate-200 p-2 text-sm" rows={2} disabled={locked}
                 value={it.explanation} aria-label="설명" onChange={(e) => upd(it.id, { explanation: e.target.value })} />
-              {it.measures.length > 0 && (
-                <textarea className="mt-1 w-full rounded border border-slate-200 p-2 text-sm" disabled={locked}
-                  rows={Math.max(2, it.measures.length)} value={it.measures.join("\n")} aria-label="대책"
+              {it.measures.length > 0 && (<>
+                <label className="mt-1 block text-xs font-bold text-slate-500">오늘 적용할 대책</label>
+                <textarea className="w-full rounded border border-slate-200 p-2 text-sm" disabled={locked}
+                  rows={Math.max(2, it.measures.length)} value={it.measures.join("\n")} aria-label="오늘 적용할 대책"
                   onChange={(e) => upd(it.id, { measures: e.target.value.split("\n") })} />
+              </>)}
+              {(it.reference_measures?.length ?? 0) > 0 && (
+                <ReferenceMeasures refs={it.reference_measures!} onCase={(id) => setEv({ kind: "case", id })} />
               )}
               <div className="mt-2 flex flex-wrap gap-1">
                 {it.evidence.cases.map((c) => <Chip key={c} tone="amber" onClick={() => setEv({ kind: "case", id: c })}>사례 {c}</Chip>)}
