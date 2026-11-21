@@ -15,13 +15,13 @@ import MessageList from "./MessageList";
 import { THANKS } from "./messages";
 import { pickPhoto, preparePhoto } from "./photoUpload";
 import SideMenu from "./SideMenu";
-import { speak } from "./speech";
 import { once, remember, seen } from "./storage";
 import SuggestionChips from "./SuggestionChips";
 import TopBar from "./TopBar";
 import { useCheckin, type Tag, type TagSource } from "./useCheckin";
 import { useIssueReplies } from "./useIssueReplies";
 import { useNfcZone } from "./useNfcZone";
+import { useSpeech } from "./useSpeech";
 import ZonePicker from "./ZonePicker";
 
 function loadMsgs(k: string): ChatMsg[] {
@@ -70,6 +70,7 @@ export default function WorkerPage() {
   useEffect(() => saveLastVisit(lang, zone), [lang, zone]); // 홈 화면 앱이 다음에 이어서 열 언어·구역
   const end = useRef<HTMLDivElement>(null);
   useEffect(() => { if (msgs.length) end.current?.scrollIntoView?.({ behavior: "smooth" }); }, [msgs.length]);
+  const voice = useSpeech(`${lang}-${zone}`);
 
   // 언어별 열람 1회 기록 (같은 기기 새로고침 중복 제외)
   useEffect(() => {
@@ -148,8 +149,8 @@ export default function WorkerPage() {
 
   return (
     <div className="mx-auto min-h-screen max-w-md bg-white">
-      <TopBar title={title} onMenu={() => setMenu(true)} listen={ui.listen}
-        onListen={brief ? () => speak(briefSpeech(brief), lang) : undefined} />
+      <TopBar title={title} onMenu={() => setMenu(true)} listen={ui.listen} speaking={voice.speaking}
+        onListen={brief ? () => voice.toggle(briefSpeech(brief), lang) : undefined} />
       <SideMenu open={menu} onClose={() => setMenu(false)} zones={data.zones} zone={zone} onZone={pickZone} nfc={nfc}
         langs={data.langs} lang={lang} onLang={(l) => setLang(remember(`sb-lang-${token}`, l) ?? l)} big={big} onBig={setBig}
         account={auth.worker ? { name: auth.worker.name, company: auth.worker.company, logout: ui.logout, onLogout: auth.logout } : undefined} />
