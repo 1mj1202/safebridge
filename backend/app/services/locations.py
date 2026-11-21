@@ -22,8 +22,13 @@ def _utc(d: datetime | None) -> datetime | None:
     return d if d.tzinfo else d.replace(tzinfo=timezone.utc)  # SQLite 는 시간대를 지운다
 
 
+TAG_SOURCES = ("qr", "nfc")
+
+
 def last(db: Session, w: Worker) -> CheckIn | None:
-    return db.get(CheckIn, w.last_checkin_id) if w.last_checkin_id else None
+    """마지막 QR·NFC 태그. 예전(PR #24)에 '직접 선택'(pick)으로 남은 기록은 위치로 치지 않는다."""
+    c = db.get(CheckIn, w.last_checkin_id) if w.last_checkin_id else None
+    return c if c and c.source in TAG_SOURCES else None
 
 
 def checkin(db: Session, w: Worker, t: Tbm, zone: str, source: str) -> CheckIn:

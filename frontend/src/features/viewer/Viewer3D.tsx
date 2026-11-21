@@ -74,6 +74,8 @@ export default function Viewer3D({ model, status, zones, selected, onZoneClick, 
     const el = host.current!;
     const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    // 캔버스는 부모를 꽉 채우되 부모 폭을 밀어내지 않게(창을 줄여도 가로 넘침 없이 ResizeObserver 가 따라감)
+    renderer.domElement.style.cssText = "position:absolute;inset:0;width:100%;height:100%;display:block";
     el.appendChild(renderer.domElement);
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0xf1f5f9);
@@ -116,7 +118,8 @@ export default function Viewer3D({ model, status, zones, selected, onZoneClick, 
 
     const resize = () => {
       const w = el.clientWidth, h = el.clientHeight;
-      renderer.setSize(w, h);
+      if (!w || !h) return;
+      renderer.setSize(w, h, false);
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
     };
@@ -255,5 +258,5 @@ export default function Viewer3D({ model, status, zones, selected, onZoneClick, 
     }
   }, [markers, model]);
 
-  return <div ref={host} className="h-full w-full overflow-hidden rounded-xl" data-testid="viewer3d" />;
+  return <div ref={host} className="relative h-full w-full min-w-0 overflow-hidden rounded-xl" data-testid="viewer3d" />;
 }

@@ -13,7 +13,7 @@ import PublishPanel from "../tbm/PublishPanel";
 import StatusPanel from "../tbm/StatusPanel";
 import Legend from "../viewer/Legend";
 import Viewer3D, { type PeopleMarker } from "../viewer/Viewer3D";
-import { groupZones } from "../viewer/scene";
+import ZoneLabels from "../viewer/ZoneLabels";
 import DateSlider from "./DateSlider";
 import DayInfo from "./DayInfo";
 import { addDays, otherDay } from "./dates";
@@ -69,6 +69,8 @@ export default function AdminPage() {
   const publish = (memo: string) => a && run(async () => setTbm(await api.post<Tbm>(`/assessments/${a.id}/publish`, { memo })));
 
   const zones = risk?.zones ?? [];
+  const pickZones = (zs: Zone[]) => { setSelected(zs.map((z) => z.id)); setZoneInfo(zs[0]); };
+  const clearZones = () => { setSelected([]); setZoneInfo(null); };
   // 보고 있는 날짜와 초안 작업일이 다르면 이전 초안은 보존하되 수정·승인·발행을 잠근다
   const stale = otherDay(a?.work_date, day);
   const noWork = !!risk && risk.tasks.every((t) => t.trade === "양생");
@@ -83,25 +85,16 @@ export default function AdminPage() {
         <span className="ml-auto text-xs text-slate-400">오늘 {meta?.today} · 가상 현장 데이터</span>
       </header>
       {err && <div className="bg-red-600 px-5 py-2 text-sm text-white">오류: {err}</div>}
-      <main className="grid min-h-0 flex-1 gap-4 p-4 lg:grid-cols-[minmax(0,1.3fr)_minmax(380px,1fr)]">
-        <div className="flex min-h-[480px] flex-col gap-3">
-          <div className="relative min-h-[360px] flex-1">
+      <main className="grid min-h-0 flex-1 gap-4 overflow-y-auto p-4 lg:grid-cols-[minmax(0,1.3fr)_minmax(380px,1fr)] lg:overflow-hidden">
+        <div className="flex min-w-0 flex-col gap-3 lg:min-h-[480px]">
+          <div className="relative h-[360px] shrink-0 sm:h-[440px] lg:h-auto lg:min-h-[360px] lg:flex-1 lg:shrink">
             {model && risk ? (
               <Viewer3D model={model} status={risk.element_status} zones={zones} selected={selected}
                 onZoneClick={(z) => { setZoneInfo(z); setSelected([z.id]); }} markers={markers} />
             ) : <div className="p-6 text-slate-500">{modelErr ?? "3D 모델 불러오는 중…"}</div>}
-            <div className="absolute left-3 top-3"><Legend /></div>
-            <div className="absolute right-3 top-3 max-w-[260px] space-y-1">
-              {groupZones(zones).map((g) => (
-                <button key={g.key} onClick={() => { setSelected(g.zones.map((z) => z.id)); setZoneInfo(g.zones[0]); }}
-                  className={`block w-full rounded-md px-2 py-1 text-left text-xs text-white shadow ${g.kind === "fall" ? "bg-red-600" : "bg-orange-500"}`}>
-                  {g.label}{g.zones.length > 1 ? ` (${g.zones.length})` : ""}
-                </button>
-              ))}
-              {selected.length > 0 && (
-                <button className="block w-full rounded-md bg-white px-2 py-1 text-xs shadow" onClick={() => { setSelected([]); setZoneInfo(null); }}>
-                  전체 보기</button>
-              )}
+            <div className="absolute left-3 top-3 hidden sm:block"><Legend /></div>
+            <div className="absolute right-3 top-3 hidden sm:block">
+              <ZoneLabels zones={zones} selected={selected} onPick={pickZones} onClear={clearZones} />
             </div>
             {zoneInfo && (
               <div className="absolute bottom-3 left-3 max-w-sm rounded-lg bg-white p-3 text-sm shadow-lg">
@@ -112,15 +105,17 @@ export default function AdminPage() {
               </div>
             )}
           </div>
+          <div className="space-y-2 sm:hidden">
+            <ZoneLabels row zones={zones} selected={selected} onPick={pickZones} onClear={clearZones} />
+            <Legend />
+          </div>
           {sched && meta && day && <DateSlider start={sched.start} end={sched.end} value={day} today={meta.today}
             onChange={(d) => { setDay(d); setSelected([]); setZoneInfo(null); }} />}
           {risk && <DayInfo risk={risk} />}
         </div>
 
-        <div className="min-h-0 space-y-4 overflow-y-auto pb-8">
+        <div className="min-w-0 space-y-4 pb-8 lg:min-h-0 lg:overflow-y-auto">
           <AgentQuery busy={busy} onAsk={ask} day={day} today={meta?.today} trace={a?.trace ?? null} provider={meta?.provider ?? ""} />
-          <WorkerLocations data={loc.data} error={loc.error} workers={shown} company={company} onCompany={setCompany}
-            zones={(a?.draft.briefings ?? []).map((b) => b.zone)} langs={meta?.langs ?? {}} />
           {a && stale && day && (
             <DraftDateNotice draftDay={a.work_date} viewDay={day} today={meta?.today} noWork={noWork} busy={busy}
               onBack={() => { setDay(a.work_date); setSelected([]); setZoneInfo(null); }} onReanalyze={() => ask(a.query)} />
@@ -135,6 +130,8 @@ export default function AdminPage() {
               <PublishPanel tbm={tbm} meta={meta} busy={busy} onPublish={publish} zones={a.draft.briefings ?? []} />
             )}
           </div>
+          <WorkerLocations data={loc.data} error={loc.error} workers={shown} company={company} onCompany={setCompany}
+            zones={(a?.draft.briefings ?? []).map((b) => b.zone)} langs={meta?.langs ?? {}} />
           {tbm && meta && <IssueInbox tbmId={tbm.id} meta={meta} />}
           {tbm && <PhotoInbox tbmId={tbm.id} />}
           {tbm && meta && <StatusPanel tbmId={tbm.id} meta={meta} />}

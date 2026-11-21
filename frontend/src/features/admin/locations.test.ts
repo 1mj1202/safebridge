@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ago, companiesOf, countByZone, filterCompany, sortWorkers, type WorkerLoc } from "./locations";
+import { ago, companiesOf, countByZone, filterCompany, sortWorkers, type WorkerLoc, sourceLabel } from "./locations";
 
 const w = (id: number, o: Partial<WorkerLoc>): WorkerLoc => ({
   id, name: `w${id}`, company: "A", team: "t", lang: "vi", zone: "A동 3F-a", source: "qr", at: "", minutes: 1,
@@ -45,5 +45,13 @@ describe("평면 배치", () => {
       { storey: "2F", zones: ["A동 2F-b"] },
       { storey: "지상", zones: ["A동 외곽 지상"] },
     ]);
+  });
+});
+
+describe("sourceLabel", () => {
+  it("never shows undefined for legacy or unknown sources", () => {
+    expect(sourceLabel("qr")).toBe("QR");
+    expect(sourceLabel("pick")).toBe("");
+    expect(sourceLabel(null)).toBe("");
   });
 });

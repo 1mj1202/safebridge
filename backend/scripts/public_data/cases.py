@@ -22,6 +22,18 @@ def _measures(text: str) -> list[str]:
     return [p for p in parts if len(p) > 3][:4]
 
 
+DEATH_WORDS = ("사망", "숨지", "숨져", "숨졌")
+INJURY_WORDS = ("부상", "골절", "다쳐", "다친", "상해", "중상", "경상", "화상", "절단")
+
+
+def sif_severity(text: str) -> str:
+    """SIF 아카이브는 사망사고 고위험요인 모음이지만 재해개요에 부상만 적힌 사례도 있어 본문으로 정한다.
+    사망 표현이 있으면 사망, 없고 부상 표현만 있으면 부상, 둘 다 없으면 아카이브 기본값(사망)."""
+    if any(w in text for w in DEATH_WORDS):
+        return "사망"
+    return "부상" if any(w in text for w in INJURY_WORDS) else "사망"
+
+
 def sif(src: Path) -> list[dict]:
     out = []
     for r in read_csv(find(src, "07_안전보건공단")):
@@ -42,7 +54,7 @@ def sif(src: Path) -> list[dict]:
             "cause_object_raw": obj_raw,
             "causes": [r["재해유발요인"]] if r["재해유발요인"] else [],
             "measures": _measures(r["위험성감소대책(예시)"]),
-            "severity": "사망",
+            "severity": sif_severity(r["재해개요"]),
             "confidence": 1.0,
             "raw_text": r["재해개요"],
         })
