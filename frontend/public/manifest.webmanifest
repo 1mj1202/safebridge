@@ -1,9 +1,19 @@
 {
+  "id": "/app",
   "name": "SafeBridge 세이프브릿지",
   "short_name": "SafeBridge",
-  "start_url": "/",
+  "description": "외국인 근로자 현장 안전 브리핑",
+  "lang": "ko",
+  "start_url": "/app",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#0f172a",
   "theme_color": "#0f172a",
-  "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
 }
