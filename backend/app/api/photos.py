@@ -10,7 +10,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
-from app.core.admin_auth import require_admin
+from app.core.admin_auth import require, require_admin
 from app.core.db import get_db
 from app.models import Photo, Tbm
 from app.services import glossary, photo_check, photos, zone_brief
@@ -76,7 +76,7 @@ def image(pid: int, db: Session = Depends(get_db)):
     return FileResponse(get_settings().photo_dir / str(p.tbm_id) / p.file, media_type="image/jpeg")
 
 
-@router.post("/photos/{pid}/confirm", dependencies=[Depends(require_admin)])
+@router.post("/photos/{pid}/confirm", dependencies=[Depends(require("photo"))])
 def confirm(pid: int, db: Session = Depends(get_db)):
     p = db.get(Photo, pid)
     if not p:

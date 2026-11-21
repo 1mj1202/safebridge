@@ -111,3 +111,4 @@ class Photo(Base):
 
 
 from .workers import CheckIn, Worker  # noqa: E402,F401  (표 등록)
+from .staff import StaffSession  # noqa: E402,F401  (표 등록)

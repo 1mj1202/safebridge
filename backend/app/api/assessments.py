@@ -11,7 +11,7 @@ from app.agent import runner
 from app.agent.explain_clean import clean_draft
 from app.core.clock import today
 from app.core.config import get_settings
-from app.core.admin_auth import require_admin
+from app.core.admin_auth import require, require_admin
 from app.core.db import get_db
 from app.llm.factory import get_provider
 from app.models import Assessment, Tbm
@@ -37,7 +37,7 @@ def _get(db: Session, aid: int) -> Assessment:
     return a
 
 
-@router.post("/agent/assess")
+@router.post("/agent/assess", dependencies=[Depends(require("analyze"))])
 def assess(req: AssessRequest, db: Session = Depends(get_db)):
     r = runner.run(get_provider(), req.query, today(), req.date, req.storey)
     d = r["draft"]
@@ -59,7 +59,7 @@ def get_assessment(aid: int, db: Session = Depends(get_db)):
     return _out(_get(db, aid))
 
 
-@router.put("/assessments/{aid}")
+@router.put("/assessments/{aid}", dependencies=[Depends(require("edit"))])
 def edit(aid: int, body: DraftEdit, db: Session = Depends(get_db)):
     a = _get(db, aid)
     if a.status != "draft":
@@ -82,7 +82,7 @@ def edit(aid: int, body: DraftEdit, db: Session = Depends(get_db)):
     return _out(a)
 
 
-@router.post("/assessments/{aid}/approve")
+@router.post("/assessments/{aid}/approve", dependencies=[Depends(require("approve"))])
 def approve(aid: int, body: ApproveRequest | None = None, db: Session = Depends(get_db)):
     a = _get(db, aid)
     if body and body.work_date and body.work_date != a.work_date:
@@ -93,7 +93,7 @@ def approve(aid: int, body: ApproveRequest | None = None, db: Session = Depends(
     return _out(a)
 
 
-@router.post("/assessments/{aid}/publish")
+@router.post("/assessments/{aid}/publish", dependencies=[Depends(require("publish"))])
 def publish(aid: int, body: PublishRequest, db: Session = Depends(get_db)):
     a = _get(db, aid)
     if a.status != "approved":

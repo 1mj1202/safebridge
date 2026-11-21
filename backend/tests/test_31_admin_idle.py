@@ -51,7 +51,10 @@ def test_logout_kills_server_session(client, locked):
     assert client.get("/api/assessments").status_code == 401
 
 
-def test_cookie_is_random_session_not_long_lived(client, locked):
+def test_cookie_remembers_device_but_server_still_expires(client, locked):
     r = client.post("/api/admin/login", json={"password": "pw-test"})
     sc = r.headers["set-cookie"].lower()
-    assert "max-age" not in sc and "expires" not in sc and "httponly" in sc
+    assert "max-age=2592000" in sc and "httponly" in sc        # 30일 기억 → 다시 열면 자동 로그인
+    sid = client.cookies.get(admin_auth.COOKIE)
+    admin_sessions._age_for_test(sid, 15 * 60 + 1)               # 그래도 15분 안 쓰면 끝
+    assert client.get("/api/admin/me").json()["ok"] is False

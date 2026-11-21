@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "../../shared/api";
 import { useFetch } from "../../shared/hooks";
+import { useStaff } from "../../shared/staff";
 import type { Assessment, BimModel, DraftItem, Meta, RiskResponse, Task, Tbm, Zone } from "../../shared/types";
 import AgentQuery from "../assessment/AgentQuery";
 import DraftDateNotice from "../assessment/DraftDateNotice";
@@ -21,8 +22,10 @@ import { countByZone, filterCompany } from "./locations";
 import { useLocations } from "./useLocations";
 import WorkerLocations from "./WorkerLocations";
 import { useRestore } from "./useRestore";
+import StaffBadge from "./StaffBadge";
 
 export default function AdminPage() {
+  const { can } = useStaff();
   const { data: meta } = useFetch<Meta>("/meta");
   const { data: model, error: modelErr } = useFetch<BimModel>("/bim/model");
   const { data: sched } = useFetch<{ start: string; end: string; tasks: Task[] }>("/schedule");
@@ -83,6 +86,7 @@ export default function AdminPage() {
         <h1 className="text-lg font-bold">SafeBridge <span className="font-normal text-slate-300">세이프브릿지</span></h1>
         <span className="text-sm text-slate-400">재해 데이터 × BIM 안전 TBM 에이전트</span>
         <span className="ml-auto text-xs text-slate-400">오늘 {meta?.today} · 가상 현장 데이터</span>
+        <StaffBadge />
       </header>
       {err && <div className="bg-red-600 px-5 py-2 text-sm text-white">오류: {err}</div>}
       <main className="grid min-h-0 flex-1 gap-4 overflow-y-auto p-4 lg:grid-cols-[minmax(0,1.3fr)_minmax(380px,1fr)] lg:overflow-hidden">
@@ -115,10 +119,10 @@ export default function AdminPage() {
         </div>
 
         <div className="min-w-0 space-y-4 pb-8 lg:min-h-0 lg:overflow-y-auto">
-          <AgentQuery busy={busy} onAsk={ask} day={day} today={meta?.today} trace={a?.trace ?? null} provider={meta?.provider ?? ""} />
+          {can("analyze") && <AgentQuery busy={busy} onAsk={ask} day={day} today={meta?.today} trace={a?.trace ?? null} provider={meta?.provider ?? ""} />}
           {a && stale && day && (
             <DraftDateNotice draftDay={a.work_date} viewDay={day} today={meta?.today} noWork={noWork} busy={busy}
-              onBack={() => { setDay(a.work_date); setSelected([]); setZoneInfo(null); }} onReanalyze={() => ask(a.query)} />
+              onBack={() => { setDay(a.work_date); setSelected([]); setZoneInfo(null); }} onReanalyze={can("analyze") ? () => ask(a.query) : undefined} />
           )}
           {a && <DraftReview a={a} busy={busy} onSave={save} onApprove={approve} frozen={stale}
             onFocusZones={(ids) => { setSelected(ids); setZoneInfo(zones.find((z) => z.id === ids[0]) ?? null); }} />}
@@ -126,7 +130,7 @@ export default function AdminPage() {
             {a?.draft.briefings && meta && (
               <ZoneBriefings briefings={a.draft.briefings} items={a.draft.items} meta={meta} approved={a.status === "approved"} />
             )}
-            {a?.status === "approved" && meta && (
+            {a?.status === "approved" && meta && (tbm || can("publish")) && (
               <PublishPanel tbm={tbm} meta={meta} busy={busy} onPublish={publish} zones={a.draft.briefings ?? []} />
             )}
           </div>

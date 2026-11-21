@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { Chip, Panel } from "../../shared/ui";
 import type { Assessment, DraftItem } from "../../shared/types";
+import { useStaff } from "../../shared/staff";
 import DraftActions from "./DraftActions";
 import DraftItemCard from "./DraftItemCard";
 import EditableText from "./EditableText";
@@ -26,7 +27,9 @@ export default function DraftReview({ a, busy, onSave, onApprove, onFocusZones, 
   const [dirty, setDirty] = useState(false);
   useEffect(() => { setItems(d.items); setSummary(d.summary); setNotes(d.notes.join("\n")); setDirty(false); }, [d]);
   const approved = a.status === "approved";
-  const locked = approved || frozen;
+  const { can } = useStaff();
+  const closed = approved || frozen;
+  const locked = closed || !can("edit"); // 현장소장·발주처는 내용 수정 불가
   const upd = (id: string, patch: Partial<DraftItem>) => {
     setItems((xs) => xs.map((x) => (x.id === id ? { ...x, ...patch } : x)));
     setDirty(true);
@@ -58,8 +61,8 @@ export default function DraftReview({ a, busy, onSave, onApprove, onFocusZones, 
       <EditableText list label="시공 유의사항" locked={locked} rows={3} value={notes} className="pr-6"
         onChange={(v) => { setNotes(v); setDirty(true); }} />
 
-      {!locked && (
-        <DraftActions dirty={dirty} busy={busy} onApprove={onApprove}
+      {!closed && (can("edit") || can("approve")) && (
+        <DraftActions dirty={dirty} busy={busy} onApprove={onApprove} canEdit={can("edit")} canApprove={can("approve")}
           onSave={() => { onSave(items, summary, notes.split("\n").filter(Boolean)); setDirty(false); }} />
       )}
       {ev && <EvidenceModal ev={ev} onClose={() => setEv(null)} />}
