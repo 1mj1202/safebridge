@@ -14,7 +14,7 @@ export interface ZonesData {
   ui: Record<UiKey, string>;
 }
 
-export interface BriefLine { text: string; item_id?: string; level?: string; rank?: number; pictogram?: string | null }
+export interface BriefLine { text: string; item_id?: string; level?: string; rank?: number; pictogram?: string | null; /** 위험 바로 밑 대책 한 줄 */ measure?: string | null }
 
 export interface Brief {
   zone: string;

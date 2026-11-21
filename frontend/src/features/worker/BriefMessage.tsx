@@ -1,5 +1,5 @@
-// 챗봇 첫 메시지: 구역 브리핑 — 제목·소제목 없이 3D/평면도 · 날씨 · 시공 · 위험 순위 · 확인할 것
-import { CircleCheck, Construction, MessageSquareText, Wind } from "lucide-react";
+// 챗봇 첫 메시지: 구역 브리핑 — 제목·소제목 없이 3D/평면도 · 날씨 · 위험 순위(밑에 대책) · 확인할 것
+import { CircleCheck, Construction, MessageSquareText, ShieldCheck, Wind } from "lucide-react";
 import Pictogram from "./Pictogram";
 import PhotoRequest from "./PhotoRequest";
 import KoshaVideos from "./KoshaVideos";
@@ -14,7 +14,8 @@ function Icon({ of: C }: { of: typeof Wind }) {
 }
 
 export function briefSpeech(b: Brief): string {
-  return cardSpeech(b.title, [...b.sections.flatMap((s) => s.lines.map((l) => l.text)), ...b.checks, b.memo].filter(Boolean));
+  return cardSpeech(b.title, [...b.sections.flatMap((s) => s.lines.flatMap((l) => [l.text, l.measure ?? ""])), ...b.checks, b.memo]
+    .filter(Boolean));
 }
 
 export default function BriefMessage({ brief, big, token, ui, photo }: {
@@ -29,7 +30,7 @@ export default function BriefMessage({ brief, big, token, ui, photo }: {
       {brief.sections.filter((s) => s.lines.length).map((s) => (
         <ul key={s.type} className="space-y-2">
           {s.lines.map((l, i) => (
-            <li key={i} className="flex items-center gap-3">
+            <li key={i} className={`flex gap-3 ${l.measure ? "items-start" : "items-center"}`}>
               {l.rank ? <span className="w-6 shrink-0 text-center text-sm font-bold text-red-600">{l.rank}</span>
                 : !l.pictogram && ICON[s.type] && <Icon of={ICON[s.type]!} />}
               {l.pictogram && (
@@ -38,7 +39,11 @@ export default function BriefMessage({ brief, big, token, ui, photo }: {
                     className={`${big ? "h-6 w-6" : "h-5 w-5"} ${s.type === "weather" ? "text-slate-500" : l.level === "상" ? "text-red-600" : "text-orange-500"}`} />
                 </span>
               )}
-              <span className={l.level === "상" ? "font-semibold" : ""}>{l.text}</span>
+              <span className="min-w-0">
+                <span className={`block ${l.level === "상" ? "font-semibold" : ""}`}>{l.text}</span>
+                {l.measure && <span className="mt-0.5 flex items-start gap-1 text-[0.85em] text-slate-500">
+                  <ShieldCheck size={14} strokeWidth={1.75} className="mt-[0.2em] shrink-0 text-emerald-600" />{l.measure}</span>}
+              </span>
             </li>
           ))}
         </ul>

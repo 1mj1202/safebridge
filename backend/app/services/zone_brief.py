@@ -33,18 +33,21 @@ def brief(draft: dict, zone: str, lang: str) -> dict | None:
         if it:
             weather.append({"item_id": it["id"], "level": it["level"], "pictogram": PICTO.get(it["key"]),
                             "text": glossary.phrase(it["weather"]["phrase"], lang, value=it["weather"]["value"])})
+    # 위험마다 바로 밑에 대책 한 줄(build.<key>) — 따로 있던 '작업 순서' 줄과 같은 내용이라 합쳤다 (사용자 결정 2026-11-22).
+    # 번호는 현장 전체 순위가 아니라 이 구역 안에서 1부터.
+    phrases = glossary.load_json("phrases.json")["phrases"]
     safety, checks = [], []
     for s in b["safety"]:
         it = items.get(s["item_id"])
         if not it:
             continue
-        safety.append({"item_id": it["id"], "level": it["level"], "rank": it.get("risk_rank"),
-                       "pictogram": PICTO.get(it["key"]), "text": glossary.phrase(f"hazard.{it['key']}", lang)})
+        k = it["key"]
+        safety.append({"item_id": it["id"], "level": it["level"], "rank": len(safety) + 1,
+                       "pictogram": PICTO.get(k), "text": glossary.phrase(f"hazard.{k}", lang),
+                       "measure": glossary.phrase(f"build.{k}", lang) if f"build.{k}" in phrases else None})
         checks += [c for c in it.get("checks", []) if c not in checks]
-    build = [glossary.phrase(f"build.{k}", lang) for k in b.get("build_keys", [])]
+    build = [glossary.phrase("chat.restricted", lang)] if b["restricted"] else []
     hazard_keys = [items[s["item_id"]]["key"] for s in b["safety"] if s["item_id"] in items]
-    if b["restricted"]:
-        build.insert(0, glossary.phrase("chat.restricted", lang))
     return {
         "zone": b["zone"], "label": names.zone(b["zone"], lang), "storey": b["storey"], "restricted": b["restricted"],
         "teams": [{"team": names.team(t["trade"], lang), "lead": names.lead(t["trade"], lang)} for t in b["teams"]],
