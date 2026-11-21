@@ -142,9 +142,12 @@ def _merge(skeleton: dict, written: dict | None) -> None:
     for it in skeleton["items"]:
         w = by_id.get(it["id"], {})
         it["explanation"] = strip_refs(str(w.get("explanation") or f"{it['location']}: {it['hazard']} 위험."))
+        # LLM이 고른 대책은 골격 후보(사례 원문)에 있는 것만 받는다 — 문장을 고쳐 쓰면 원문 근거·짧은 문구와 끊긴다
+        allowed = {m.strip() for m in it.get("measures", []) + it.get("measure_options", [])}
         ms = w.get("measures")
-        if isinstance(ms, list) and ms:
-            it["measures"] = [str(m) for m in ms][:4]
+        picked = [str(m).strip() for m in ms if str(m).strip() in allowed] if isinstance(ms, list) else []
+        if picked:
+            it["measures"] = list(dict.fromkeys(picked))[:4]
     skeleton["summary"] = str((written or {}).get("summary") or
                               f"{skeleton['date']} 주요 위험 {len(skeleton['items'])}건 (기본 문장).")
     notes = (written or {}).get("notes")

@@ -20,7 +20,7 @@ WRITE = """도구 확인이 끝났습니다. 아래는 코드가 만든 위험�
 규칙
 - 출력은 JSON 하나만: {{"summary": str, "items": [{{"id": str, "explanation": str, "measures": [str]}}], "notes": [str]}}
 - explanation: 1~2문장. 위치·위험 상황·예보값을 쓴다. 사례 ID·조문 ID는 화면에 따로 나오니 쓰지 않는다. 골격에 없는 사실 금지.
-- measures: 골격 measures 를 다듬거나 보충한 2~4개 실천 문장.
+- measures: 골격 measures 에서 2~4개를 글자 그대로 골라 적는다. 문장을 고치거나 새로 쓰지 않는다.
 - notes: 시공 유의사항 2~4개.
 - summary: 2문장 이내.
 

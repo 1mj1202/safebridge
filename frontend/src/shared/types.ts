@@ -85,6 +85,8 @@ export interface DraftItem {
   measures: string[];
   /** 목록에서 골라 넣을 수 있는 대책 후보 (오늘 조건에 맞는 유사사례 대책) */
   measure_options?: string[];
+  /** 대책 원문 → 개조식 짧은 문구 (화면 표시용, 서버가 붙여 줌) */
+  measure_short?: Record<string, string>;
   /** 유사사례 원문 대책 중 오늘 작업 단계·장비와 조건이 달라 참고로만 보이는 것 */
   reference_measures?: { text: string; case_id: string; reason: string }[];
   checks: string[];

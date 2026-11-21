@@ -46,9 +46,14 @@ def strip_refs(text: str) -> str:
 
 
 def clean_draft(draft: dict) -> dict:
-    """설명문을 정리한 사본 (저장된 원본은 건드리지 않는다)."""
+    """화면용 사본: 설명문 정리 + 대책 짧은 문구(measure_short) 첨부. 저장된 원본은 건드리지 않는다."""
+    from app.services.measure_short import short_map
+
     d = copy.deepcopy(draft)
     for it in d.get("items", []):
-        if isinstance(it, dict) and it.get("explanation"):
+        if not isinstance(it, dict):
+            continue
+        if it.get("explanation"):
             it["explanation"] = strip_refs(str(it["explanation"]))
+        it["measure_short"] = short_map(it)
     return d
