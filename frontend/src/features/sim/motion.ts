@@ -3,6 +3,8 @@
 export const G = 9.8;
 /** 장면 하나의 길이(초): 사고 장면과 대책 장면이 같은 길이 */
 export const PHASE_SEC = 6;
+/** 실제 건물 3D 에서 위험 구역을 짚는 장면 길이(초) */
+export const INTRO_SEC = 4;
 
 export const clamp01 = (x: number) => Math.min(1, Math.max(0, x));
 export const lerp = (a: number, b: number, t: number) => a + (b - a) * clamp01(t);
@@ -27,13 +29,21 @@ export function walk(from: number, to: number, t: number, t0: number, t1: number
   return { x: lerp(from, to, k), swing: moving ? Math.sin(t * 9) * 0.6 : 0, k };
 }
 
-export type Phase = "accident" | "measure";
+export type Phase = "intro" | "accident" | "measure";
 
-/** 재생 위치(초) → 몇 번째 사고 · 사고/대책 · 그 장면 안에서 흐른 시간 */
+const PHASES: [Phase, number][] = [["intro", INTRO_SEC], ["accident", PHASE_SEC], ["measure", PHASE_SEC]];
+const CYCLE = PHASES.reduce((a, [, s]) => a + s, 0);
+
+/** 재생 위치(초) → 몇 번째 위험 · 위험 구역 짚기/사고/대책 · 그 장면 안에서 흐른 시간 */
 export function timeline(elapsed: number, count: number) {
-  if (count <= 0) return { index: 0, phase: "accident" as Phase, t: 0 };
-  const total = count * 2 * PHASE_SEC;
+  if (count <= 0) return { index: 0, phase: "intro" as Phase, t: 0 };
+  const total = count * CYCLE;
   const e = ((elapsed % total) + total) % total;
-  const slot = Math.floor(e / PHASE_SEC);
-  return { index: Math.floor(slot / 2), phase: (slot % 2 ? "measure" : "accident") as Phase, t: e - slot * PHASE_SEC };
+  const index = Math.floor(e / CYCLE);
+  let t = e - index * CYCLE;
+  for (const [phase, sec] of PHASES) {
+    if (t < sec) return { index, phase, t };
+    t -= sec;
+  }
+  return { index, phase: "measure" as Phase, t: PHASE_SEC };
 }

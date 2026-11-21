@@ -1,4 +1,5 @@
-// 3D 사고 재현 재생기: 위험 순위대로 '사고 장면 → 대책 장면'을 이어서 반복 재생한다 (소리 없음)
+// 3D 사고 재현 재생기: 위험 순위대로 '(실제 건물에서 위험 구역 짚기) → 사고 장면 → 대책 장면'을 반복 재생한다 (소리 없음)
+// 짚기 장면 동안은 사고 장면 첫 화면을 멈춰 두고(위에 실제 건물 3D 가 덮인다) 단계만 알린다
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { timeline, type Phase } from "./motion";
@@ -53,25 +54,26 @@ export default function AccidentSim({ kinds, onStep }: Props) {
     resize();
 
     let cur: { slot: string; built: Built } | null = null;
+    let lastPhase = "", lastIndex = -1;
     const start = performance.now();
     let raf = 0;
     const loop = () => {
       raf = requestAnimationFrame(loop);
       const elapsed = (performance.now() - start) / 1000;
       const { index, phase, t } = timeline(elapsed, list.length);
-      const slot = `${index}-${phase}`;
+      const slot = `${index}-${phase === "measure" ? "m" : "a"}`;
       if (!cur || cur.slot !== slot) {
         if (cur) { scene.remove(cur.built.group); disposeGroup(cur.built.group); }
         cur = { slot, built: SCENARIOS[list[index]](phase === "measure") };
         scene.add(cur.built.group);
-        stepRef.current(index, phase);
       }
+      if (phase !== lastPhase || index !== lastIndex) { lastPhase = phase; lastIndex = index; stepRef.current(index, phase); }
       const { pos, target } = cur.built.camera;
       const sway = Math.sin(elapsed * 0.4) * 0.12; // 천천히 좌우로 살짝 돈다
       const dx = pos[0] - target[0], dz = pos[2] - target[2];
       camera.position.set(target[0] + dx * Math.cos(sway) - dz * Math.sin(sway), pos[1], target[2] + dx * Math.sin(sway) + dz * Math.cos(sway));
       camera.lookAt(...target);
-      cur.built.update(t);
+      cur.built.update(phase === "intro" ? 0 : t);
       renderer.render(scene, camera);
     };
     loop();

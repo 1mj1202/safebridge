@@ -21,6 +21,8 @@ interface Props {
   markers?: PeopleMarker[];
   /** 관리자 층 버튼: 이 층까지만 보이고 윗층 부재는 숨긴다 (null 이면 전체) */
   upTo?: string | null;
+  /** 카메라만 이 상자(IFC 좌표) 쪽으로 (예방 영상에서 위험 구역 짚기) */
+  aim?: { min: Vec3; max: Vec3 } | null;
 }
 
 interface Ctx {
@@ -63,7 +65,7 @@ function badge(text: string, warn: boolean): THREE.Sprite {
   return s;
 }
 
-export default function Viewer3D({ model, status, zones, selected, onZoneClick, focus, replay = false, markers, upTo = null }: Props) {
+export default function Viewer3D({ model, status, zones, selected, onZoneClick, focus, replay = false, markers, upTo = null, aim = null }: Props) {
   const host = useRef<HTMLDivElement>(null);
   const ctx = useRef<Ctx | null>(null);
   const clickRef = useRef(onZoneClick);
@@ -245,6 +247,16 @@ export default function Viewer3D({ model, status, zones, selected, onZoneClick, 
     c.camera.position.set(...cam.position);
     c.controls.update();
   }, [focus, model]);
+
+  // 위험 구역 짚기: 상자를 돌아보도록 카메라만 옮긴다
+  useEffect(() => {
+    const c = ctx.current;
+    if (!c || !aim) return;
+    const cam = focusCamera(aim);
+    c.controls.target.set(...cam.target);
+    c.camera.position.set(...cam.position);
+    c.controls.update();
+  }, [aim, model]);
 
   // 근로자 인원 배지 + 구역 테두리(초록)
   useEffect(() => {
