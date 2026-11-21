@@ -35,7 +35,6 @@ export default function DraftReview({ a, busy, onSave, onApprove, onFocusZones, 
   return (
     <Panel title={<>위험성평가 초안 <span className="font-normal text-slate-500">· {d.date} {d.storey}</span></>}
       right={approved ? <Chip tone="blue">승인됨</Chip> : <Chip tone="amber">검토 중</Chip>}>
-      <p className="mb-2 text-xs text-slate-400">순위 = 사고가능성 × 심각성 × 공종 사고 빈도 + 기상 (확률 예측이 아닌 위험도·빈도 순위)</p>
       {d.data_note && <p className="mb-2 rounded bg-amber-50 px-2 py-1 text-xs text-amber-800">{d.data_note}</p>}
       {d.llm_note && <p className="mb-2 rounded bg-slate-100 px-2 py-1 text-xs text-slate-600">{d.llm_note}</p>}
       <EditableText label="요약" locked={locked} value={summary} className="pr-6"
