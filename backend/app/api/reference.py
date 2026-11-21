@@ -4,7 +4,7 @@ from fastapi import APIRouter, HTTPException
 from app.core.clock import today
 from app.core.config import get_settings
 from app.llm.factory import get_provider
-from app.services import glossary, guides, law, patterns, risk_profile
+from app.services import glossary, guides, law, patterns, risk_profile, site
 
 router = APIRouter(prefix="/api", tags=["reference"])
 
@@ -12,7 +12,8 @@ router = APIRouter(prefix="/api", tags=["reference"])
 @router.get("/meta")
 def meta():
     return {"today": today().isoformat(), "provider": get_provider().name,
-            "langs": glossary.lang_names(), "public_web_url": get_settings().public_web_url}
+            "langs": glossary.lang_names(), "public_web_url": get_settings().public_web_url,
+            "site": f"{site.info()['site']} · {site.info()['building']}"}
 
 
 @router.get("/accidents/{case_id}")
