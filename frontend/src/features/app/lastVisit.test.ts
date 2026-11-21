@@ -21,7 +21,7 @@ describe("홈 화면 앱 이어 열기", () => {
 
   it("마지막 언어·구역을 새 TBM 에 이어 붙인다", () => {
     saveLastVisit("vi", "A동 3F-a");
-    expect(workerPath("new")).toBe("/w/new?zone=A%EB%8F%99%203F-a");
+    expect(workerPath("new")).toBe("/w/new?zone=A%EB%8F%99%203F-a&from=app");
     expect(localStorage.getItem("sb-lang-new")).toBe("vi");
   });
 

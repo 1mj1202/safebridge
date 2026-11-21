@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 
-from app.api import admin, assessments, bim, field, issues, launch, photos, reference, worker
+from app.api import admin, assessments, bim, field, issues, launch, locations, photos, reference, worker, workers
 from app.core.config import get_settings
 from app.core.db import init_db
 from app.services import bim as bim_service
@@ -28,7 +28,7 @@ app.add_middleware(CORSMiddleware, allow_origins=get_settings().cors_origins, al
                    allow_headers=["*"])
 app.add_middleware(GZipMiddleware, minimum_size=2048)
 for r in (admin.router, bim.router, reference.router, assessments.router, field.router, issues.router, photos.router, worker.router,
-          launch.router):
+          launch.router, workers.router, locations.router):
     app.include_router(r)
 
 

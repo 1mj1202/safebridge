@@ -1,5 +1,5 @@
-// 메뉴(왼쪽 서랍): 구역 · NFC · 언어(기본 5 + 접기) · 큰 글씨
-import { Ban, Check, ChevronDown, Globe, MapPin, Nfc, Type } from "lucide-react";
+// 메뉴(왼쪽 서랍): 내 이름·업체(로그아웃) · 구역 · NFC · 언어(기본 5 + 접기) · 큰 글씨
+import { Ban, Check, ChevronDown, Globe, LogOut, MapPin, Nfc, Type, User } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { splitLangs } from "../../shared/langs";
 import type { ZoneRow } from "./fieldTypes";
@@ -16,6 +16,7 @@ interface Props {
   onLang: (l: string) => void;
   big: boolean;
   onBig: (b: boolean) => void;
+  account?: { name: string; company: string; logout: string; onLogout: () => void };
 }
 
 const ROW = "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-[15px] active:bg-slate-100";
@@ -30,7 +31,7 @@ function Group({ icon: I, children }: { icon: typeof MapPin; children: ReactNode
   );
 }
 
-export default function SideMenu({ open, onClose, zones, zone, onZone, nfc, langs, lang, onLang, big, onBig }: Props) {
+export default function SideMenu({ open, onClose, zones, zone, onZone, nfc, langs, lang, onLang, big, onBig, account }: Props) {
   const { main, more } = splitLangs(Object.keys(langs));
   const [moreOpen, setMoreOpen] = useState(more.includes(lang));
   if (!open) return null;
@@ -39,6 +40,14 @@ export default function SideMenu({ open, onClose, zones, zone, onZone, nfc, lang
     <div className="fixed inset-0 z-30" role="dialog" aria-modal="true">
       <button className="absolute inset-0 bg-black/40" aria-label="close" onClick={onClose} />
       <nav className="absolute inset-y-0 left-0 flex w-[80%] max-w-xs flex-col gap-3 overflow-y-auto bg-white p-3 pt-6 shadow-xl">
+        {account && (
+          <Group icon={User}>
+            <p className="px-3 text-[15px] font-semibold">{account.name}</p>
+            <p className="px-3 text-sm text-slate-500">{account.company}</p>
+            <button onClick={() => pick(account.onLogout)} className={`${ROW} text-slate-500`}>
+              <LogOut {...ICON} className="shrink-0" />{account.logout}</button>
+          </Group>
+        )}
         <Group icon={MapPin}>
           {zones.map((z) => (
             <button key={z.zone} onClick={() => pick(() => onZone(z.zone))}

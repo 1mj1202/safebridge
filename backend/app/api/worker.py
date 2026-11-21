@@ -1,11 +1,12 @@
-"""근로자 API — QR 토큰만으로 접속(로그인·개인정보 없음)."""
-from fastapi import APIRouter, Depends, HTTPException
+"""근로자 API — QR 토큰만으로 접속. 집계는 언어별 익명, 로그인한 근로자면 구역 이해 확인을 따로 남긴다."""
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.core import worker_auth
 from app.core.db import get_db
 from app.models import Ack, Report, Tbm
-from app.services import glossary, translate
+from app.services import glossary, locations, translate
 
 from .schemas import AckRequest, ReportRequest
 
@@ -36,11 +37,15 @@ def cards(token: str, lang: str = "ko", db: Session = Depends(get_db)):
 
 
 @router.post("/{token}/ack")
-def ack(token: str, body: AckRequest, db: Session = Depends(get_db)):
+def ack(token: str, body: AckRequest, request: Request, db: Session = Depends(get_db)):
     t = _tbm(db, token)
-    db.add(Ack(tbm_id=t.id, lang=_lang(body.lang), status=body.status))
-    db.commit()
-    return {"ok": True}
+    lang = _lang(body.lang)
+    if body.tally:
+        db.add(Ack(tbm_id=t.id, lang=lang, status=body.status))
+        db.commit()
+    w = worker_auth.current(request, db)
+    zone_ok = bool(w and body.status == "understood" and body.zone and locations.mark_understood(db, w, t, body.zone))
+    return {"ok": True, "zone_understood": zone_ok}
 
 
 @router.post("/{token}/report")

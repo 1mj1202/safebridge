@@ -1,5 +1,5 @@
-// 관리자(청년 기사, PC) 화면: 3D 위험구역 + 날짜 슬라이더 | 에이전트 → 초안 검토·승인 → TBM 발행 → 확인 현황
-import { useCallback, useEffect, useState } from "react";
+// 관리자(청년 기사, PC) 화면: 3D 위험구역·근로자 인원 + 날짜 슬라이더 | 에이전트 → 근로자 현재 위치 → 초안 검토·승인 → TBM 발행 → 확인 현황
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "../../shared/api";
 import { useFetch } from "../../shared/hooks";
 import type { Assessment, BimModel, DraftItem, Meta, RiskResponse, Task, Tbm, Zone } from "../../shared/types";
@@ -11,11 +11,14 @@ import PhotoInbox from "../tbm/PhotoInbox";
 import PublishPanel from "../tbm/PublishPanel";
 import StatusPanel from "../tbm/StatusPanel";
 import Legend from "../viewer/Legend";
-import Viewer3D from "../viewer/Viewer3D";
+import Viewer3D, { type PeopleMarker } from "../viewer/Viewer3D";
 import { groupZones } from "../viewer/scene";
 import DateSlider from "./DateSlider";
 import DayInfo from "./DayInfo";
 import { addDays } from "./dates";
+import { countByZone, filterCompany } from "./locations";
+import { useLocations } from "./useLocations";
+import WorkerLocations from "./WorkerLocations";
 import { useRestore } from "./useRestore";
 
 export default function AdminPage() {
@@ -31,6 +34,13 @@ export default function AdminPage() {
   const [a, setA] = useState<Assessment | null>(null);
   const [tbm, setTbm] = useState<Tbm | null>(null);
   const [busy, setBusy] = useState(false);
+  const loc = useLocations();
+  const [company, setCompany] = useState("");
+  const shown = useMemo(() => filterCompany(loc.data?.workers ?? [], company), [loc.data, company]);
+  const markers = useMemo<PeopleMarker[]>(() => [...countByZone(shown)].flatMap(([zone, c]) => {
+    const box = loc.data?.boxes[zone];
+    return box ? [{ key: zone, box, text: `${c.count}명`, warn: c.pending > 0 }] : [];
+  }), [shown, loc.data]);
   const [err, setErr] = useState<string | null>(null);
 
   const run = useCallback(async <T,>(f: () => Promise<T>) => {
@@ -74,7 +84,7 @@ export default function AdminPage() {
           <div className="relative min-h-[360px] flex-1">
             {model && risk ? (
               <Viewer3D model={model} status={risk.element_status} zones={zones} selected={selected}
-                onZoneClick={(z) => { setZoneInfo(z); setSelected([z.id]); }} />
+                onZoneClick={(z) => { setZoneInfo(z); setSelected([z.id]); }} markers={markers} />
             ) : <div className="p-6 text-slate-500">{modelErr ?? "3D 모델 불러오는 중…"}</div>}
             <div className="absolute left-3 top-3"><Legend /></div>
             <div className="absolute right-3 top-3 max-w-[260px] space-y-1">
@@ -105,6 +115,8 @@ export default function AdminPage() {
 
         <div className="min-h-0 space-y-4 overflow-y-auto pb-8">
           <AgentQuery busy={busy} onAsk={ask} day={day} today={meta?.today} trace={a?.trace ?? null} provider={meta?.provider ?? ""} />
+          <WorkerLocations data={loc.data} error={loc.error} workers={shown} company={company} onCompany={setCompany}
+            zones={(a?.draft.briefings ?? []).map((b) => b.zone)} langs={meta?.langs ?? {}} />
           {a && <DraftReview a={a} busy={busy} onSave={save} onApprove={approve}
             onFocusZones={(ids) => { setSelected(ids); setZoneInfo(zones.find((z) => z.id === ids[0]) ?? null); }} />}
           {a?.draft.briefings && meta && (

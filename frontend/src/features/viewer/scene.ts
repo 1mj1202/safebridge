@@ -50,3 +50,11 @@ export function focusCamera(b: Pick<Zone, "min" | "max">): { target: Vec3; posit
   const d = Math.max(size[0], size[1], 8) * 2.1;
   return { target: t, position: [t[0] - d * 0.6, t[1] + d * 0.8, t[2] + d] };
 }
+
+export const PEOPLE_COLOR = 0x059669; // 근로자 인원 배지(초록)
+
+/** 인원 배지 자리: 구역 상자 윗면 가운데 조금 위 (three 좌표) */
+export function markerPosition(b: Pick<Zone, "min" | "max">): Vec3 {
+  const { center } = zoneBox(b);
+  return ifcToThree([center[0], center[1], b.max[2] + 1.2]);
+}

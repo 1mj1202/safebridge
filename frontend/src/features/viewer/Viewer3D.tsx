@@ -1,9 +1,11 @@
-// BIM 3D 뷰어 — 공정 상태별 부재 색 + 추락(빨강)·낙하(주황) 위험 영역. 영역 클릭 → onZoneClick
+// BIM 3D 뷰어 — 공정 상태별 부재 색 + 추락(빨강)·낙하(주황) 위험 영역 + 구역별 근로자 인원 배지. 영역 클릭 → onZoneClick
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import type { BimModel, Vec3, Zone } from "../../shared/types";
-import { FOCUS_COLOR, ZONE_COLOR, focusCamera, ifcToThree, statusStyle, zoneBox, type Status } from "./scene";
+import { FOCUS_COLOR, PEOPLE_COLOR, ZONE_COLOR, focusCamera, ifcToThree, markerPosition, statusStyle, zoneBox, type Status } from "./scene";
+
+export interface PeopleMarker { key: string; box: { min: Vec3; max: Vec3 }; text: string; warn: boolean }
 
 interface Props {
   model: BimModel;
@@ -15,6 +17,8 @@ interface Props {
   focus?: { min: Vec3; max: Vec3 } | null;
   /** 예방 영상(BIM 재현): 천천히 돌면서 위험 영역이 깜빡인다 */
   replay?: boolean;
+  /** 관리자 화면: 구역마다 지금 있는 근로자 수 (교육 미확인이 있으면 주황) */
+  markers?: PeopleMarker[];
 }
 
 interface Ctx {
@@ -25,9 +29,39 @@ interface Ctx {
   meshes: Map<string, THREE.Mesh>;
   zoneGroup: THREE.Group;
   focusGroup: THREE.Group;
+  markerGroup: THREE.Group;
 }
 
-export default function Viewer3D({ model, status, zones, selected, onZoneClick, focus, replay = false }: Props) {
+function disposeAll(g: THREE.Group) {
+  for (const o of [...g.children]) {
+    g.remove(o);
+    if (o instanceof THREE.Mesh || o instanceof THREE.LineSegments || o instanceof THREE.Sprite) {
+      o.geometry.dispose();
+      const m = o.material as THREE.Material & { map?: THREE.Texture | null };
+      m.map?.dispose();
+      m.dispose();
+    }
+  }
+}
+
+/** 글자 배지 스프라이트 (캔버스 → 텍스처, 화면 크기 고정) */
+function badge(text: string, warn: boolean): THREE.Sprite {
+  const c = document.createElement("canvas");
+  c.width = 256; c.height = 96;
+  const g = c.getContext("2d");
+  if (g) {
+    g.fillStyle = warn ? "#d97706" : `#${PEOPLE_COLOR.toString(16).padStart(6, "0")}`;
+    g.beginPath(); g.roundRect(4, 4, 248, 88, 44); g.fill();
+    g.fillStyle = "#fff"; g.font = "bold 52px sans-serif"; g.textAlign = "center"; g.textBaseline = "middle";
+    g.fillText(text, 128, 50);
+  }
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), depthTest: false, sizeAttenuation: false }));
+  s.scale.set(0.09, 0.034, 1);
+  s.renderOrder = 5;
+  return s;
+}
+
+export default function Viewer3D({ model, status, zones, selected, onZoneClick, focus, replay = false, markers }: Props) {
   const host = useRef<HTMLDivElement>(null);
   const ctx = useRef<Ctx | null>(null);
   const clickRef = useRef(onZoneClick);
@@ -76,7 +110,9 @@ export default function Viewer3D({ model, status, zones, selected, onZoneClick, 
     scene.add(zoneGroup);
     const focusGroup = new THREE.Group();
     scene.add(focusGroup);
-    ctx.current = { renderer, scene, camera, controls, meshes, zoneGroup, focusGroup };
+    const markerGroup = new THREE.Group();
+    scene.add(markerGroup);
+    ctx.current = { renderer, scene, camera, controls, meshes, zoneGroup, focusGroup, markerGroup };
 
     const resize = () => {
       const w = el.clientWidth, h = el.clientHeight;
@@ -116,6 +152,7 @@ export default function Viewer3D({ model, status, zones, selected, onZoneClick, 
       ro.disconnect();
       renderer.domElement.removeEventListener("click", onClick);
       controls.dispose();
+      disposeAll(markerGroup);
       scene.traverse((o) => {
         if (o instanceof THREE.Mesh) {
           o.geometry.dispose();
@@ -199,6 +236,24 @@ export default function Viewer3D({ model, status, zones, selected, onZoneClick, 
     c.camera.position.set(...cam.position);
     c.controls.update();
   }, [focus, model]);
+
+  // 근로자 인원 배지 + 구역 테두리(초록)
+  useEffect(() => {
+    const c = ctx.current;
+    if (!c) return;
+    disposeAll(c.markerGroup);
+    for (const m of markers ?? []) {
+      const s = badge(m.text, m.warn);
+      s.position.set(...markerPosition(m.box));
+      const { center, size } = zoneBox(m.box);
+      const geo = new THREE.BoxGeometry(size[0], size[2], size[1]);
+      const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geo),
+        new THREE.LineBasicMaterial({ color: PEOPLE_COLOR, transparent: true, opacity: 0.8 }));
+      geo.dispose();
+      edges.position.set(...ifcToThree(center));
+      c.markerGroup.add(s, edges);
+    }
+  }, [markers, model]);
 
   return <div ref={host} className="h-full w-full overflow-hidden rounded-xl" data-testid="viewer3d" />;
 }
