@@ -15,6 +15,7 @@ services:
       SAFEBRIDGE_PUBLIC_WEB_URL: ${PUBLIC_WEB_URL:-http://localhost:8080}
       SAFEBRIDGE_DEMO_TODAY: ${DEMO_TODAY:-}
       SAFEBRIDGE_KMA_SERVICE_KEY: ${KMA_SERVICE_KEY:-}
+      SAFEBRIDGE_KOSHA_SERVICE_KEY: ${KOSHA_SERVICE_KEY:-}
       SAFEBRIDGE_CORS_ORIGINS: '["http://localhost:8080"]'
     volumes: [apidata:/data]
     ports: ["8000:8000"]
