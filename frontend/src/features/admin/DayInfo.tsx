@@ -1,5 +1,6 @@
 // 선택 날짜의 진행 작업·기상 판정
 import type { RiskResponse } from "../../shared/types";
+import BasisTag from "./BasisTag";
 
 export default function DayInfo({ risk }: { risk: RiskResponse }) {
   const fc = risk.weather.forecast;
@@ -18,7 +19,11 @@ export default function DayInfo({ risk }: { risk: RiskResponse }) {
         <div className="mb-1 text-xs font-bold text-slate-500">기상 ({fc.source})</div>
         <p>{fc.sky} · 순간풍속 {fc.wind_gust}m/s · 강수 {fc.rain_mm_h}mm/h · {fc.temp_min}~{fc.temp_max}℃</p>
         {risk.weather.alerts.map((a) => (
-          <p key={a.code} className={a.level === "info" ? "text-slate-600" : "font-semibold text-red-700"}>{a.text}</p>
+          <div key={a.code} className="mt-1">
+            <p className={a.level === "info" ? "text-slate-600" : "font-semibold text-red-700"}>
+              {a.basis && <BasisTag basis={a.basis} />}{a.text}</p>
+            {a.legal && <p className="text-xs text-slate-500">{a.legal}</p>}
+          </div>
         ))}
       </div>
     </div>

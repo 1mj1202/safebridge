@@ -16,6 +16,10 @@ def test_weather_wind_rule():
     j = weather.judge("2026-11-24", ["거푸집", "양중"])
     codes = {a["code"] for a in j["alerts"]}
     assert "wind_high" in codes and "cold" in codes
+    wind = next(a for a in j["alerts"] if a["code"] == "wind_high")
+    # 10m/s 양중·단부 기준은 현장 기준이고, 법령(제37조②)은 운전 20m/s·설치·해체 10m/s 로 따로 보여준다
+    assert wind["basis"] == "현장 기준" and "현장 기준" in wind["text"]
+    assert "운전은 20m/s" in wind["legal"] and "법정 중지 대상 아님" in wind["legal"]
 
 
 def test_glossary_term_check():

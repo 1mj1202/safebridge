@@ -3,6 +3,7 @@ import { MapPin } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button, Chip, LevelBadge, Panel } from "../../shared/ui";
 import type { Assessment, DraftItem, Level } from "../../shared/types";
+import BasisTag from "../admin/BasisTag";
 import EvidenceModal, { type Evidence } from "./EvidenceModal";
 
 interface Props {
@@ -65,6 +66,9 @@ export default function DraftReview({ a, busy, onSave, onApprove, onFocusZones, 
                 {it.evidence_status === "확인 불가" && <Chip tone="red">근거 확인 불가</Chip>}
               </div>
               <p className="mt-1 flex items-center gap-1 text-xs text-slate-500"><MapPin size={12} />{it.location}</p>
+              {it.weather?.basis && (
+                <p className="mt-0.5 text-xs text-slate-500"><BasisTag basis={it.weather.basis} />{it.weather.legal ?? ""}</p>
+              )}
               <textarea className="mt-2 w-full rounded border border-slate-200 p-2 text-sm" rows={2} disabled={locked}
                 value={it.explanation} aria-label="설명" onChange={(e) => upd(it.id, { explanation: e.target.value })} />
               {it.measures.length > 0 && (

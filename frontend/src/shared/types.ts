@@ -47,6 +47,10 @@ export interface WeatherAlert {
   text: string;
   rule: string | null;
   value: number;
+  /** 판단 근거 종류: 법령 / 현장 기준(현장 관리 기준, 법령 아님) / 참고 */
+  basis?: "법령" | "현장 기준" | "참고";
+  /** 법령 기준 설명과 오늘 해당 여부 */
+  legal?: string | null;
 }
 
 export interface Forecast {
@@ -90,6 +94,7 @@ export interface DraftItem {
   evidence_status: string;
   explanation: string;
   included?: boolean;
+  weather?: { phrase: string; value: number; basis?: WeatherAlert["basis"]; legal?: string | null };
 }
 
 export interface LawArticle {
