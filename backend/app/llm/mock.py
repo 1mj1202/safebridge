@@ -77,11 +77,9 @@ class MockConversation(Conversation):
         skeleton = json.loads(m.group(1)) if m else {"items": []}
         items = []
         for it in skeleton.get("items", []):
-            cases = it.get("similar_cases") or []
-            ref = f" 과거 유사 사례 {', '.join(cases)}에서도 같은 유형이 있었습니다." if cases else ""
             items.append({
                 "id": it["id"],
-                "explanation": f"{it['location']}에서 {it['hazard']} 위험이 있습니다.{ref}",
+                "explanation": f"{it['location']}에서 {it['hazard']} 위험이 있습니다.",
                 "measures": it.get("measures", [])[:3],
             })
         return json.dumps({

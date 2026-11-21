@@ -8,6 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.agent import runner
+from app.agent.explain_clean import clean_draft
 from app.core.clock import today
 from app.core.config import get_settings
 from app.core.admin_auth import require_admin
@@ -23,7 +24,7 @@ router = APIRouter(prefix="/api", dependencies=[Depends(require_admin)], tags=["
 
 def _out(a: Assessment) -> dict:
     return {"id": a.id, "work_date": a.work_date, "storey": a.storey, "query": a.query, "status": a.status,
-            "draft": a.draft, "trace": a.trace, "provider": a.provider,
+            "draft": clean_draft(a.draft), "trace": a.trace, "provider": a.provider,
             "created_at": a.created_at.isoformat(),
             "approved_at": a.approved_at.isoformat() if a.approved_at else None,
             "tbms": [{"id": t.id, "token": t.token} for t in a.tbms]}
