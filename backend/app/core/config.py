@@ -1,4 +1,5 @@
 """설정 — 환경변수 접두어 SAFEBRIDGE_ (bim-dcm 과 같은 방식)."""
+import os
 from functools import lru_cache
 from pathlib import Path
 
@@ -35,6 +36,15 @@ class Settings(BaseSettings):
 
     # 근로자 화면 주소(QR) — 배포 시 공개 주소로 바꾼다
     public_web_url: str = "http://localhost:5173"
+
+    # 한 서버 배포(Render 등): 빌드된 프런트엔드 폴더. 비우면 화면을 내보내지 않는다
+    web_dist: Path | None = None
+
+    def model_post_init(self, _ctx) -> None:
+        # Render 는 공개 https 주소를 RENDER_EXTERNAL_URL 로 넘겨 준다 → 따로 안 적어도 QR/NFC 가 그 주소로
+        render_url = os.environ.get("RENDER_EXTERNAL_URL")
+        if render_url and "SAFEBRIDGE_PUBLIC_WEB_URL" not in os.environ:
+            self.public_web_url = render_url
 
 
 @lru_cache
