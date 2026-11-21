@@ -1,18 +1,20 @@
 // 홈 화면 앱의 시작 화면(/app): 가장 최근에 발행된 TBM 의 근로자 화면으로 바로 넘긴다
+// 고정 구역 QR·NFC(/app?zone=)로 열리면 그 구역 태그로 넘긴다(위치 갱신)
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { api } from "../../shared/api";
 import { workerPath } from "./lastVisit";
 
 export default function LaunchPage() {
   const nav = useNavigate();
   const [failed, setFailed] = useState(false);
+  const zone = useSearchParams()[0].get("zone");
 
   useEffect(() => {
     api.get<{ token: string }>("/launch")
-      .then((r) => nav(workerPath(r.token), { replace: true }))
+      .then((r) => nav(workerPath(r.token, zone), { replace: true }))
       .catch(() => setFailed(true));
-  }, [nav]);
+  }, [nav, zone]);
 
   if (failed) {
     return (

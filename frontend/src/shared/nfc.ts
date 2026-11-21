@@ -38,11 +38,11 @@ export async function scanUrls(onUrl: (url: string) => void): Promise<() => void
   return () => ctl.abort();
 }
 
-/** 같은 TBM 의 구역 주소면 구역 이름, 아니면 null */
+/** 같은 TBM 의 구역 주소이거나 고정 구역 주소(/app?zone=)면 구역 이름, 아니면 null */
 export function zoneFromUrl(url: string, token: string): string | null {
   try {
     const u = new URL(url);
-    return u.pathname.endsWith(`/w/${token}`) ? u.searchParams.get("zone") : null;
+    return u.pathname.endsWith(`/w/${token}`) || u.pathname.endsWith("/app") ? u.searchParams.get("zone") : null;
   } catch {
     return null;
   }
