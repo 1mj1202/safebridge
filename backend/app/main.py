@@ -10,6 +10,7 @@ from app.api import assessments, bim, field, issues, photos, reference, worker
 from app.core.config import get_settings
 from app.core.db import init_db
 from app.services import bim as bim_service
+from app.web.spa import mount_spa
 
 logging.basicConfig(level=logging.INFO)
 
@@ -33,3 +34,7 @@ for r in (bim.router, reference.router, assessments.router, field.router, issues
 @app.get("/api/health")
 def health():
     return {"ok": True}
+
+
+# 화면까지 한 서버에서 낼 때만 (반드시 마지막: 모든 경로를 받는 SPA 라우트)
+mount_spa(app, get_settings().web_dist)
