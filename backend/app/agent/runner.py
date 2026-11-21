@@ -12,6 +12,7 @@ from datetime import date
 from app.llm.base import LLMError, LLMProvider
 
 from . import draft, prompts
+from .explain_clean import strip_refs
 from .registry import BRIEF, TOOLS, specs
 
 log = logging.getLogger(__name__)
@@ -140,7 +141,7 @@ def _merge(skeleton: dict, written: dict | None) -> None:
     by_id = {i.get("id"): i for i in (written or {}).get("items", []) if isinstance(i, dict)}
     for it in skeleton["items"]:
         w = by_id.get(it["id"], {})
-        it["explanation"] = str(w.get("explanation") or f"{it['location']}: {it['hazard']} 위험.")
+        it["explanation"] = strip_refs(str(w.get("explanation") or f"{it['location']}: {it['hazard']} 위험."))
         ms = w.get("measures")
         if isinstance(ms, list) and ms:
             it["measures"] = [str(m) for m in ms][:4]
