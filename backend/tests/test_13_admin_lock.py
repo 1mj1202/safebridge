@@ -14,7 +14,8 @@ def locked():
 
 def test_admin_api_locked_but_worker_open(client, locked):
     client.cookies.clear()
-    assert client.get("/api/admin/me").json() == {"required": True, "ok": False}
+    me = client.get("/api/admin/me").json()
+    assert me["required"] is True and me["ok"] is False
     assert client.get("/api/assessments").status_code == 401
     assert client.post("/api/agent/assess", json={"query": "내일 3층"}).status_code == 401
     assert client.get("/api/tbms/1/issues").status_code == 401
@@ -33,7 +34,8 @@ def test_admin_api_locked_but_worker_open(client, locked):
 
 def test_no_password_means_open(client):
     client.cookies.clear()
-    assert client.get("/api/admin/me").json() == {"required": False, "ok": True}
+    me = client.get("/api/admin/me").json()
+    assert me["required"] is False and me["ok"] is True
     assert client.get("/api/assessments").status_code == 200
 
 
