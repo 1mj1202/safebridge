@@ -3,7 +3,7 @@ import type { Vec3 } from "../../shared/types";
 
 export interface WorkerLoc {
   id: number; name: string; company: string; team: string; lang: string;
-  zone: string | null; source: "qr" | "nfc" | "pick" | null; at: string | null; minutes: number | null;
+  zone: string | null; source: "qr" | "nfc" | null; at: string | null; minutes: number | null;
   fresh: boolean; understood: boolean;
 }
 
@@ -49,7 +49,7 @@ export function ago(minutes: number | null): string {
   return h < 24 ? `${h}시간 전` : `${Math.floor(h / 24)}일 전`;
 }
 
-export const SOURCE_LABEL = { qr: "QR", nfc: "NFC", pick: "직접 선택" } as const;
+export const SOURCE_LABEL = { qr: "QR", nfc: "NFC" } as const;
 
 /** 평면 배치: 층(위층 먼저)별 구역 칸, 외곽 지상은 맨 아래 */
 export function zoneGrid(zones: string[]): { storey: string; zones: string[] }[] {

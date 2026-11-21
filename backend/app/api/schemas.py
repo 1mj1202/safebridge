@@ -80,4 +80,4 @@ class WorkerLoginRequest(BaseModel):
 
 class CheckInRequest(BaseModel):
     zone: str = Field(..., min_length=1, max_length=40)
-    source: str = Field("qr", pattern="^(qr|nfc|pick)$")
+    source: str = Field("qr", pattern="^(qr|nfc)$")  # 직접 고른 구역은 위치를 갱신하지 않는다

@@ -58,9 +58,10 @@ export default function WorkerPage() {
   useEffect(() => { try { sessionStorage.setItem(msgKey, JSON.stringify(msgs)); } catch { /* */ } }, [msgKey, msgs]);
   const add = useCallback((m: ChatMsg) => setMsgs((ms) => (ms.some((x) => x.id === m.id) ? ms : [...ms, m])), []);
   useIssueReplies(token, msgs, add);
-  const pickZone = useCallback((z: string, source: TagSource = "pick") => {
+  // 직접 고른 구역은 교육만 열고 위치는 갱신하지 않는다 (위치는 QR·NFC 태그로만)
+  const pickZone = useCallback((z: string, source?: TagSource) => {
     setZone(remember(`sb-zone-${token}`, z) ?? z);
-    setTag({ zone: z, source, at: Date.now() });
+    if (source) setTag({ zone: z, source, at: Date.now() });
   }, [token]);
   const nfc = useNfcZone(token, (z) => pickZone(z, "nfc"));
   // 로그인한 근로자는 가입할 때 고른 언어로 바로 시작
