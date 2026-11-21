@@ -63,7 +63,7 @@ export default function DraftReview({ a, busy, onSave, onApprove, onFocusZones, 
                     {(["상", "중", "하"] as Level[]).map((l) => <option key={l}>{l}</option>)}
                   </select>
                 )}
-                {it.frequency && <span className="text-xs text-slate-500">사망사고 사례 {it.frequency.count}/{it.frequency.of}건</span>}
+                {it.frequency && <span className="text-xs text-slate-500">유사 사고사례 {it.frequency.count}/{it.frequency.of}건</span>}
                 {it.evidence_status === "확인 불가" && <Chip tone="red">근거 확인 불가</Chip>}
               </div>
               <p className="mt-1 flex items-center gap-1 text-xs text-slate-500"><MapPin size={12} />{it.location}</p>

@@ -2,7 +2,7 @@
 import { CircleAlert, CircleCheck, MapPin, Users } from "lucide-react";
 import { useState } from "react";
 import { Panel } from "../../shared/ui";
-import { SOURCE_LABEL, ago, companiesOf, countByZone, sortWorkers, zoneGrid, type Locations, type WorkerLoc } from "./locations";
+import { ago, companiesOf, countByZone, sortWorkers, sourceLabel, zoneGrid, type Locations, type WorkerLoc } from "./locations";
 
 export default function WorkerLocations({ data, error, workers, company, onCompany, zones, langs }: {
   data: Locations | null; error: string | null; workers: WorkerLoc[]; company: string; onCompany: (c: string) => void;
@@ -54,7 +54,7 @@ export default function WorkerLocations({ data, error, workers, company, onCompa
               <td className="py-1 font-medium">{w.name} <span className="text-slate-400">{langs[w.lang] ?? w.lang}</span></td>
               <td>{w.company}</td>
               <td>{w.zone ? <span className="flex items-center gap-0.5"><MapPin size={11} />{w.zone.replace(/^\S+동\s/, "")}</span> : "-"}</td>
-              <td>{ago(w.minutes)}{w.source ? ` · ${SOURCE_LABEL[w.source]}` : ""}</td>
+              <td>{ago(w.minutes)}{sourceLabel(w.source) ? ` · ${sourceLabel(w.source)}` : ""}</td>
               <td>{w.zone ? (w.understood
                 ? <CircleCheck size={14} className="text-emerald-600" aria-label="확인" />
                 : <span className="flex items-center gap-0.5 text-amber-700"><CircleAlert size={12} />미확인</span>) : ""}</td>

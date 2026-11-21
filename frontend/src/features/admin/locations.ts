@@ -51,6 +51,11 @@ export function ago(minutes: number | null): string {
 
 export const SOURCE_LABEL = { qr: "QR", nfc: "NFC" } as const;
 
+/** 태그 방식 표시. 모르는 값(예전 '직접 선택' 기록 등)은 빈 문자열 — 화면에 undefined 가 나오지 않게 */
+export function sourceLabel(source: string | null | undefined): string {
+  return source && source in SOURCE_LABEL ? SOURCE_LABEL[source as keyof typeof SOURCE_LABEL] : "";
+}
+
 /** 평면 배치: 층(위층 먼저)별 구역 칸, 외곽 지상은 맨 아래 */
 export function zoneGrid(zones: string[]): { storey: string; zones: string[] }[] {
   const rows = new Map<string, string[]>();

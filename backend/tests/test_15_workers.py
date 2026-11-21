@@ -83,3 +83,19 @@ def test_locations_locked_for_non_admin(client):
         assert client.get("/api/locations").status_code == 401
     finally:
         s.admin_password = ""
+
+
+def test_legacy_pick_record_is_not_a_location(client, tbm):
+    """PR #24 때 저장된 source='pick' 기록은 위치·태그 방식으로 보이지 않는다(관리자 화면 'undefined' 방지)."""
+    from app.core.db import SessionLocal
+    from app.models import CheckIn, Worker
+    tok = tbm["token"]
+    client.cookies.clear()
+    client.post("/api/workers/signup", json={"name": "Legacy", "company": CO, "lang": "vi", "pin": "1111"})
+    client.post(f"/api/w/{tok}/checkin", json={"zone": "A동 3F-a", "source": "qr"})
+    with SessionLocal() as db:
+        w = db.query(Worker).filter_by(name="Legacy").one()
+        db.get(CheckIn, w.last_checkin_id).source = "pick"
+        db.commit()
+    me = next(w for w in client.get("/api/locations").json()["workers"] if w["name"] == "Legacy")
+    assert me["zone"] is None and me["source"] is None
