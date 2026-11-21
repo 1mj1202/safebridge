@@ -4,7 +4,7 @@
 """
 from __future__ import annotations
 
-from . import glossary, names
+from . import glossary, names, videos
 from .tbm import PICTO
 
 
@@ -42,6 +42,7 @@ def brief(draft: dict, zone: str, lang: str) -> dict | None:
                        "pictogram": PICTO.get(it["key"]), "text": glossary.phrase(f"hazard.{it['key']}", lang)})
         checks += [c for c in it.get("checks", []) if c not in checks]
     build = [glossary.phrase(f"build.{k}", lang) for k in b.get("build_keys", [])]
+    hazard_keys = [items[s["item_id"]]["key"] for s in b["safety"] if s["item_id"] in items]
     if b["restricted"]:
         build.insert(0, glossary.phrase("chat.restricted", lang))
     return {
@@ -54,7 +55,15 @@ def brief(draft: dict, zone: str, lang: str) -> dict | None:
             {"type": "safety", "title": glossary.phrase("chat.safety", lang), "lines": safety},
         ],
         "checks": [glossary.phrase(c, lang) for c in checks[:5]],
+        "photo": None if b["restricted"] else photo_request(hazard_keys, lang),
+        "videos": videos.kosha_links(hazard_keys) if hazard_keys else [],
     }
+
+
+def photo_request(hazard_keys: list[str], lang: str) -> dict | None:
+    """가장 높은 순위 위험의 안전시설 사진 1장 요청 (출입 통제 구역은 요청하지 않는다)."""
+    key = next((f"photo.{k}" for k in hazard_keys if f"photo.{k}" in glossary.load_json("phrases.json")["phrases"]), None)
+    return {"key": key, "text": glossary.phrase(key, lang)} if key else None
 
 
 def context_ko(draft: dict, zone: str) -> str:

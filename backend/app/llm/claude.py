@@ -7,6 +7,8 @@
 from __future__ import annotations
 
 
+import base64
+
 import anthropic
 
 from .base import Conversation, LLMError, LLMProvider, StepResult, ToolCall, ToolSpec
@@ -74,3 +76,16 @@ class ClaudeProvider(LLMProvider):
 
     def conversation(self, system: str, tools: list[ToolSpec]) -> Conversation:
         return ClaudeConversation(self, system, tools)
+
+    def see(self, system: str, prompt: str, jpeg: bytes) -> str:
+        """사진 한 장 + 질문 (안전시설 사진 확인). 사진을 볼 수 있는 공급자만 이 메서드가 있다."""
+        conv = ClaudeConversation(self, system, [])
+        conv.messages.append({"role": "user", "content": [
+            {"type": "image", "source": {"type": "base64", "media_type": "image/jpeg",
+                                         "data": base64.b64encode(jpeg).decode()}},
+            {"type": "text", "text": prompt},
+        ]})
+        res = conv.step()
+        if res.stop_reason in ("refusal", "error"):
+            raise LLMError(res.text or res.stop_reason)
+        return res.text
