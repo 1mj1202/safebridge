@@ -78,3 +78,26 @@ def test_kosha_rows_parsing():
         {"titlNm": "화학물질 관리", "linkUrl": "https://example.org/v2"}, {"x": 1}]}}}}
     rows = [p for p in (videos._pick(r) for r in videos._rows(data)) if p]
     assert [r["url"] for r in rows] == ["https://example.org/v1", "https://example.org/v2"]
+
+
+def test_kosha_real_format_and_match(monkeypatch):
+    """2026-11-21 실호출로 확인한 응답 형식: body.items.item[] = {MED_SJ_NM, MED_URL, MED_COMPY_DY}."""
+    real = {"header": {"resultCode": "00"}, "body": {"totalCount": 3, "items": {"item": [
+        {"MED_URL": "https://portal.kosha.or.kr/a?medSeq=1", "MED_COMPY_DY": "2026-11-19", "MED_SJ_NM": "한랭질환 예방"},
+        {"MED_URL": "https://portal.kosha.or.kr/a?medSeq=2", "MED_COMPY_DY": "2026-11-18",
+         "MED_SJ_NM": "[실제상황] 위태로운 발판, 예견된 추락"},
+        {"MED_URL": "https://portal.kosha.or.kr/a?medSeq=3", "MED_COMPY_DY": "2026-11-17", "MED_SJ_NM": "끼임 사고사례"}]}}}
+
+    class R:
+        def raise_for_status(self): ...
+        def json(self): return real
+
+    calls = []
+    monkeypatch.setattr(videos.httpx, "get", lambda url, params, timeout: calls.append((url, params)) or R())
+    monkeypatch.setattr(videos, "get_settings", lambda: type("S", (), {"kosha_service_key": "k"})())
+    videos._cache.clear()
+    got = videos.kosha_links(["fall_edge", "fall_opening"])
+    assert [g["url"] for g in got] == ["https://portal.kosha.or.kr/a?medSeq=2"]
+    assert calls[0][0].endswith("/selectMediaList01/getselectMediaList01") and len(calls) == 1
+    assert videos.kosha_links(["collapse"]) == [videos.HOME]  # 맞는 자료 없으면 누리집
+    videos._cache.clear()
