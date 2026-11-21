@@ -16,7 +16,7 @@ from app.llm.factory import get_provider
 from app.models import Assessment, Tbm
 from app.services import glossary, tbm, translate
 
-from .schemas import AssessRequest, DraftEdit, PublishRequest
+from .schemas import ApproveRequest, AssessRequest, DraftEdit, PublishRequest
 
 router = APIRouter(prefix="/api", dependencies=[Depends(require_admin)], tags=["assessments"])
 
@@ -82,8 +82,10 @@ def edit(aid: int, body: DraftEdit, db: Session = Depends(get_db)):
 
 
 @router.post("/assessments/{aid}/approve")
-def approve(aid: int, db: Session = Depends(get_db)):
+def approve(aid: int, body: ApproveRequest | None = None, db: Session = Depends(get_db)):
     a = _get(db, aid)
+    if body and body.work_date and body.work_date != a.work_date:
+        raise HTTPException(409, f"이 초안은 {a.work_date} 작업 기준입니다. 보고 있는 날짜({body.work_date})와 달라 승인하지 않았어요")
     a.status = "approved"
     a.approved_at = datetime.now(timezone.utc)
     db.commit()

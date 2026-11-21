@@ -4,6 +4,7 @@ import { api } from "../../shared/api";
 import { useFetch } from "../../shared/hooks";
 import type { Assessment, BimModel, DraftItem, Meta, RiskResponse, Task, Tbm, Zone } from "../../shared/types";
 import AgentQuery from "../assessment/AgentQuery";
+import DraftDateNotice from "../assessment/DraftDateNotice";
 import DraftReview from "../assessment/DraftReview";
 import ZoneBriefings from "../assessment/ZoneBriefings";
 import IssueInbox from "../tbm/IssueInbox";
@@ -15,7 +16,7 @@ import Viewer3D, { type PeopleMarker } from "../viewer/Viewer3D";
 import { groupZones } from "../viewer/scene";
 import DateSlider from "./DateSlider";
 import DayInfo from "./DayInfo";
-import { addDays } from "./dates";
+import { addDays, otherDay } from "./dates";
 import { countByZone, filterCompany } from "./locations";
 import { useLocations } from "./useLocations";
 import WorkerLocations from "./WorkerLocations";
@@ -64,11 +65,14 @@ export default function AdminPage() {
         level: i.level, included: i.included !== false })),
     }));
   });
-  const approve = () => a && run(async () => setA(await api.post<Assessment>(`/assessments/${a.id}/approve`)));
+  const approve = () => a && run(async () => setA(await api.post<Assessment>(`/assessments/${a.id}/approve`, { work_date: day })));
   const publish = (memo: string) => a && run(async () => setTbm(await api.post<Tbm>(`/assessments/${a.id}/publish`, { memo })));
 
   const zones = risk?.zones ?? [];
-  const related = zoneInfo && a ? a.draft.items.filter((i) => i.evidence.zones.includes(zoneInfo.id)) : [];
+  // 보고 있는 날짜와 초안 작업일이 다르면 이전 초안은 보존하되 수정·승인·발행을 잠근다
+  const stale = otherDay(a?.work_date, day);
+  const noWork = !!risk && risk.tasks.every((t) => t.trade === "양생");
+  const related = zoneInfo && a && !stale ? a.draft.items.filter((i) => i.evidence.zones.includes(zoneInfo.id)) : [];
 
   return (
     <div className="flex h-full flex-col">
@@ -117,14 +121,20 @@ export default function AdminPage() {
           <AgentQuery busy={busy} onAsk={ask} day={day} today={meta?.today} trace={a?.trace ?? null} provider={meta?.provider ?? ""} />
           <WorkerLocations data={loc.data} error={loc.error} workers={shown} company={company} onCompany={setCompany}
             zones={(a?.draft.briefings ?? []).map((b) => b.zone)} langs={meta?.langs ?? {}} />
-          {a && <DraftReview a={a} busy={busy} onSave={save} onApprove={approve}
+          {a && stale && day && (
+            <DraftDateNotice draftDay={a.work_date} viewDay={day} today={meta?.today} noWork={noWork} busy={busy}
+              onBack={() => { setDay(a.work_date); setSelected([]); setZoneInfo(null); }} onReanalyze={() => ask(a.query)} />
+          )}
+          {a && <DraftReview a={a} busy={busy} onSave={save} onApprove={approve} frozen={stale}
             onFocusZones={(ids) => { setSelected(ids); setZoneInfo(zones.find((z) => z.id === ids[0]) ?? null); }} />}
-          {a?.draft.briefings && meta && (
-            <ZoneBriefings briefings={a.draft.briefings} items={a.draft.items} meta={meta} approved={a.status === "approved"} />
-          )}
-          {a?.status === "approved" && meta && (
-            <PublishPanel tbm={tbm} meta={meta} busy={busy} onPublish={publish} zones={a.draft.briefings ?? []} />
-          )}
+          <div className={stale ? "pointer-events-none space-y-4 opacity-50" : "space-y-4"} aria-disabled={stale}>
+            {a?.draft.briefings && meta && (
+              <ZoneBriefings briefings={a.draft.briefings} items={a.draft.items} meta={meta} approved={a.status === "approved"} />
+            )}
+            {a?.status === "approved" && meta && (
+              <PublishPanel tbm={tbm} meta={meta} busy={busy} onPublish={publish} zones={a.draft.briefings ?? []} />
+            )}
+          </div>
           {tbm && meta && <IssueInbox tbmId={tbm.id} meta={meta} />}
           {tbm && <PhotoInbox tbmId={tbm.id} />}
           {tbm && meta && <StatusPanel tbmId={tbm.id} meta={meta} />}

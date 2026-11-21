@@ -11,9 +11,11 @@ interface Props {
   onSave: (items: DraftItem[], summary: string, notes: string[]) => void;
   onApprove: () => void;
   onFocusZones: (ids: string[]) => void;
+  /** 보고 있는 날짜와 초안 작업일이 다르면 true — 수정·승인 잠금 */
+  frozen?: boolean;
 }
 
-export default function DraftReview({ a, busy, onSave, onApprove, onFocusZones }: Props) {
+export default function DraftReview({ a, busy, onSave, onApprove, onFocusZones, frozen = false }: Props) {
   const d = a.draft;
   const [items, setItems] = useState(d.items);
   const [summary, setSummary] = useState(d.summary);
@@ -21,7 +23,8 @@ export default function DraftReview({ a, busy, onSave, onApprove, onFocusZones }
   const [ev, setEv] = useState<Evidence | null>(null);
   const [dirty, setDirty] = useState(false);
   useEffect(() => { setItems(d.items); setSummary(d.summary); setNotes(d.notes.join("\n")); setDirty(false); }, [d]);
-  const locked = a.status === "approved";
+  const approved = a.status === "approved";
+  const locked = approved || frozen;
   const upd = (id: string, patch: Partial<DraftItem>) => {
     setItems((xs) => xs.map((x) => (x.id === id ? { ...x, ...patch } : x)));
     setDirty(true);
@@ -29,7 +32,7 @@ export default function DraftReview({ a, busy, onSave, onApprove, onFocusZones }
 
   return (
     <Panel title={<>위험성평가 초안 <span className="font-normal text-slate-500">· {d.date} {d.storey}</span></>}
-      right={locked ? <Chip tone="blue">승인됨</Chip> : <Chip tone="amber">검토 중</Chip>}>
+      right={approved ? <Chip tone="blue">승인됨</Chip> : <Chip tone="amber">검토 중</Chip>}>
       <p className="mb-2 text-xs text-slate-400">순위 = 사고가능성 × 심각성 × 공종 사고 빈도 + 기상 (확률 예측이 아닌 위험도·빈도 순위)</p>
       {d.data_note && <p className="mb-2 rounded bg-amber-50 px-2 py-1 text-xs text-amber-800">{d.data_note}</p>}
       {d.llm_note && <p className="mb-2 rounded bg-slate-100 px-2 py-1 text-xs text-slate-600">{d.llm_note}</p>}
