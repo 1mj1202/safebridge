@@ -1,5 +1,5 @@
 // 오늘 적용할 대책: 평소엔 목록으로 보여 주고, '수정'일 때는 후보 목록에서 체크로 고른다
-// 후보 = 오늘 조건에 맞는 유사사례 대책 + 지금 들어간 대책 + 조건이 다른 참고 대책(표시) + 직접 추가
+// 후보 = 지금 들어간 대책 + 오늘 조건에 맞는 유사사례 대책 + 직접 추가 (조건이 다른 참고 대책은 ReferenceMeasures에 따로 접어 둔다)
 import { Plus } from "lucide-react";
 import { useState } from "react";
 import type { DraftItem } from "../../shared/types";
@@ -10,18 +10,17 @@ interface Props {
   onChange: (measures: string[]) => void;
 }
 
-interface Option { text: string; ref?: string }
+interface Option { text: string }
 
 export function measureOptions(it: DraftItem): Option[] {
   const out: Option[] = [];
   const seen = new Set<string>();
-  const add = (text: string, ref?: string) => {
+  const add = (text: string) => {
     const t = text.trim();
-    if (t && !seen.has(t)) { seen.add(t); out.push({ text: t, ref }); }
+    if (t && !seen.has(t)) { seen.add(t); out.push({ text: t }); }
   };
   it.measures.forEach((m) => add(m));
   (it.measure_options ?? []).forEach((m) => add(m));
-  (it.reference_measures ?? []).forEach((r) => add(r.text, r.reason));
   return out;
 }
 
@@ -57,10 +56,7 @@ export default function MeasurePicker({ it, editing, onChange }: Props) {
             <label className="flex cursor-pointer items-start gap-2 text-sm">
               <input type="checkbox" className="mt-1" checked={chosen.includes(o.text)}
                 onChange={(e) => toggle(o.text, e.target.checked)} />
-              <span className={o.ref && !chosen.includes(o.text) ? "text-slate-500" : "text-slate-800"}>
-                {o.ref && <span className="mr-1 rounded bg-slate-200 px-1 text-xs text-slate-600">참고 · {o.ref}</span>}
-                {o.text}
-              </span>
+              <span className="text-slate-800">{o.text}</span>
             </label>
           </li>
         ))}
