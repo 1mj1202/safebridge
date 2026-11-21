@@ -164,6 +164,7 @@ export default function WorkerPage() {
 
       <div className="fixed inset-x-0 bottom-0 mx-auto max-w-md bg-gradient-to-t from-white via-white to-white/0 px-3 pb-3 pt-4">
         <SuggestionChips understood={isDone ? undefined : ui.understood} onUnderstood={understood}
+          confirm={{ q: ui.understood_q, back: ui.read_again }}
           report={ui.report} onReport={() => setMode("issue")} />
         <ChatInput lang={lang} mode={mode} onMode={setMode} busy={busy} labels={{ ask: ui.question, issue: ui.report }}
           hints={{ ask: ui.ask, issue: ui.issue }} onSend={send} photo={photo} />
