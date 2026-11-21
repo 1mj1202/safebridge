@@ -83,6 +83,8 @@ export interface DraftItem {
   level: Level;
   frequency: { count: number; of: number } | null;
   measures: string[];
+  /** 유사사례 원문 대책 중 오늘 작업 단계·장비와 조건이 달라 참고로만 보이는 것 */
+  reference_measures?: { text: string; case_id: string; reason: string }[];
   checks: string[];
   evidence: { cases: string[]; elements: string[]; zones: string[]; laws: string[]; guides?: string[]; forecast?: Forecast };
   profile?: { id: string; n: number; likelihood: number; severity: number } | null;

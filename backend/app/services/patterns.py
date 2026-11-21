@@ -69,6 +69,31 @@ def _objects(rows: list[dict]) -> list[tuple[str, int]]:
     return top + [(o, cnt[o]) for o in KEY_OBJECTS if cnt[o] and o not in dict(top)]
 
 
+def measures_for(trade: str, acc_type: str, obj: str | None, ctx: dict) -> tuple[list[str], list[dict]]:
+    """오늘 작업 조건(work_context)에 맞는 사례의 대책(많이 나온 순)과, 조건이 달라 참고로만 보일 대책.
+
+    사례 작업명(work)이 다른 단계면 그 사례 대책은 모두 참고, 대책 문장이 다른 장비·단계를 말하면 그 문장만 참고.
+    """
+    from . import work_context
+
+    fit: Counter = Counter()
+    ref: dict[str, dict] = {}
+    for c in cases():
+        if c["trade"] != trade or c["accident_type"] != acc_type or c.get("confidence", 1) < CONF_MIN:
+            continue
+        if obj and c["cause_object"] != obj:
+            continue
+        case_off = work_context.mismatch(c["work"], ctx)
+        for m in c["measures"]:
+            why = case_off or work_context.mismatch(m, ctx)
+            if why:
+                ref.setdefault(m, {"text": m, "case_id": c["case_id"], "reason": why, "n": 0})["n"] += 1
+            else:
+                fit[m] += 1
+    refs = sorted((r for m, r in ref.items() if m not in fit), key=lambda r: -r["n"])
+    return [m for m, _n in fit.most_common()], [{k: r[k] for k in ("text", "case_id", "reason")} for r in refs]
+
+
 # ---- 유의어 확장: 질의에 든 용어의 유의어를 덧붙인다(전도 → 넘어짐 등) ----
 @lru_cache
 def _synonyms() -> tuple[tuple[str, ...], ...]:

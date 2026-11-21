@@ -6,7 +6,7 @@ LLM 은 이 골격의 설명 문장·시공 유의사항만 쓴다. 근거가 �
 """
 from __future__ import annotations
 
-from app.services import crosswalk, guides, patterns, risk_profile, stats
+from app.services import crosswalk, guides, patterns, risk_profile, stats, work_context
 
 from . import briefing, ranking
 
@@ -77,7 +77,7 @@ def build(day: str, storey: str | None, results: dict) -> dict:
         name, acc_type, obj, zone_pred, checks, extra_laws = HAZARDS[k]
         rel_trades = [tr for tr in trades if k in TRADE_HAZARDS.get(tr, [])]
         hz_zones = [z for z in zones if zone_pred and zone_pred(z)]
-        case_ids, measures, count, total = [], [], 0, 0
+        case_ids, measures, refs, count, total = [], [], [], 0, 0
         for tr in rel_trades:
             p = pats.get(tr)
             if not p:
@@ -92,9 +92,15 @@ def build(day: str, storey: str | None, results: dict) -> dict:
                 for c in t.get("similar_cases", []):
                     if (obj is None or c["cause_object"] == obj) and c["case_id"] not in case_ids:
                         case_ids.append(c["case_id"])
-                for m, _n in t["top_measures"]:
+                # 대책은 오늘 작업 단계·장비에 맞는 사례에서만, 조건이 다른 대책은 참고 칸으로(기획서 별첨 2-4)
+                ctx = work_context.of_tasks([x for x in tasks if x["trade"] == tr])
+                fit, ref = patterns.measures_for(tr, t["type"], obj, ctx)
+                for m in fit:
                     if not _dup(m, measures):
                         measures.append(m)
+                for r in ref:
+                    if not _dup(r["text"], measures) and not _dup(r["text"], [x["text"] for x in refs]):
+                        refs.append(r)
         if count == 0 and not hz_zones:
             continue  # 근거가 전혀 없으면 항목을 만들지 않는다
         rule_ids = list(dict.fromkeys([z["rule"] for z in hz_zones] + extra_laws))
@@ -117,6 +123,7 @@ def build(day: str, storey: str | None, results: dict) -> dict:
             "profile": {k2: prof[k2] for k2 in ("id", "n", "likelihood", "severity")} if prof else None,
             "frequency": {"count": count, "of": total},
             "measures": measures[:4],
+            "reference_measures": refs[:4],
             "checks": checks + (["check.signal"] if k == "falling_object" and "양중" in trades else []),
             "evidence": {
                 "cases": case_ids[:3],
