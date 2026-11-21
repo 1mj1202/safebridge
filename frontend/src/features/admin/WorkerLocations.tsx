@@ -43,6 +43,9 @@ export default function WorkerLocations({ data, error, workers, company, onCompa
           </div>
         ))}
       </div>
+      {list.length === 0 ? (
+        <p className="mt-3 text-center text-xs text-slate-400">{zone ? "이 구역에 태그한 근로자가 없어요" : "아직 가입한 근로자가 없어요"}</p>
+      ) : (
       <table className="mt-3 w-full text-xs">
         <thead className="text-left text-slate-400">
           <tr><th className="py-1 font-normal">이름</th><th className="font-normal">업체</th><th className="font-normal">위치</th>
@@ -60,9 +63,9 @@ export default function WorkerLocations({ data, error, workers, company, onCompa
                 : <span className="flex items-center gap-0.5 text-amber-700"><CircleAlert size={12} />미확인</span>) : ""}</td>
             </tr>
           ))}
-          {list.length === 0 && <tr><td colSpan={5} className="py-2 text-center text-slate-400">아직 가입한 근로자가 없어요</td></tr>}
         </tbody>
       </table>
+      )}
     </Panel>
   );
 }
