@@ -19,6 +19,8 @@ def test_mock_agent_builds_evidence_backed_draft():
     assert edge["evidence"]["cases"] and "SLB-3F" in edge["evidence"]["elements"]
     assert set(edge["evidence"]["laws"]) == {"LAW-42", "LAW-13"}
     assert all(i["explanation"] for i in d["items"])
+    # 대책 선택 목록: 후보는 기본 대책을 모두 담고 더 많을 수 있다
+    assert edge["measures"] and set(edge["measures"]) <= set(edge["measure_options"])
     assert not any(t["auto"] for t in r["trace"] if t["tool"] != "get_regulation")
     assert {t["tool"] for t in r["trace"]} >= {"get_activities", "get_spatial_hazards", "query_hazard_rules",
                                                "search_cases", "get_guides", "get_regulation", "get_weather",

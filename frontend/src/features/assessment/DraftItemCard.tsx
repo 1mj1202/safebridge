@@ -1,4 +1,4 @@
-// 위험성평가 초안 항목 하나: 순위·위험도·위치·설명·오늘 대책·근거. '수정'을 눌렀을 때만 입력칸으로 바뀐다
+// 위험성평가 초안 항목 하나: 순위·위험도·위치·설명·오늘 대책·근거. '수정'을 눌렀을 때만 입력칸(대책은 후보 체크 목록)으로 바뀐다
 import { Check, MapPin, Pencil } from "lucide-react";
 import { useState } from "react";
 import { Chip, LevelBadge } from "../../shared/ui";
@@ -8,6 +8,7 @@ import LegalNote from "../admin/LegalNote";
 import EditableText from "./EditableText";
 import EvidenceChips from "./EvidenceChips";
 import type { Evidence } from "./EvidenceModal";
+import MeasurePicker from "./MeasurePicker";
 import ReferenceMeasures from "./ReferenceMeasures";
 
 interface Props {
@@ -58,10 +59,9 @@ export default function DraftItemCard({ it, laws, locked, onChange, onEvidence, 
       )}
       <EditableText className="mt-2" label="설명" editing={edit} locked={locked} value={it.explanation}
         onChange={(v) => onChange({ explanation: v })} />
-      {it.measures.length > 0 && (<>
+      {(edit || it.measures.length > 0 || (it.measure_options?.length ?? 0) > 0) && (<>
         <div className="mt-2 text-xs font-bold text-slate-500">오늘 적용할 대책</div>
-        <EditableText list label="오늘 적용할 대책" editing={edit} locked={locked} rows={Math.max(2, it.measures.length)}
-          value={it.measures.join("\n")} onChange={(v) => onChange({ measures: v.split("\n") })} />
+        <MeasurePicker it={it} editing={edit} onChange={(measures) => onChange({ measures })} />
       </>)}
       {(it.reference_measures?.length ?? 0) > 0 && (
         <ReferenceMeasures refs={it.reference_measures!} onCase={(id) => onEvidence({ kind: "case", id })} />
