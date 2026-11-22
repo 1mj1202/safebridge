@@ -15,7 +15,7 @@ from app.core.admin_auth import require, require_admin
 from app.core.db import get_db
 from app.llm.factory import get_provider
 from app.models import Assessment, Tbm
-from app.services import glossary, tbm, translate
+from app.services import glossary, tbm, translate, weather_text
 
 from .launch import iso_utc
 from .schemas import ApproveRequest, AssessRequest, DraftEdit, PublishRequest
@@ -99,11 +99,16 @@ def publish(aid: int, body: PublishRequest, db: Session = Depends(get_db)):
     a = _get(db, aid)
     if a.status != "approved":
         raise HTTPException(409, "관리자 승인 후 발행할 수 있습니다")
-    cards = {lang: tbm.build_cards(a.draft, lang) for lang in glossary.LANGS}
+    # 관리자가 고친 기상 경고 문구는 고정 문장 대신 그 문구를 번역하고 뜻(작업·조건·지시)을 검사한다
+    weather_tr = {i["id"]: {lang: translate.with_back_translation(i["hazard"], lang) for lang in glossary.LANGS if lang != "ko"}
+                  for i in a.draft["items"] if i.get("included", True) and weather_text.needs_translation(i)}
+    cards = {lang: tbm.build_cards(a.draft, lang, weather_tr) for lang in glossary.LANGS}
     plan = tbm.floor_plan(a.draft, cards["ko"][0]["zone_ids"])
     for lang in glossary.LANGS:
         cards[lang][0]["plan"] = plan
     check = {"phrases": {lang: tbm.phrase_term_check(cards["ko"], cards[lang], lang) for lang in glossary.LANGS}}
+    if weather_tr:
+        check["weather"] = weather_tr
     if body.memo.strip():
         memo = {lang: translate.with_back_translation(body.memo.strip(), lang) for lang in glossary.LANGS}
         check["memo"] = memo
@@ -118,9 +123,15 @@ def publish(aid: int, body: PublishRequest, db: Session = Depends(get_db)):
 
 
 def tbm_out(t: Tbm) -> dict:
+    check = copy.deepcopy(t.translation_check or {})
+    for lang, m in (check.get("memo") or {}).items():  # 뜻 검사 전에 발행한 TBM 도 지금 기준으로 표시
+        if lang != "ko" and m.get("meaning") is None:
+            m["meaning"] = translate.meaning_check(m.get("source", ""), m.get("translated", ""), m.get("back", ""))
+            if m.get("ok") and not m["meaning"]["ok"]:
+                m["ok"], m["note"] = False, "뜻이 바뀜: " + ", ".join(m["meaning"]["missing"])
     return {"id": t.id, "assessment_id": t.assessment_id, "token": t.token,
             "url": f"{get_settings().public_web_url.rstrip('/')}/w/{t.token}",
-            "cards": t.cards, "translation_check": t.translation_check,
+            "cards": tbm.refresh_weather(t.cards, t.assessment.draft, check.get("weather")), "translation_check": check,
             "published_at": iso_utc(t.published_at), "work_date": t.assessment.work_date,
             "approved_at": iso_utc(t.assessment.approved_at)}
 
