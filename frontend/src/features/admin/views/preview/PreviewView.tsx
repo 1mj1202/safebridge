@@ -44,7 +44,7 @@ export default function PreviewView({ s }: { s: AdminState }) {
             {ko.zones.map((z) => (
               <button key={z.zone} type="button" onClick={() => setZone(z.zone)} aria-pressed={z.zone === zone}
                 className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm ${z.zone === zone
-                  ? "border-slate-900 bg-slate-900 text-white" : z.restricted ? "border-slate-200 text-slate-400" : "border-slate-200 hover:bg-slate-50"}`}>
+                  ? "border-brand-600 bg-brand-600 text-white" : z.restricted ? "border-slate-200 text-slate-400" : "border-slate-200 hover:bg-slate-50"}`}>
                 {z.restricted ? <Ban size={14} /> : <MapPin size={14} />}{z.label}
               </button>
             ))}
@@ -56,7 +56,7 @@ export default function PreviewView({ s }: { s: AdminState }) {
             {orderLangs(ko.langs, row?.langs).map((l) => (
               <button key={l.code} type="button" onClick={() => setLang(l.code)} aria-pressed={l.code === lang}
                 className={`rounded-full border px-3 py-1.5 text-sm ${l.code === lang
-                  ? "border-slate-900 bg-slate-900 text-white" : l.here ? "border-blue-300 bg-blue-50 text-blue-800" : "border-slate-200 hover:bg-slate-50"}`}>
+                  ? "border-brand-600 bg-brand-600 text-white" : l.here ? "border-blue-300 bg-blue-50 text-blue-800" : "border-slate-200 hover:bg-slate-50"}`}>
                 {l.name}</button>
             ))}
           </div>

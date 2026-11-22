@@ -20,7 +20,7 @@ export default function LaunchPage() {
     return (
       <div className="flex min-h-dvh flex-col items-center justify-center gap-3 p-6 text-center text-slate-600">
         <p>오늘 발행된 안전 브리핑이 아직 없어요.</p>
-        <button className="rounded-lg bg-slate-900 px-4 py-2 text-white" onClick={() => location.reload()}>다시 열기</button>
+        <button className="rounded-lg bg-brand-600 px-4 py-2 text-white" onClick={() => location.reload()}>다시 열기</button>
       </div>
     );
   }

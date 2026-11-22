@@ -22,7 +22,7 @@ export default function ManagerHome({ s, c, goto }: { s: AdminState; c: InboxCou
     <div className="mx-auto max-w-md space-y-4 p-4">
       <Panel title={a ? `${shortDay(a.work_date)} ${a.storey} 위험성평가` : "오늘 승인할 일"}
         right={a && <span className={`rounded-full px-2 py-0.5 text-xs font-semibold text-white ${
-          tbm ? "bg-emerald-600" : approved ? "bg-blue-600" : "bg-orange-500"}`}>{tbm ? "발행됨" : approved ? "승인됨" : "승인 대기"}</span>}>
+          tbm ? "bg-emerald-600" : approved ? "bg-brand-600" : "bg-orange-500"}`}>{tbm ? "발행됨" : approved ? "승인됨" : "승인 대기"}</span>}>
         {!a ? <p className="text-sm text-slate-400">안전관리자가 초안을 만들면 여기에 보여요.</p> : (
           <div className="space-y-3">
             <HazardList items={topHazards(a)} />

@@ -18,7 +18,7 @@ export default function DateSlider({ start, end, value, today, onChange }: Props
           disabled={idx >= max} aria-label="다음 날"><ChevronRight size={18} /></button>
       </div>
       <div className="relative">
-        <input type="range" min={0} max={max} value={idx} className="w-full accent-orange-600"
+        <input type="range" min={0} max={max} value={idx} className="w-full accent-brand-600"
           aria-label="작업 날짜" onChange={(e) => onChange(addDays(start, Number(e.target.value)))} />
         {todayIdx >= 0 && todayIdx <= max && (
           <span className="pointer-events-none absolute -bottom-3 text-[10px] text-slate-500"

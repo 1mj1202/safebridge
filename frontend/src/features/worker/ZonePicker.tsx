@@ -10,7 +10,7 @@ export default function ZonePicker({ greet, zones, onPick, nfc }: {
       <p className="mb-4 text-xl">{greet}</p>
       {nfc.supported && (
         <button onClick={nfc.start} disabled={nfc.active}
-          className="flex w-full items-center justify-center gap-2 rounded-full bg-slate-900 py-3 text-base font-semibold text-white disabled:bg-blue-600">
+          className="flex w-full items-center justify-center gap-2 rounded-full bg-brand-600 py-3 text-base font-semibold text-white disabled:bg-brand-400">
           <Nfc size={18} strokeWidth={1.75} /> NFC {nfc.active ? "…" : ""}</button>
       )}
       {zones.map((z) => (

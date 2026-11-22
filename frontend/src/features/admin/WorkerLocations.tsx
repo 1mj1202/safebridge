@@ -35,7 +35,7 @@ export default function WorkerLocations({ data, error, workers, company, onCompa
               const c = counts.get(z);
               return (
                 <button key={z} onClick={() => setZone(zone === z ? null : z)} aria-pressed={zone === z}
-                  className={`flex flex-1 items-center justify-between rounded-md border px-2 py-1.5 text-xs ${zone === z ? "border-slate-900 ring-1 ring-slate-900" : "border-slate-200"} ${c ? "bg-emerald-50" : "bg-white"}`}>
+                  className={`flex flex-1 items-center justify-between rounded-md border px-2 py-1.5 text-xs ${zone === z ? "border-brand-600 ring-1 ring-brand-600" : "border-slate-200"} ${c ? "bg-emerald-50" : "bg-white"}`}>
                   <span className="truncate">{z.replace(/^\S+동\s/, "")}</span>
                   <span className="flex items-center gap-1">
                     {c && c.pending > 0 && <span className="flex items-center gap-0.5 text-amber-700"><CircleAlert size={12} />{c.pending}</span>}

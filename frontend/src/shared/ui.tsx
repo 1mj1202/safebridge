@@ -26,7 +26,7 @@ export function Button({ children, onClick, disabled, kind = "primary", type = "
   children: ReactNode; onClick?: () => void; disabled?: boolean; kind?: "primary" | "ghost" | "danger";
   type?: "button" | "submit" }) {
   const k = {
-    primary: "bg-slate-900 text-white hover:bg-slate-700",
+    primary: "bg-brand-600 text-white hover:bg-brand-700",
     ghost: "bg-white text-slate-800 ring-1 ring-slate-300 hover:bg-slate-50",
     danger: "bg-orange-600 text-white hover:bg-orange-500",
   }[kind];

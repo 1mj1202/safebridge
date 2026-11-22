@@ -26,7 +26,7 @@ export default function ChatInput({ lang, mode, onMode, labels, hints, busy, onS
           aria-label={labels[mode]} placeholder={hints[mode] || (mode === "issue" ? NO_PII[lang] : "")}
           className="max-h-32 min-w-0 flex-1 resize-none bg-transparent py-2 text-base outline-none" />
         <button onClick={send} disabled={busy || !text.trim()} aria-label="send"
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-900 text-lg text-white disabled:bg-slate-300">
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-600 text-lg text-white disabled:bg-slate-300">
           {busy ? <Loader2 size={18} className="animate-spin" /> : <ArrowUp size={20} strokeWidth={2.25} />}</button>
       </div>
       <ModeSheet open={sheet} mode={mode} labels={labels} onPick={onMode} onClose={() => setSheet(false)} photo={photo} />

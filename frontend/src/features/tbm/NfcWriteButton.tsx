@@ -13,7 +13,7 @@ export default function NfcWriteButton({ url }: { url: string }) {
   const label = { idle: "NFC 쓰기", wait: "태그를 대세요…", done: "기록됨", fail: "실패, 다시" }[state];
   return (
     <button onClick={(e) => { e.preventDefault(); write(); }} disabled={state === "wait"}
-      className={`mt-1 flex w-full items-center justify-center gap-1 rounded px-1 py-0.5 text-[11px] font-semibold ${state === "done" ? "bg-emerald-600 text-white" : "bg-slate-900 text-white"}`}>
+      className={`mt-1 flex w-full items-center justify-center gap-1 rounded px-1 py-0.5 text-[11px] font-semibold ${state === "done" ? "bg-emerald-600 text-white" : "bg-brand-600 text-white"}`}>
       <Nfc size={12} />{label}</button>
   );
 }
