@@ -1,7 +1,7 @@
 // 챗봇 첫 메시지: 구역 브리핑 (사용자 결정 2026-11-22 — 같은 안내는 한 번만, 행동 시점이 먼저 보이게)
-// 출입금지 배너(통제 구역) → 오늘의 작업 조건 → 이 구역에서 해야 할 행동(위험 | 시점, 행동) → 공통 보호구 → 관리자 한마디
-// → 사진 증빙 → 관련 예방 영상 N개 ▾ · 3D·도면 보기 ▾ (접힘)
-import { Ban, Box, CirclePlay, HardHat, MessageSquareText, Wind } from "lucide-react";
+// 출입금지 배너(통제 구역, 가장 먼저) → 3D 모델(기본 펼침) → 오늘의 작업 조건 → 이 구역에서 해야 할 행동(위험 | 시점, 행동)
+// → 공통 보호구 → 관리자 한마디 → 사진 증빙 → 관련 예방 영상 N개 ▾ (접힘)
+import { Ban, CirclePlay, HardHat, MessageSquareText, Wind } from "lucide-react";
 import type { ReactNode } from "react";
 import { briefCaptions } from "./brief";
 import Fold from "./Fold";
@@ -34,6 +34,9 @@ export default function BriefMessage({ brief, big, token, ui, photo }: {
           {brief.ban.hazards.length > 0 && <p className="mt-1 text-[0.85em] text-red-100">⚠ {brief.ban.hazards.join(" · ")}</p>}
         </div>
       )}
+
+      <ZoneView key={brief.zone} token={token} zone={brief.zone} plan={brief.plan} video={ui.video}
+        captions={briefCaptions(brief)} sims={brief.sims} />
 
       {weather.length > 0 && (
         <section data-testid="brief-conditions">
@@ -83,9 +86,6 @@ export default function BriefMessage({ brief, big, token, ui, photo }: {
         <Fold label={L?.videos ?? `${ui.video} ${brief.videos.length}`} icon={<CirclePlay size={18} className="shrink-0 text-red-600" />}>
           {() => <KoshaVideos videos={brief.videos} />}</Fold>
       )}
-      <Fold label={L?.view_3d ?? "3D"} icon={<Box size={18} className="shrink-0 text-slate-500" />}>
-        {() => <ZoneView key={brief.zone} token={token} zone={brief.zone} plan={brief.plan} video={ui.video}
-          captions={briefCaptions(brief)} sims={brief.sims} />}</Fold>
     </div>
   );
 }
