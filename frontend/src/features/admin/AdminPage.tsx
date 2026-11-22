@@ -1,5 +1,5 @@
 // 관리자 화면 (PDF 별첨 2-10·2-11 목업): 머리글(현장·기상·상태) + 왼쪽 메뉴(휴대폰은 아래 탭), 소장·발주처는 '오늘' 홈부터
-// 위험 지도 / TBM 초안 / 발행 / 확인 현황 / 신고함. 날짜·초안·TBM 은 메뉴끼리 공유(useAdminState)
+// 위험 지도 / TBM 초안 / 발행 / 확인 현황 / 신고함 / 근로자 화면(미리보기). 날짜·초안·TBM 은 메뉴끼리 공유(useAdminState)
 import { useMemo, useState } from "react";
 import { useStaff } from "../../shared/staff";
 import type { Zone } from "../../shared/types";
@@ -16,6 +16,7 @@ import ManagerHome from "./views/home/ManagerHome";
 import ViewerHome from "./views/home/ViewerHome";
 import InboxView from "./views/InboxView";
 import MapView from "./views/MapView";
+import PreviewView from "./views/preview/PreviewView";
 import PublishView from "./views/PublishView";
 import StatusView from "./views/StatusView";
 
@@ -68,6 +69,7 @@ export default function AdminPage() {
           {menu === "publish" && <PublishView s={st} onDraft={() => setMenu("draft")} />}
           {menu === "status" && <StatusView s={st} loc={loc} workers={workers} company={company} onCompany={setCompany} />}
           {menu === "inbox" && <InboxView s={st} />}
+          {menu === "preview" && <PreviewView s={st} />}
         </main>
       </div>
     </div>
