@@ -33,6 +33,7 @@ _lock = threading.Lock()
 _mem: dict | None = None
 _down_until = 0.0
 _mst: dict[str, str] = {}
+_last_error = ""
 
 
 class LawApiError(RuntimeError):
@@ -149,7 +150,7 @@ def fetch(oc: str, law_name: str, article: str) -> dict:
 
 def original(law_name: str, article: str) -> dict | None:
     """원문 {text, effective, mst, fetched} 또는 None(키 없음·실패·캐시도 없음)."""
-    global _down_until
+    global _down_until, _last_error
     key = f"{law_name}|{article}"
     with _lock:
         hit = _load().get(key)
@@ -163,7 +164,9 @@ def original(law_name: str, article: str) -> dict | None:
     except (httpx.HTTPError, LawApiError, ValueError, KeyError, TypeError) as e:
         log.warning("법제처 조회 실패(%s %s): %s — 팀 요약/보관 원문으로 대체", law_name, article, e)
         _down_until = time.time() + RETRY_AFTER
+        _last_error = str(e)
         return hit
+    _last_error = ""
     with _lock:
         _load()[key] = got
         _save()
@@ -182,7 +185,21 @@ def prefetch(articles: list[dict]) -> None:
     threading.Thread(target=run, name="law-prefetch", daemon=True).start()
 
 
+def status(probe: dict | None = None) -> dict:
+    """연결 점검용 (키 값은 내보내지 않는다). probe={law, article} 이면 캐시를 건너뛰고 실제로 한 번 불러 본다."""
+    out = {"key_set": bool(get_settings().law_api_oc.strip()), "cached": len(_load()),
+           "last_error": _last_error, "retry_wait_s": max(0, round(_down_until - time.time()))}
+    if probe and out["key_set"]:
+        try:
+            got = fetch(get_settings().law_api_oc.strip(), probe["law"], probe["article"])
+            out["probe"] = {"ok": True, "article": probe["article"], "effective": got["effective"],
+                            "head": got["text"][:80]}
+        except (httpx.HTTPError, LawApiError, ValueError, KeyError, TypeError) as e:
+            out["probe"] = {"ok": False, "error": str(e)}
+    return out
+
+
 def reset_for_tests() -> None:
-    global _mem, _down_until
-    _mem, _down_until = None, 0.0
+    global _mem, _down_until, _last_error
+    _mem, _down_until, _last_error = None, 0.0, ""
     _mst.clear()

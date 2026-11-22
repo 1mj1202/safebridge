@@ -55,6 +55,12 @@ def profile(profile_id: str):
     return {**r, "source": risk_profile.source()}
 
 
+@router.get("/law-status")
+def law_status(probe: bool = False):
+    """법제처 Open API 연결 점검 — 키 유무, 마지막 오류, probe=true 면 실제 조회 한 번."""
+    return law.status(probe)
+
+
 @router.get("/law/{article_id}")
 def law_article(article_id: str):
     a = law.get(article_id)
