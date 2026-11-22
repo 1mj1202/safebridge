@@ -7,7 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models import CheckIn, Tbm, Worker
-from app.services import site
+from app.services import demo_workers, site
 
 FRESH = timedelta(hours=4)  # 이보다 오래된 태그는 '오래됨'(인원 수에서 뺀다)
 
@@ -64,6 +64,8 @@ def snapshot(db: Session) -> dict:
     for w in db.scalars(select(Worker).order_by(Worker.company, Worker.name)):
         c = last(db, w)
         at = _utc(c.seen_at) if c else None
+        if c and demo_workers.is_demo(w):
+            at = now - timedelta(minutes=demo_workers.minutes_ago(w))
         rows.append({"id": w.id, "name": w.name, "company": w.company, "team": w.team, "lang": w.lang,
                      "zone": c.zone if c else None, "source": c.source if c else None,
                      "at": at.isoformat() if at else None,
