@@ -12,6 +12,9 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="SAFEBRIDGE_", env_file=".env", extra="ignore")
 
     database_url: str = f"sqlite:///{BACKEND_DIR / 'var' / 'safebridge.db'}"
+    # DB 파일이 없을 때 처음 한 번 복사해 쓰는 시연 상태 사본 (클라우드 첫 기동용, 예: seed/safebridge.db).
+    # 비우면(기본·테스트) 빈 DB 로 시작
+    seed_db_path: Path | None = None
     data_dir: Path = BACKEND_DIR / "data"
     ifc_path: Path = BACKEND_DIR / "samples" / "safebridge_sample.ifc"
     cors_origins: list[str] = ["http://localhost:5173", "http://localhost:8080"]

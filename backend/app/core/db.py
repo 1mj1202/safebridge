@@ -13,9 +13,14 @@ class Base(DeclarativeBase):
 
 _settings = get_settings()
 if _settings.database_url.startswith("sqlite:///"):
+    import shutil
     from pathlib import Path
 
-    Path(_settings.database_url.removeprefix("sqlite:///")).parent.mkdir(parents=True, exist_ok=True)
+    _db_file = Path(_settings.database_url.removeprefix("sqlite:///"))
+    _db_file.parent.mkdir(parents=True, exist_ok=True)
+    # 클라우드 첫 기동: 디스크에 DB 가 없으면 시연 상태 사본으로 시작한다 (이미 있으면 건드리지 않음)
+    if not _db_file.exists() and _settings.seed_db_path and _settings.seed_db_path.is_file():
+        shutil.copyfile(_settings.seed_db_path, _db_file)
 
 engine = create_engine(
     _settings.database_url,
