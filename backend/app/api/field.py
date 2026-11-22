@@ -8,6 +8,7 @@ from app.core.db import get_db
 from app.models import Issue
 from app.services import field_chat, glossary, issues, names, risk, schedule, site, zone_brief
 
+from .launch import stamp
 from .schemas import ChatRequest, IssueRequest
 from .worker import _lang, _tbm
 
@@ -25,7 +26,9 @@ def zones(token: str, lang: str = "ko", db: Session = Depends(get_db)):
     ui.update({k: glossary.phrase(f"ui.{k}", lang) for k in ("understood", "understood_q", "read_again", "question", "report", "listen", "photo", "video",
                                                                  "switch_role")})
     ui["logout"] = glossary.phrase("auth.logout", lang)
-    return {"lang": lang, "langs": glossary.lang_names(), "work_date": a.work_date,
+    ui.update({k: glossary.phrase(f"ui.{k}", lang) for k in ("work_day", "approved", "published", "loading")})
+    # 근로자가 읽는 발행본 표시(작업일·승인·발행 시각·번호) — 관리자 발행 화면과 대조할 수 있게
+    return {"lang": lang, "langs": glossary.lang_names(), "work_date": a.work_date, "stamp": stamp(t),
             "zones": zone_brief.zones(a.draft, lang), "ui": ui}
 
 

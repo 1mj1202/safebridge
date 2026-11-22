@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { saveLastVisit } from "../app/lastVisit";
 import { api } from "../../shared/api";
+import { stampLine } from "../../shared/stamp";
 import { useFetch } from "../../shared/hooks";
 import BriefMessage, { briefSpeech } from "./BriefMessage";
 import ChatInput, { type Mode } from "./ChatInput";
@@ -131,6 +132,10 @@ export default function WorkerPage() {
       <SideMenu open={menu} onClose={() => setMenu(false)} zones={data.zones} zone={zone} onZone={pickZone} nfc={nfc}
         langs={data.langs} lang={lang} onLang={(l) => setLang(remember(`sb-lang-${token}`, l) ?? l)} big={big} onBig={setBig}
         onStart={{ label: ui.switch_role, go: backToPicker }} />
+      {data.stamp && (
+        <p className="border-b border-slate-100 px-4 py-1.5 text-center text-xs text-slate-500" data-testid="stamp">
+          {stampLine(data.stamp, ui)}</p>
+      )}
 
       <main className="space-y-5 px-4 pb-64 pt-4">
         {brief ? <BriefMessage brief={brief} big={big} token={token} ui={ui}
