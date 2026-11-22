@@ -83,6 +83,22 @@ def test_chat_retranslates_korean_answer(monkeypatch):
     assert translate.looks_korean("안전대를 착용하세요") and not translate.looks_korean("A동 3F-a: Hãy đeo dây đai")
 
 
+def test_chat_korean_worker_gets_korean_rule(monkeypatch):
+    seen = []
+
+    class _Fake:
+        name = "fake"
+
+        def complete(self, system, prompt):
+            seen.append(system)
+            return "안전대를 단부 지지점에 거세요"
+
+    monkeypatch.setattr(field_chat, "get_provider", lambda: _Fake())
+    r = field_chat.answer("안전대 어디에 걸어?", "ko", "위험: 추락")
+    assert r == {"text": "안전대를 단부 지지점에 거세요", "grounded": True}
+    assert "never in Korean" not in seen[0] and "never in Korean" in field_chat.system_prompt("vi")
+
+
 def test_scene_for_zone(client, tbm):
     s = client.get(f"/api/w/{tbm['token']}/scene", params={"zone": "A동 3F-a"}).json()
     assert s["focus"]["min"][0] == 0.0 and s["focus"]["max"][0] == 15.0 and s["focus"]["min"][2] > 9
