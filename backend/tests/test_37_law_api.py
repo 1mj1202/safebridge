@@ -108,5 +108,7 @@ def test_status_reports_error_and_probe(monkeypatch, api):
     monkeypatch.setattr(law_api.httpx, "get", lambda *a, **k: Resp({"result": "사용자 정보 검증에 실패하였습니다.", "msg": "IP 등록"}))
     law_api.reset_for_tests()
     law.get("LAW-42")
+    monkeypatch.setattr(law_api, "egress_ip", lambda: "1.2.3.4")
     st = law.status(probe=True)
+    assert st["probe"]["egress_ip"] == "1.2.3.4"
     assert "검증에 실패" in st["last_error"] and st["probe"]["ok"] is False and "tester" not in str(st)
