@@ -111,6 +111,8 @@ export interface LawArticle {
   summary: string;
   url: string;
   source: string;
+  original_text?: string;
+  effective_date?: string;
 }
 
 export interface Draft {

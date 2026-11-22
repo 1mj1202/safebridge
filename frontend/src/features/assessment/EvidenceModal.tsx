@@ -17,7 +17,13 @@ export default function EvidenceModal({ ev, onClose }: { ev: Evidence; onClose: 
           <>
             <h3 className="font-bold">{data.law} {data.article} ({data.title})</h3>
             <p className="mt-3 text-sm">{data.summary}</p>
-            <p className="mt-3 text-xs text-slate-500">{data.source} · <a className="underline" href={data.url} target="_blank" rel="noreferrer">법제처에서 보기</a></p>
+            {data.original_text && (
+              <details className="mt-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
+                <summary className="cursor-pointer text-sm font-semibold text-slate-700">법제처 원문 보기</summary>
+                <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-slate-800">{data.original_text}</p>
+              </details>
+            )}
+            <p className="mt-3 text-xs text-slate-500">{data.source} ·<a className="underline" href={data.url} target="_blank" rel="noreferrer">법제처에서 보기</a></p>
           </>
         )}
         {data && ev.kind === "guide" && (

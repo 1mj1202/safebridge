@@ -10,6 +10,7 @@ from app.api import admin, assessments, bim, field, issues, launch, locations, p
 from app.core.config import get_settings
 from app.core.db import init_db
 from app.services import bim as bim_service
+from app.services import law as law_service
 from app.web.spa import mount_spa
 
 logging.basicConfig(level=logging.INFO)
@@ -20,6 +21,7 @@ logging.basicConfig(level=logging.INFO)
 async def lifespan(_app: FastAPI):
     init_db()
     bim_service.get_model()  # 요청 받기 전에 IFC 를 미리 읽어 둔다
+    law_service.prefetch()  # 법제처 원문을 뒤에서 미리 받아 둔다 (키 없으면 건너뜀)
     yield
 
 
