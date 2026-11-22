@@ -35,3 +35,8 @@ def find(ids: list[str]) -> list[dict]:
 
 def prefetch() -> None:
     law_api.prefetch(articles())
+
+
+def status(probe: bool = False) -> dict:
+    a = articles()[0] if probe else None
+    return law_api.status({"law": a["law"], "article": a["article"]} if a else None)

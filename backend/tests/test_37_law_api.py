@@ -101,3 +101,12 @@ def test_no_key_no_call(monkeypatch, api):
     monkeypatch.setattr(get_settings(), "law_api_oc", "")
     assert law.get("LAW-42")["source"] == law.SUMMARY_ONLY
     assert api == []
+
+
+def test_status_reports_error_and_probe(monkeypatch, api):
+    assert law_api.status({"law": LAW, "article": "제42조"})["probe"]["ok"]
+    monkeypatch.setattr(law_api.httpx, "get", lambda *a, **k: Resp({"result": "사용자 정보 검증에 실패하였습니다.", "msg": "IP 등록"}))
+    law_api.reset_for_tests()
+    law.get("LAW-42")
+    st = law.status(probe=True)
+    assert "검증에 실패" in st["last_error"] and st["probe"]["ok"] is False and "tester" not in str(st)
