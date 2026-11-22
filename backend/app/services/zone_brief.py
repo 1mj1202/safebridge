@@ -7,6 +7,21 @@ from __future__ import annotations
 from . import glossary, names, videos, weather_text
 from .tbm import PICTO
 
+# 위험 밑 대책 줄(build.<위험>)이 이미 말하는 확인 항목 — 체크 박스에 다시 쓰지 않는다 (사용자 결정 2026-11-22, 반복 줄이기)
+COVERED_BY_MEASURE = {
+    "fall_edge": {"check.guardrail"},
+    "fall_opening": {"check.opening_cover"},
+    "collapse": {"check.shoring"},
+    "falling_object": {"check.no_entry_below"},
+}
+# 관리자 한마디(승인 원문)에 이 낱말이 있으면 같은 확인 항목을 체크 박스에서 뺀다
+MEMO_WORDS = {"check.harness": "안전대", "check.helmet": "안전모", "check.signal": "신호수"}
+
+
+def memo_skips(memo_ko: str) -> set[str]:
+    """관리자 한마디가 이미 말하는 확인 항목"""
+    return {k for k, w in MEMO_WORDS.items() if w in (memo_ko or "")}
+
 
 def zones(draft: dict, lang: str = "ko") -> list[dict]:
     return [{"zone": b["zone"], "label": names.zone(b["zone"], lang), "storey": b["storey"],
@@ -22,8 +37,9 @@ def _items(draft: dict) -> dict[str, dict]:
     return {i["id"]: i for i in draft["items"] if i.get("included", True)}
 
 
-def brief(draft: dict, zone: str, lang: str, weather_tr: dict | None = None) -> dict | None:
-    """weather_tr: 발행 때 뜻 검사를 거친 기상 경고 번역 {item_id: {lang: check}} (관리자가 문구를 고친 경우만)."""
+def brief(draft: dict, zone: str, lang: str, weather_tr: dict | None = None, skip: set[str] | None = None) -> dict | None:
+    """weather_tr: 발행 때 뜻 검사를 거친 기상 경고 번역 {item_id: {lang: check}} (관리자가 문구를 고친 경우만).
+    skip: 체크 박스에서 뺄 확인 항목(관리자 한마디가 이미 말하는 것)."""
     b = find(draft, zone)
     if b is None:
         return None
@@ -37,7 +53,7 @@ def brief(draft: dict, zone: str, lang: str, weather_tr: dict | None = None) -> 
     # 위험마다 바로 밑에 대책 한 줄(build.<key>) — 따로 있던 '작업 순서' 줄과 같은 내용이라 합쳤다 (사용자 결정 2026-11-22).
     # 번호는 현장 전체 순위가 아니라 이 구역 안에서 1부터.
     phrases = glossary.load_json("phrases.json")["phrases"]
-    safety, checks = [], []
+    safety, checks, covered = [], [], set(skip or ())
     for s in b["safety"]:
         it = items.get(s["item_id"])
         if not it:
@@ -47,6 +63,9 @@ def brief(draft: dict, zone: str, lang: str, weather_tr: dict | None = None) -> 
                        "pictogram": PICTO.get(k), "text": glossary.phrase(f"hazard.{k}", lang),
                        "measure": glossary.phrase(f"build.{k}", lang) if f"build.{k}" in phrases else None})
         checks += [c for c in it.get("checks", []) if c not in checks]
+        if f"build.{k}" in phrases:
+            covered |= COVERED_BY_MEASURE.get(k, set())
+    checks = [c for c in checks if c not in covered]
     build = [glossary.phrase("chat.restricted", lang)] if b["restricted"] else []
     hazard_keys = [items[s["item_id"]]["key"] for s in b["safety"] if s["item_id"] in items]
     return {

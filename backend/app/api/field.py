@@ -44,8 +44,11 @@ def brief(token: str, zone: str, lang: str = "ko", db: Session = Depends(get_db)
     t = _zone(db, token, zone)
     lang = _lang(lang)
     tc = t.translation_check or {}
-    out = zone_brief.brief(t.assessment.draft, zone, lang, tc.get("weather"))
     place, _hz, check = t.cards[lang]
+    restricted = zone_brief.find(t.assessment.draft, zone)["restricted"]
+    # 관리자 한마디가 이미 말하는 확인 항목(예: 안전대)은 체크 박스에서 뺀다 — 출입 통제 구역은 한마디가 없으니 그대로
+    skip = set() if restricted else zone_brief.memo_skips(check.get("memo_ko") or "")
+    out = zone_brief.brief(t.assessment.draft, zone, lang, tc.get("weather"), skip)
     # 평면도는 작업 층 구역에만. 관리자 한마디는 작업 구역에만 — 출입 통제 구역은 마지막 줄이 출입금지 지침이다
     out["plan"] = place.get("plan") if place.get("plan") and place["plan"]["storey"] == out["storey"] else None
     out["memo"] = "" if out["restricted"] else _memo(check, (tc.get("memo") or {}).get(lang), lang)
