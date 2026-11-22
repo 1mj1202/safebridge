@@ -1,5 +1,5 @@
-// 머리글 오른쪽: 로그인한 부류 이름(발주처·감리는 '보기 전용') + 로그아웃
-import { LogOut } from "lucide-react";
+// 머리글 오른쪽: 들어온 부류 이름(발주처·감리는 '보기 전용') + 이용자층 바꾸기
+import { ArrowLeftRight } from "lucide-react";
 import { useStaff } from "../../shared/staff";
 
 export default function StaffBadge() {
@@ -10,7 +10,7 @@ export default function StaffBadge() {
     <span className="flex items-center gap-2 text-xs">
       <span className="rounded bg-slate-700 px-2 py-0.5">{me.label}{readOnly && " · 보기 전용"}</span>
       <button type="button" onClick={logout} className="flex items-center gap-1 text-slate-300 hover:text-white">
-        <LogOut size={13} />로그아웃</button>
+        <ArrowLeftRight size={13} />이용자층 바꾸기</button>
     </span>
   );
 }

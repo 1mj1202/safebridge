@@ -9,9 +9,11 @@ from app.core.config import get_settings
 def three(client):
     s = get_settings()
     s.admin_password, s.manager_password, s.viewer_password = "pw-safe", "pw-boss", "pw-view"
+    s.staff_password_check = True
     client.cookies.clear()
     yield
     s.admin_password = s.manager_password = s.viewer_password = ""
+    s.staff_password_check = False
     client.cookies.clear()
 
 
