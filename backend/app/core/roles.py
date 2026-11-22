@@ -5,7 +5,9 @@
 - viewer  발주처·감리       : 보기 전용
 
 부류별 비밀번호는 .env(SAFEBRIDGE_ADMIN_PASSWORD / _MANAGER_PASSWORD / _VIEWER_PASSWORD).
-현장소장 비밀번호가 없으면 승인할 사람이 없으니 안전관리자가 승인한다(예전 동작).
+비밀번호 확인(staff_password_check)은 기본으로 꺼 두어 부류를 고르기만 하면 들어간다 (사용자 결정 2026-11-22).
+이때도 비밀번호가 하나라도 있으면 부류별 권한은 그대로 지킨다. 비밀번호가 하나도 없으면 잠금 없음(개발·테스트).
+현장소장으로 들어갈 수 없으면 승인할 사람이 없으니 안전관리자가 승인한다(예전 동작).
 """
 from __future__ import annotations
 
@@ -28,19 +30,28 @@ def password(role: str) -> str:
     return {"safety": s.admin_password, "manager": s.manager_password, "viewer": s.viewer_password}.get(role, "")
 
 
+def checking() -> bool:
+    return get_settings().staff_password_check
+
+
 def enabled() -> list[str]:
-    """비밀번호가 정해져 있어 로그인할 수 있는 부류."""
-    return [r for r in ROLES if password(r)]
+    """들어갈 수 있는 부류. 비밀번호 확인을 끄면(잠금이 있을 때) 세 부류 모두."""
+    has = [r for r in ROLES if password(r)]
+    return has if checking() or not has else list(ROLES)
 
 
 def check(role: str, pw: str) -> bool:
+    if role not in ROLES:
+        return False
+    if not checking():
+        return True
     want = password(role)
     return bool(want) and hmac.compare_digest(pw.encode(), want.encode())
 
 
 def perms(role: str) -> set[str]:
     p = set(_PERMS.get(role, set()))
-    if role == "safety" and not password("manager"):
+    if role == "safety" and "manager" not in enabled():
         p.add("approve")
     return p
 

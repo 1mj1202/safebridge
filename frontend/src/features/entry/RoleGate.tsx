@@ -1,5 +1,5 @@
 // 어떤 주소로 들어오든(첫 주소·/app·구역 QR·홈 화면 앱) 처음엔 이용자층 고르기부터 (사용자 결정 2026-11-22)
-// 로그인은 유지: 이미 로그인한 부류는 눌러도 비밀번호 없이 바로, 근로자는 원래 가려던 주소(구역 QR 포함)로 이어진다
+// 비밀번호·가입 없이 고르기만 하면 들어가고, 근로자는 원래 가려던 주소(구역 QR 포함)로 이어진다
 // 고르면 새 기록으로 넘어가므로, 뒤로 가기를 누르면 선택 화면으로 돌아온다
 import { useEffect, useState, type ReactNode } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -32,7 +32,7 @@ export default function RoleGate({ children }: { children: ReactNode }) {
 
   const enter = (to: string) => { markPicked(historyIdx()); setDone(true); nav(to); };
   return (
-    <RoleLogin roles={me.roles} signedIn={me.ok ? me.role : null}
+    <RoleLogin roles={me.roles}
       onWorker={() => enter(pathname === "/" ? "/app" : pathname + search)}
       onLogin={() => enter("/")} />
   );

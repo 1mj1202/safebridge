@@ -16,7 +16,10 @@ from .db import SessionLocal
 
 
 def idle_seconds() -> int:
-    return max(1, get_settings().admin_idle_minutes) * 60
+    s = get_settings()
+    if not s.staff_password_check:  # 고르기만으로 들어가는 동안은 자동 로그아웃도 없다(30일)
+        return 30 * 24 * 3600
+    return max(1, s.admin_idle_minutes) * 60
 
 
 def _model():

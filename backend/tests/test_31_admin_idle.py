@@ -8,10 +8,10 @@ from app.core.config import get_settings
 @pytest.fixture
 def locked(client):
     s = get_settings()
-    s.admin_password = "pw-test"
+    s.admin_password, s.staff_password_check = "pw-test", True
     client.cookies.clear()
     yield
-    s.admin_password = ""
+    s.admin_password, s.staff_password_check = "", False
     client.cookies.clear()
 
 

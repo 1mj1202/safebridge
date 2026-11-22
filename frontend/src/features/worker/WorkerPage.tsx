@@ -1,10 +1,8 @@
 // 근로자 현장 챗봇 (구역 QR 접속)
-// 언어 → 가입·로그인(처음 한 번, 또는 가입 없이 보기) → 구역(?zone=, 태그하면 내 위치 갱신) → 구역 브리핑 + 음성 → 질문(브리핑 안에서 답) / 문제 알리기(번역·긴급도·반장 전달) → 회신
+// 언어 → 구역(?zone=, QR·NFC) → 구역 브리핑 + 음성 → 질문(브리핑 안에서 답) / 문제 알리기(번역·긴급도·반장 전달) → 회신
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { saveLastVisit } from "../app/lastVisit";
-import SignupPage from "../auth/SignupPage";
-import { useWorker } from "../auth/useWorker";
 import { api } from "../../shared/api";
 import { useFetch } from "../../shared/hooks";
 import BriefMessage, { briefSpeech } from "./BriefMessage";
@@ -18,7 +16,6 @@ import SideMenu from "./SideMenu";
 import { once, remember, seen } from "./storage";
 import SuggestionChips from "./SuggestionChips";
 import TopBar from "./TopBar";
-import { useCheckin, type Tag, type TagSource } from "./useCheckin";
 import { useIssueReplies } from "./useIssueReplies";
 import { useNfcZone } from "./useNfcZone";
 import { useSpeech } from "./useSpeech";
@@ -34,14 +31,6 @@ export default function WorkerPage() {
   const [lang, setLang] = useState<string | null>(() => remember(`sb-lang-${token}`));
   const [zone, setZone] = useState<string | null>(
     () => remember(`sb-zone-${token}`, params.get("zone") ?? undefined)); // 구역 QR·NFC 주소의 zone 이 우선
-  // 구역 QR·NFC 주소로 열렸을 때만 태그로 본다 (홈 화면 앱이 마지막 구역으로 연 것은 제외)
-  const [tag, setTag] = useState<Tag | null>(() => {
-    const z = params.get("zone");
-    return z && params.get("from") !== "app" ? { zone: z, source: "qr", at: Date.now() } : null;
-  });
-  const auth = useWorker();
-  const signedIn = !!auth.worker;
-  const checkin = useCheckin(token, signedIn, tag);
   const [big, setBig] = useState(false);
   const [busy, setBusy] = useState(false);
   const [menu, setMenu] = useState(false);
@@ -58,15 +47,9 @@ export default function WorkerPage() {
   useEffect(() => { try { sessionStorage.setItem(msgKey, JSON.stringify(msgs)); } catch { /* */ } }, [msgKey, msgs]);
   const add = useCallback((m: ChatMsg) => setMsgs((ms) => (ms.some((x) => x.id === m.id) ? ms : [...ms, m])), []);
   useIssueReplies(token, msgs, add);
-  // 직접 고른 구역은 교육만 열고 위치는 갱신하지 않는다 (위치는 QR·NFC 태그로만)
-  const pickZone = useCallback((z: string, source?: TagSource) => {
-    setZone(remember(`sb-zone-${token}`, z) ?? z);
-    if (source) setTag({ zone: z, source, at: Date.now() });
-  }, [token]);
-  const nfc = useNfcZone(token, (z) => pickZone(z, "nfc"));
-  // 로그인한 근로자는 가입할 때 고른 언어로 바로 시작
-  useEffect(() => { if (!lang && auth.worker) setLang(remember(`sb-lang-${token}`, auth.worker.lang) ?? auth.worker.lang); },
-    [lang, auth.worker, token]);
+  // 근로자 가입·로그인이 없어(사용자 결정 2026-11-22) 구역 태그는 교육만 열고 위치는 기록하지 않는다
+  const pickZone = useCallback((z: string) => setZone(remember(`sb-zone-${token}`, z) ?? z), [token]);
+  const nfc = useNfcZone(token, pickZone);
   useEffect(() => saveLastVisit(lang, zone), [lang, zone]); // 홈 화면 앱이 다음에 이어서 열 언어·구역
   const end = useRef<HTMLDivElement>(null);
   useEffect(() => { if (msgs.length) end.current?.scrollIntoView?.({ behavior: "smooth" }); }, [msgs.length]);
@@ -79,11 +62,7 @@ export default function WorkerPage() {
 
   if (error) return <div className="p-6 text-center text-red-600">TBM 을 찾을 수 없어요 ({error})</div>;
   if (!data) return <div className="p-6 text-center text-slate-500">…</div>;
-  if (auth.worker === undefined) return <div className="p-6 text-center text-slate-500">…</div>;
   if (!lang) return <LangPicker langs={data.langs} onPick={(l) => setLang(remember(`sb-lang-${token}`, l) ?? l)} />;
-  if (!auth.worker && !auth.guest) {
-    return <SignupPage lang={lang} onDone={auth.signedIn} onGuest={() => auth.setGuest(true)} />;
-  }
   const ui = data.ui;
   if (!zone || (data.zones.length && !data.zones.some((z) => z.zone === zone))) {
     return <ZonePicker greet={ui.greet} zones={data.zones} onPick={pickZone} nfc={nfc} />;
@@ -137,13 +116,10 @@ export default function WorkerPage() {
   const ack = (status: "understood" | "question") => api.post(`/w/${token}/ack`, { lang, status }).catch(() => undefined);
 
   const title = brief?.zone === zone ? brief.label : zone;
-  // 로그인: 구역마다 이해 확인(내 태그 기록), 언어별 익명 집계는 기기당 한 번. 가입 없이 보기: 기기당 한 번
-  const isDone = signedIn ? !!checkin.understood[zone] : done;
+  // '이해했어요'는 기기·언어당 한 번만 익명 집계
+  const isDone = done;
   const understood = () => {
-    if (signedIn) {
-      api.post(`/w/${token}/ack`, { lang, status: "understood", zone, tally: once(doneKey) }).catch(() => undefined);
-      checkin.mark(zone);
-    } else if (once(doneKey)) ack("understood");
+    if (once(doneKey)) ack("understood");
     setDone(true);
   };
 
@@ -152,9 +128,7 @@ export default function WorkerPage() {
       <TopBar title={title} onMenu={() => setMenu(true)} listen={ui.listen} speaking={voice.speaking}
         onListen={brief ? () => voice.toggle(briefSpeech(brief), lang) : undefined} />
       <SideMenu open={menu} onClose={() => setMenu(false)} zones={data.zones} zone={zone} onZone={pickZone} nfc={nfc}
-        langs={data.langs} lang={lang} onLang={(l) => setLang(remember(`sb-lang-${token}`, l) ?? l)} big={big} onBig={setBig}
-        account={auth.worker ? { name: auth.worker.name, company: auth.worker.company, logout: ui.logout, onLogout: auth.logout } : undefined}
-        guestBack={!auth.worker && auth.guest ? { label: ui.login, onBack: () => auth.setGuest(false) } : undefined} />
+        langs={data.langs} lang={lang} onLang={(l) => setLang(remember(`sb-lang-${token}`, l) ?? l)} big={big} onBig={setBig} />
 
       <main className="space-y-5 px-4 pb-64 pt-4">
         {brief ? <BriefMessage brief={brief} big={big} token={token} ui={ui}
