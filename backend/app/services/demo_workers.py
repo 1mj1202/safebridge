@@ -54,7 +54,7 @@ def seed(db: Session, seed_value: int = 7) -> dict:
     if t is None:
         return {"tbm_id": None, "workers": 0, "zones": []}
     rnd = random.Random(seed_value)
-    used: set[tuple[str, str]] = set()
+    used: set[str] = set()  # 업체가 달라도 같은 이름은 한 번만
     pools = {lg: rnd.sample(n, len(n)) for lg, n in NAMES.items()}
     count, zones = 0, []
     for z in _zones(t.assessment):
@@ -64,10 +64,10 @@ def seed(db: Session, seed_value: int = 7) -> dict:
             for _ in range(rnd.randint(*PER_TEAM)):
                 lang = rnd.choices(langs, weights=[1 if lg == "ko" else 2 for lg in langs])[0]  # 외국인 근로자 비중
                 pool = pools.get(lang) or pools["ko"]
-                name = next((n for n in pool if (team["company"], n) not in used), None)
+                name = next((n for n in pool if n not in used), None)
                 if name is None:
                     continue
-                used.add((team["company"], name))
+                used.add(name)
                 w = Worker(name=name, company=team["company"], team=team["team"], lang=lang,
                            pin_hash=DEMO, token="demo-" + secrets.token_urlsafe(24))
                 db.add(w)

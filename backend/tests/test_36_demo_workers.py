@@ -23,6 +23,7 @@ def test_seed_places_demo_workers(client):
         ids = set(db.scalars(select(Worker.id).where(Worker.pin_hash == demo_workers.DEMO)))
         demo = [w for w in snap["workers"] if w["id"] in ids]
         assert len(demo) == r["workers"]
+        assert len({w["name"] for w in demo}) == len(demo)  # 업체가 달라도 이름 안 겹침
         assert all(w["fresh"] and w["zone"] in r["zones"] and w["source"] in ("qr", "nfc") for w in demo)
         assert all(2 <= w["minutes"] <= 45 for w in demo)
         assert set(snap["boxes"]) >= set(r["zones"])
