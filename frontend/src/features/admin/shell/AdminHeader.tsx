@@ -17,18 +17,18 @@ export default function AdminHeader({ site, risk, a, tbm }: Props) {
   const worst = alerts.find((x) => x.level === "stop") ?? alerts.find((x) => x.level === "warn");
   const wind = worst?.code.startsWith("wind");
   const status = tbm ? { text: "발행됨", cls: "bg-emerald-600" }
-    : a?.status === "approved" ? { text: "승인됨", cls: "bg-brand-600" }
+    : a?.status === "approved" ? { text: "승인됨", cls: "bg-white text-brand-700" }
     : a ? { text: "승인 대기", cls: "bg-orange-500" } : null;
 
   return (
-    <header className="flex flex-wrap items-center gap-x-3 gap-y-1 bg-ink px-4 py-2.5 text-white">
-      <img src="/favicon.svg" alt="" className="h-7 w-7" />
+    <header className="flex flex-wrap items-center gap-x-3 gap-y-1 bg-gradient-to-r from-brand-500 to-brand-700 px-4 py-2.5 text-white">
+      <img src="/favicon.svg" alt="" className="h-8 w-8 rounded-lg ring-2 ring-white/70" />
       <h1 className="text-lg font-bold">SafeBridge</h1>
-      {site && <span className="hidden text-sm text-slate-300 sm:inline">{site}</span>}
+      {site && <span className="hidden text-sm text-brand-100 sm:inline">{site}</span>}
       <span className="ml-auto flex flex-wrap items-center gap-2 text-xs">
         {f && (
           <span className={`flex items-center gap-1 rounded-full px-2.5 py-1 font-semibold ${
-            worst?.level === "stop" ? "bg-red-600" : worst ? "bg-orange-500" : "bg-slate-700 text-slate-200"}`}
+            worst?.level === "stop" ? "bg-red-600" : worst ? "bg-orange-500" : "bg-white/20 text-white"}`}
             title={worst?.text ?? f.source}>
             {wind ? <Wind size={13} /> : <CloudSun size={13} />}
             {shortDay(f.date)} <span className="hidden sm:inline">{f.sky} · </span>순간풍속 {f.wind_gust}m/s
