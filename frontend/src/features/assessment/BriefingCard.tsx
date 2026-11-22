@@ -1,4 +1,4 @@
-// 구역 하나의 챗봇 브리핑 카드: 팀·언어, 날씨·시공·안전 안내 (초안에서 뺀 항목은 숨김)
+// 구역 하나의 챗봇 브리핑 카드: 팀, 날씨·시공·안전 안내 (초안에서 뺀 항목은 숨김. 언어 목록은 표시하지 않음 — 사용자 결정 2026-11-22)
 import { Ban, Construction, MapPin, Wind } from "lucide-react";
 import { Chip, LevelBadge } from "../../shared/ui";
 import type { Meta, ZoneBriefing } from "../../shared/types";
@@ -13,7 +13,6 @@ export default function BriefingCard({ b, off, meta }: { b: ZoneBriefing; off: S
       {b.teams.length > 0 && (
         <p className="mt-1 text-slate-600">{b.teams.map((t) => `${t.team}(${t.company})`).join(" · ")}</p>
       )}
-      <p className="text-slate-400">{b.langs.map((l) => meta.langs[l] ?? l).join(", ")}</p>
       {b.weather.filter((w) => !off.has(w.item_id)).map((w) => <p key={w.item_id} className="mt-1 flex items-start gap-1"><Wind size={13} className="mt-0.5 shrink-0 text-slate-500" />{w.text}</p>)}
       {b.build.map((t) => <p key={t} className="mt-1 flex items-start gap-1"><Construction size={13} className="mt-0.5 shrink-0 text-slate-500" />{t}</p>)}
       <ol className="mt-1 space-y-0.5">
