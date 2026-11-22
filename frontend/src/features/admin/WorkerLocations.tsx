@@ -9,20 +9,24 @@ export default function WorkerLocations({ data, error, workers, company, onCompa
   zones: string[]; langs: Record<string, string> }) {
   const [zone, setZone] = useState<string | null>(null);
   if (!data) return <Panel title="근로자 현재 위치"><p className="text-xs text-slate-400">{error ?? "불러오는 중…"}</p></Panel>;
+  const anon = !!data.anonymous;
+  const ok = workers.filter((w) => w.zone && w.fresh && w.understood).length;
   const counts = countByZone(workers);
   const grid = zoneGrid([...zones, ...workers.flatMap((w) => (w.zone ? [w.zone] : []))]);
   const here = workers.filter((w) => w.zone && w.fresh).length;
   const list = sortWorkers(zone ? workers.filter((w) => w.zone === zone) : workers);
 
   return (
-    <Panel title="근로자 현재 위치" right={
+    <Panel title={anon ? "구역별 인원 · 교육 확인" : "근로자 현재 위치"} right={anon ? undefined :
       <select value={company} onChange={(e) => onCompany(e.target.value)} aria-label="업체"
         className="rounded border border-slate-200 px-1.5 py-0.5 text-xs">
         <option value="">전체 업체</option>
         {companiesOf(data.workers).map((c) => <option key={c} value={c}>{c}</option>)}
       </select>}>
       <p className="mb-2 flex items-center gap-1 text-xs text-slate-500">
-        <Users size={13} />현장 {here}명 · 가입 {workers.length}명 · 마지막 태그 구역 기준(15초마다 갱신, {data.fresh_hours}시간 지나면 제외)</p>
+        <Users size={13} />{anon
+          ? `현장 ${here}명 · 교육 확인 ${ok}/${here}명${here ? ` (${Math.round((ok / here) * 100)}%)` : ""} · 마지막 태그 구역 기준`
+          : `현장 ${here}명 · 가입 ${workers.length}명 · 마지막 태그 구역 기준(15초마다 갱신, ${data.fresh_hours}시간 지나면 제외)`}</p>
       <div className="space-y-1">
         {grid.map((r) => (
           <div key={r.storey} className="flex items-stretch gap-1">
@@ -43,7 +47,9 @@ export default function WorkerLocations({ data, error, workers, company, onCompa
           </div>
         ))}
       </div>
-      {list.length === 0 ? (
+      {anon ? (
+        <p className="mt-3 text-xs text-slate-400">발주처·감리 화면은 익명·구역 중심이라 이름·업체 없이 구역별 인원과 교육 미확인 인원만 보여요.</p>
+      ) : list.length === 0 ? (
         <p className="mt-3 text-center text-xs text-slate-400">{zone ? "이 구역에 태그한 근로자가 없어요" : "아직 가입한 근로자가 없어요"}</p>
       ) : (
       <table className="mt-3 w-full text-xs">
