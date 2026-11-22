@@ -11,18 +11,29 @@ interface Props {
   roles: StaffMe["roles"];
   notice?: string;
   onLogin: (me: StaffMe) => void;
+  /** 이미 로그인한 부류 — 누르면 비밀번호 없이 바로 들어간다 */
+  signedIn?: string | null;
+  /** 근로자를 골랐을 때 (기본: 근로자 앱으로) */
+  onWorker?: () => void;
 }
 
-export default function RoleLogin({ roles, notice, onLogin }: Props) {
+export default function RoleLogin({ roles, notice, onLogin, signedIn, onWorker }: Props) {
   const nav = useNavigate();
   const remembered = lastRole();
-  const [role, setRole] = useState<string | null>(roles.some((r) => r.id === remembered) ? remembered : null);
+  const [role, setRole] = useState<string | null>(
+    roles.some((r) => r.id === remembered) && remembered !== signedIn ? remembered : null);
   const [pw, setPw] = useState("");
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
 
-  const worker = () => { setLastRole("worker"); nav("/app"); };
-  const pick = (id: string) => { setRole(id); setPw(""); setErr(""); };
+  const worker = () => { setLastRole("worker"); if (onWorker) onWorker(); else nav("/app"); };
+  const pick = (id: string) => {
+    if (id === signedIn) {
+      setLastRole(id);
+      return api.get<StaffMe>("/admin/me").then(onLogin).catch(() => setRole(id));
+    }
+    setRole(id); setPw(""); setErr("");
+  };
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
