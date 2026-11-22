@@ -62,7 +62,7 @@ export default function PublishPanel({ tbm, meta, busy, onPublish, zones }: {
       <div className="mt-3 flex flex-wrap gap-1">
         {[...main, ...(moreOpen ? more : [])].filter((l) => l !== "ko").map((l) => (
           <button key={l} onClick={() => setLang(l)}
-            className={`rounded px-2 py-1 text-xs ${l === lang ? "bg-slate-900 text-white" : "bg-slate-100"}`}>{meta.langs[l]}</button>
+            className={`rounded px-2 py-1 text-xs ${l === lang ? "bg-brand-600 text-white" : "bg-slate-100"}`}>{meta.langs[l]}</button>
         ))}
         {more.length > 0 && (
           <button onClick={() => setMoreOpen((o) => !o)} aria-expanded={moreOpen}

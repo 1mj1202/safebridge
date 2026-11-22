@@ -59,7 +59,7 @@ export default function SideMenu({ open, onClose, zones, zone, onZone, nfc, lang
           <div className="flex flex-wrap gap-1.5 px-2">
             {[...main, ...(moreOpen ? more : [])].map((l) => (
               <button key={l} onClick={() => pick(() => onLang(l))} aria-pressed={l === lang}
-                className={`rounded-full px-3 py-1.5 text-sm ${l === lang ? "bg-slate-900 font-semibold text-white" : "bg-slate-100 text-slate-700"}`}>{langs[l]}</button>
+                className={`rounded-full px-3 py-1.5 text-sm ${l === lang ? "bg-brand-600 font-semibold text-white" : "bg-slate-100 text-slate-700"}`}>{langs[l]}</button>
             ))}
             {more.length > 0 && !moreOpen && (
               <button onClick={() => setMoreOpen(true)}
@@ -71,7 +71,7 @@ export default function SideMenu({ open, onClose, zones, zone, onZone, nfc, lang
         <Group icon={Type}>
           <button onClick={() => onBig(!big)} aria-pressed={big} className={`${ROW} justify-between`}>
             <span className="text-lg font-medium">Aa+</span>
-            <span className={`h-6 w-11 rounded-full p-0.5 transition ${big ? "bg-slate-900" : "bg-slate-200"}`}>
+            <span className={`h-6 w-11 rounded-full p-0.5 transition ${big ? "bg-brand-600" : "bg-slate-200"}`}>
               <span className={`block h-5 w-5 rounded-full bg-white shadow transition ${big ? "translate-x-5" : ""}`} />
             </span>
           </button>

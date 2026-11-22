@@ -2,7 +2,7 @@
 export default function FloorButtons({ floors, value, onChange }: {
   floors: string[]; value: string | null; onChange: (f: string | null) => void }) {
   const btn = (on: boolean) => `rounded-full px-3 py-1 text-xs font-semibold ring-1 ${
-    on ? "bg-slate-900 text-white ring-slate-900" : "bg-white text-slate-600 ring-slate-300 hover:bg-slate-50"}`;
+    on ? "bg-brand-600 text-white ring-brand-600" : "bg-white text-slate-600 ring-slate-300 hover:bg-slate-50"}`;
   return (
     <div className="flex flex-wrap gap-1.5" role="group" aria-label="층 선택">
       {floors.map((f) => <button key={f} type="button" className={btn(value === f)} aria-pressed={value === f}

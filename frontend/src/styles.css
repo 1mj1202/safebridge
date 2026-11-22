@@ -4,7 +4,19 @@
   --font-sans: "Noto Sans KR Variable", system-ui, sans-serif;
   --color-safety: #f97316;
   --color-danger: #dc2626;
-  --color-ink: #0f172a;
+  --color-ink: #161d2f;
+  /* 브랜드 파랑: 로고 그라데이션(#3aa0ff → #2346f5) 기준. 버튼·선택 상태에 사용 */
+  --color-brand-50: #eef4ff;
+  --color-brand-100: #dce8ff;
+  --color-brand-200: #bcd3ff;
+  --color-brand-300: #8db4ff;
+  --color-brand-400: #5a90ff;
+  --color-brand-500: #3a74fb;
+  --color-brand-600: #2b5cf6;
+  --color-brand-700: #2346d8;
+  --color-brand-800: #1f3aae;
+  /* 브랜드 노랑: 로고 안전모 */
+  --color-helmet: #ffab00;
 }
 
 html, body, #root { height: 100%; }

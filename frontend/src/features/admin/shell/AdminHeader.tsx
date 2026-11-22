@@ -17,11 +17,11 @@ export default function AdminHeader({ site, risk, a, tbm }: Props) {
   const worst = alerts.find((x) => x.level === "stop") ?? alerts.find((x) => x.level === "warn");
   const wind = worst?.code.startsWith("wind");
   const status = tbm ? { text: "발행됨", cls: "bg-emerald-600" }
-    : a?.status === "approved" ? { text: "승인됨", cls: "bg-blue-600" }
+    : a?.status === "approved" ? { text: "승인됨", cls: "bg-brand-600" }
     : a ? { text: "승인 대기", cls: "bg-orange-500" } : null;
 
   return (
-    <header className="flex flex-wrap items-center gap-x-3 gap-y-1 bg-slate-900 px-4 py-2.5 text-white">
+    <header className="flex flex-wrap items-center gap-x-3 gap-y-1 bg-ink px-4 py-2.5 text-white">
       <img src="/favicon.svg" alt="" className="h-7 w-7" />
       <h1 className="text-lg font-bold">SafeBridge</h1>
       {site && <span className="hidden text-sm text-slate-300 sm:inline">{site}</span>}

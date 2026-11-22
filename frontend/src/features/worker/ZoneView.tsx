@@ -25,7 +25,7 @@ export default function ZoneView({ token, zone, plan, video, captions, sims = []
         <div className="mb-1 flex justify-end gap-1" role="group" aria-label="view">
           {modes.map((m) => (
             <button key={m} onClick={() => setMode(m)} aria-pressed={mode === m}
-              className={`rounded-full px-3 py-1 text-xs font-bold ${mode === m ? "bg-slate-900 text-white" : "bg-slate-100"}`}>
+              className={`rounded-full px-3 py-1 text-xs font-bold ${mode === m ? "bg-brand-600 text-white" : "bg-slate-100"}`}>
               {name[m]}</button>
           ))}
         </div>
