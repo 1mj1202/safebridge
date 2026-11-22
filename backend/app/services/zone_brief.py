@@ -4,7 +4,7 @@
 """
 from __future__ import annotations
 
-from . import glossary, names, videos
+from . import glossary, names, videos, weather_text
 from .tbm import PICTO
 
 
@@ -22,7 +22,8 @@ def _items(draft: dict) -> dict[str, dict]:
     return {i["id"]: i for i in draft["items"] if i.get("included", True)}
 
 
-def brief(draft: dict, zone: str, lang: str) -> dict | None:
+def brief(draft: dict, zone: str, lang: str, weather_tr: dict | None = None) -> dict | None:
+    """weather_tr: 발행 때 뜻 검사를 거친 기상 경고 번역 {item_id: {lang: check}} (관리자가 문구를 고친 경우만)."""
     b = find(draft, zone)
     if b is None:
         return None
@@ -32,7 +33,7 @@ def brief(draft: dict, zone: str, lang: str) -> dict | None:
         it = items.get(w["item_id"])
         if it:
             weather.append({"item_id": it["id"], "level": it["level"], "pictogram": PICTO.get(it["key"]),
-                            "text": glossary.phrase(it["weather"]["phrase"], lang, value=it["weather"]["value"])})
+                            "text": weather_text.line(it, lang, (weather_tr or {}).get(it["id"]))})
     # 위험마다 바로 밑에 대책 한 줄(build.<key>) — 따로 있던 '작업 순서' 줄과 같은 내용이라 합쳤다 (사용자 결정 2026-11-22).
     # 번호는 현장 전체 순위가 아니라 이 구역 안에서 1부터.
     phrases = glossary.load_json("phrases.json")["phrases"]

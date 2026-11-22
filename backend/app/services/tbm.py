@@ -4,7 +4,7 @@
 """
 from __future__ import annotations
 
-from . import glossary
+from . import glossary, weather_text
 
 PICTO = {"fall_edge": "fall", "fall_opening": "opening", "falling_object": "drop", "collapse": "collapse",
          "caught": "caught", "weather_wind_high": "wind", "weather_wind_crane_stop": "wind",
@@ -18,7 +18,7 @@ def _top_items(draft: dict) -> list[dict]:
     return sorted(items, key=lambda i: (LEVEL_ORDER.get(i["level"], 3), i["id"]))
 
 
-def build_cards(draft: dict, lang: str) -> list[dict]:
+def build_cards(draft: dict, lang: str, weather_tr: dict | None = None) -> list[dict]:
     items = _top_items(draft)
     storeys = sorted({s for i in items for s in i.get("storeys", [])}) or [draft.get("storey", "")]
     storey = storeys[0] if storeys else ""
@@ -36,8 +36,7 @@ def build_cards(draft: dict, lang: str) -> list[dict]:
                              "level": i["level"], "item_id": i["id"]})
         check_keys += [c for c in i.get("checks", []) if c not in check_keys]
     for i in [i for i in items if i["key"].startswith("weather_")]:
-        w = i["weather"]
-        hazard_lines.append({"text": glossary.phrase(w["phrase"], lang, value=w["value"]),
+        hazard_lines.append({"text": weather_text.line(i, lang, (weather_tr or {}).get(i["id"])),
                              "pictogram": PICTO.get(i["key"]), "level": i["level"], "item_id": i["id"]})
 
     return [
@@ -47,6 +46,20 @@ def build_cards(draft: dict, lang: str) -> list[dict]:
         {"type": "check", "title": glossary.phrase("card.check", lang),
          "lines": [glossary.phrase(k, lang) for k in check_keys[:5]]},
     ]
+
+
+def refresh_weather(cards: dict, draft: dict, weather_tr: dict | None = None) -> dict:
+    """저장된 카드의 기상 경고 줄을 지금 규칙(승인 문구와 같은 뜻)으로 다시 쓴 사본 — 예전에 발행한 TBM 용."""
+    import copy
+
+    items = {i["id"]: i for i in draft.get("items", []) if i["key"].startswith("weather_")}
+    out = copy.deepcopy(cards)
+    for lang, cs in out.items():
+        for line in (cs[1]["lines"] if len(cs) > 1 else []):
+            it = items.get(line.get("item_id")) if isinstance(line, dict) else None
+            if it:
+                line["text"] = weather_text.line(it, lang, (weather_tr or {}).get(it["id"]))
+    return out
 
 
 def phrase_term_check(cards_ko: list[dict], cards: list[dict], lang: str) -> dict:

@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from app.core import worker_auth
 from app.core.db import get_db
 from app.models import Ack, Report, Tbm
-from app.services import glossary, locations, translate
+from app.services import glossary, locations, tbm, translate
 
 from .schemas import AckRequest, ReportRequest
 
@@ -33,7 +33,8 @@ def cards(token: str, lang: str = "ko", db: Session = Depends(get_db)):
     ui = {k: glossary.phrase(f"ui.{k}", lang) for k in ("understood", "question", "report", "listen")}
     a = t.assessment
     return {"lang": lang, "langs": glossary.lang_names(), "work_date": a.work_date, "storey": a.storey,
-            "cards": t.cards[lang], "ui": ui}
+            "cards": tbm.refresh_weather({lang: t.cards[lang]}, a.draft, (t.translation_check or {}).get("weather"))[lang],
+            "ui": ui}
 
 
 @router.post("/{token}/ack")

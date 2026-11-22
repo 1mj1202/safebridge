@@ -5,6 +5,7 @@ LLM 을 쓸 수 없으면(mock·오류) 원문을 돌려주고 ok=False 로 표�
 from __future__ import annotations
 
 import logging
+import re
 
 from app.llm.base import LLMError
 from app.llm.factory import get_provider
@@ -46,12 +47,44 @@ def translate(text: str, src: str, tgt: str) -> dict:
         return {"text": text, "ok": False, "note": str(e)}
 
 
+# 안전 지시의 뜻을 바꾸는 말: 적용 작업·장소·보호구·최종 지시. 원문에 있으면 역번역에도 있어야 한다.
+KEY_WORDS = ("양중", "단부", "개구부", "타워크레인", "크레인", "타설", "거푸집", "동바리", "비계", "작업중지", "중지", "검토",
+             "출입금지", "출입", "대피", "안전대", "안전모", "안전난간", "신호수", "덮개")
+
+
+def meaning_check(src_ko: str, translated: str, back_ko: str) -> dict:
+    """번역이 뜻을 지켰는지: 원문의 수치(조건)는 번역문에, 작업·지시 말은 역번역(한국어)에 남아 있어야 한다."""
+    nums = re.findall(r"\d+(?:\.\d+)?", src_ko)
+    words = [w for w in KEY_WORDS if w in src_ko]
+    words += [t["ko"] for t in glossary.terms_in(src_ko) if t["ko"] not in words]
+    words = [w for w in words if not any(w != o and w in o for o in words)]  # '작업중지'가 있으면 '중지'는 따로 안 본다
+    missing = [n for n in nums if n not in translated] + [w for w in words if w not in back_ko]
+    return {"ok": not missing, "missing": missing}
+
+
 def with_back_translation(ko_text: str, lang: str) -> dict:
-    """한국어 → lang 번역 + 역번역 + 용어 유지 검사 (관리자 발행 화면에 표시)."""
+    """한국어 → lang 번역 + 역번역 + 용어 유지 + 뜻 검사 (관리자 발행 화면에 표시).
+
+    뜻 검사(적용 작업·조건·지시)를 통과하지 못하면 ok=False → 근로자에게는 한국어 원문이 나간다.
+    """
     fwd = translate(ko_text, "ko", lang)
     back = translate(fwd["text"], lang, "ko") if fwd["ok"] else {"text": "", "ok": False}
+    meaning = meaning_check(ko_text, fwd["text"], back["text"]) if fwd["ok"] and back["ok"] else None
+    note = fwd.get("note", "")
+    if meaning and not meaning["ok"]:
+        note = "뜻이 바뀜: " + ", ".join(meaning["missing"])
     return {
-        "source": ko_text, "translated": fwd["text"], "back": back["text"], "ok": fwd["ok"] and back["ok"],
+        "source": ko_text, "translated": fwd["text"], "back": back["text"],
+        "ok": bool(fwd["ok"] and back["ok"] and meaning and meaning["ok"]),
         "terms": glossary.check_terms(ko_text, fwd["text"], lang) if fwd["ok"] else None,
-        "note": fwd.get("note", ""),
+        "meaning": meaning, "note": note,
     }
+
+
+def still_ok(check: dict | None) -> bool:
+    """예전에 발행된 번역 기록도 지금 뜻 검사로 다시 본다 (뜻 검사 전에 발행한 TBM)."""
+    if not check or not check.get("ok"):
+        return False
+    if check.get("meaning") is None:
+        return meaning_check(check.get("source", ""), check.get("translated", ""), check.get("back", ""))["ok"]
+    return bool(check["meaning"]["ok"])

@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.core.db import get_db
 from app.models import Issue
-from app.services import field_chat, glossary, issues, names, risk, schedule, site, zone_brief
+from app.services import field_chat, glossary, issues, names, risk, schedule, site, translate, zone_brief
 
 from .launch import stamp
 from .schemas import ChatRequest, IssueRequest
@@ -43,13 +43,23 @@ def _zone(db: Session, token: str, zone: str):
 def brief(token: str, zone: str, lang: str = "ko", db: Session = Depends(get_db)):
     t = _zone(db, token, zone)
     lang = _lang(lang)
-    out = zone_brief.brief(t.assessment.draft, zone, lang)
+    tc = t.translation_check or {}
+    out = zone_brief.brief(t.assessment.draft, zone, lang, tc.get("weather"))
     place, _hz, check = t.cards[lang]
     # 평면도는 작업 층 구역에만. 관리자 한마디는 작업 구역에만 — 출입 통제 구역은 마지막 줄이 출입금지 지침이다
     out["plan"] = place.get("plan") if place.get("plan") and place["plan"]["storey"] == out["storey"] else None
-    out["memo"] = "" if out["restricted"] else (
-        (check.get("memo") if check.get("memo_translated") else check.get("memo_ko")) or "")
+    out["memo"] = "" if out["restricted"] else _memo(check, (tc.get("memo") or {}).get(lang), lang)
     return out
+
+
+def _memo(card: dict, mcheck: dict | None, lang: str) -> str:
+    """관리자 한마디: 뜻 검사(작업·조건·지시)를 통과한 번역만. 아니면 승인 원문(한국어)에 표시를 붙인다."""
+    ko = card.get("memo_ko") or ""
+    if not ko or lang == "ko":
+        return ko
+    if card.get("memo_translated") and translate.still_ok(mcheck):
+        return card.get("memo") or ko
+    return f"{glossary.phrase('ui.approved_ko', lang)}: {ko}"
 
 
 @router.post("/{token}/chat")
