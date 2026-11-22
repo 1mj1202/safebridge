@@ -85,11 +85,11 @@ LLM은 도구 선택, 설명 문장 작성, 승인된 브리핑 안에서의 질
 
 ## 3. 화면
 
-| 첫 화면 (이용자층 선택) | 근로자 브리핑 (한국어) | 근로자 브리핑 (베트남어) |
+| 첫 화면 (이용자층 선택) | 근로자 브리핑 (한국어, 내 구역 3D) | 근로자 브리핑 (베트남어, 행동 카드) |
 |:---:|:---:|:---:|
 | <img src="docs/images/role-picker.png" width="230"> | <img src="docs/images/worker-brief-ko.jpg" width="230"> | <img src="docs/images/worker-brief-vi.jpg" width="230"> |
 
-| 3D 사고 재현 | 2D 사고 재현 |
+| 3D 사고 재현 (개구부 추락) | 2D 평면도 (위험 위치 표시) |
 |:---:|:---:|
 | <img src="docs/images/replay-3d.jpg" width="230"> | <img src="docs/images/replay-2d.jpg" width="230"> |
 
