@@ -1,7 +1,7 @@
 """근로자 현장 챗봇 — 구역 선택 → 브리핑 → 질문 → 이슈(긴급도·전달) → 관리자 회신."""
 import pytest
 
-from app.services import field_chat, glossary, issues, translate
+from app.services import field_chat, glossary, issues, translate, zone_brief
 
 
 @pytest.fixture(scope="module")
@@ -97,6 +97,15 @@ def test_chat_korean_worker_gets_korean_rule(monkeypatch):
     r = field_chat.answer("안전대 어디에 걸어?", "ko", "위험: 추락")
     assert r == {"text": "안전대를 단부 지지점에 거세요", "grounded": True}
     assert "never in Korean" not in seen[0] and "never in Korean" in field_chat.system_prompt("vi")
+
+
+def test_chat_context_has_ban_actions_and_ppe(client, tbm):
+    a = client.get(f"/api/assessments/{tbm['assessment_id']}").json()
+    work = zone_brief.context_ko(a["draft"], "A동 3F-a")
+    assert "행동:" in work and "공통 보호구:" in work and "출입:" not in work
+    ban = zone_brief.context_ko(a["draft"], "A동 2F-a")
+    assert "출입: 이 구역은" in ban and "행동:" not in ban
+    assert "covers the question only in part" in field_chat.system_prompt("ko")
 
 
 def test_scene_for_zone(client, tbm):
