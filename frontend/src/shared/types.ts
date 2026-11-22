@@ -190,6 +190,10 @@ export interface Tbm {
   url: string;
   cards: Record<string, Card[]>;
   translation_check: { phrases: Record<string, TermCheck>; memo?: Record<string, MemoCheck> };
+  assessment_id?: number;
+  work_date?: string;
+  approved_at?: string | null;
+  published_at?: string | null;
 }
 
 export interface TbmStatus {

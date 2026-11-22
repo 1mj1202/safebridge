@@ -17,6 +17,7 @@ from app.llm.factory import get_provider
 from app.models import Assessment, Tbm
 from app.services import glossary, tbm, translate
 
+from .launch import iso_utc
 from .schemas import ApproveRequest, AssessRequest, DraftEdit, PublishRequest
 
 router = APIRouter(prefix="/api", dependencies=[Depends(require_admin)], tags=["assessments"])
@@ -120,7 +121,8 @@ def tbm_out(t: Tbm) -> dict:
     return {"id": t.id, "assessment_id": t.assessment_id, "token": t.token,
             "url": f"{get_settings().public_web_url.rstrip('/')}/w/{t.token}",
             "cards": t.cards, "translation_check": t.translation_check,
-            "published_at": t.published_at.isoformat()}
+            "published_at": iso_utc(t.published_at), "work_date": t.assessment.work_date,
+            "approved_at": iso_utc(t.assessment.approved_at)}
 
 
 @router.get("/tbms/{tid}")

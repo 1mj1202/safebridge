@@ -1,7 +1,9 @@
 // TBM 발행 — QR·언어별 카드 미리보기·용어 유지율·관리자 한마디 역번역
 import QRCode from "qrcode";
 import { useEffect, useState } from "react";
+import { useFetch } from "../../shared/hooks";
 import { splitLangs } from "../../shared/langs";
+import { stampLine } from "../../shared/stamp";
 import { Button, Panel } from "../../shared/ui";
 import type { Meta, Tbm, ZoneBriefing } from "../../shared/types";
 import ZoneQrList from "./ZoneQrList";
@@ -12,6 +14,7 @@ export default function PublishPanel({ tbm, meta, busy, onPublish, zones }: {
   const [qr, setQr] = useState("");
   const [lang, setLang] = useState("vi");
   const [moreOpen, setMoreOpen] = useState(false);
+  const { data: live } = useFetch<{ tbm_id: number }>(tbm ? `/launch?t=${tbm.id}` : null); // 근로자 앱이 지금 여는 발행본
   useEffect(() => {
     if (tbm) QRCode.toDataURL(tbm.url, { width: 220, margin: 1 }).then(setQr);
   }, [tbm]);
@@ -30,8 +33,18 @@ export default function PublishPanel({ tbm, meta, busy, onPublish, zones }: {
   const check = tbm.translation_check;
   const { main, more } = splitLangs(Object.keys(tbm.cards));
   const m = check.memo?.[lang];
+  const isLive = live?.tbm_id === tbm.id;
   return (
     <Panel title="TBM 발행됨">
+      {tbm.work_date && (
+        <p className="mb-3 flex flex-wrap items-center gap-2 text-xs text-slate-600" data-testid="stamp">
+          {stampLine({ tbm_id: tbm.id, work_date: tbm.work_date, approved_at: tbm.approved_at ?? null,
+            published_at: tbm.published_at ?? null }, { work_day: "작업일", approved: "승인", published: "발행" })}
+          {live && (isLive
+            ? <span className="rounded bg-emerald-50 px-1.5 py-0.5 font-semibold text-emerald-700">근로자 앱에 지금 나가는 발행본</span>
+            : <span className="rounded bg-amber-50 px-1.5 py-0.5 font-semibold text-amber-800">근로자 앱은 발행 #{live.tbm_id} 표시 중</span>)}
+        </p>
+      )}
       <div className="flex flex-wrap gap-4">
         {qr && <img src={qr} alt="근로자 접속 QR (구역 선택)" className="h-44 w-44 rounded-lg ring-1 ring-slate-200" />}
         <div className="min-w-0 flex-1 text-sm">

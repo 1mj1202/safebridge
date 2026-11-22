@@ -1,8 +1,10 @@
 // 근로자 현장 챗봇 API 응답 타입
+import type { Stamp } from "../../shared/stamp";
 import type { Plan } from "./FloorPlan";
 
 export type UiKey = "greet" | "ask" | "issue" | "urgent" | "reply" | "change_zone" | "ask_lead"
-  | "scan_hint" | "understood" | "understood_q" | "read_again" | "question" | "report" | "listen" | "photo" | "video" | "logout" | "switch_role";
+  | "scan_hint" | "understood" | "understood_q" | "read_again" | "question" | "report" | "listen" | "photo" | "video" | "logout" | "switch_role"
+  | "work_day" | "approved" | "published" | "loading";
 
 export interface ZoneRow { zone: string; label: string; storey: string; restricted: boolean; teams: string[]; langs: string[] }
 
@@ -10,6 +12,8 @@ export interface ZonesData {
   lang: string;
   langs: Record<string, string>;
   work_date: string;
+  /** 이 화면이 읽는 발행본 (작업일·승인·발행 시각·번호) */
+  stamp?: Stamp;
   zones: ZoneRow[];
   ui: Record<UiKey, string>;
 }
