@@ -195,8 +195,16 @@ def status(probe: dict | None = None) -> dict:
             out["probe"] = {"ok": True, "article": probe["article"], "effective": got["effective"],
                             "head": got["text"][:80]}
         except (httpx.HTTPError, LawApiError, ValueError, KeyError, TypeError) as e:
-            out["probe"] = {"ok": False, "error": str(e)}
+            out["probe"] = {"ok": False, "error": str(e), "egress_ip": egress_ip()}
     return out
+
+
+def egress_ip() -> str:
+    """이 서버가 밖으로 나갈 때 쓰는 공인 IP — 법제처에 등록할 주소 확인용."""
+    try:
+        return httpx.get("https://api.ipify.org", timeout=TIMEOUT).text.strip()
+    except httpx.HTTPError:
+        return ""
 
 
 def reset_for_tests() -> None:
