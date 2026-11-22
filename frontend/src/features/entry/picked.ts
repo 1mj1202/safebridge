@@ -28,3 +28,16 @@ export function historyIdx(): number {
   const s = window.history.state as { idx?: number } | null;
   return typeof s?.idx === "number" ? s.idx : 0;
 }
+
+const EVENT = "sb-pick-role";
+
+/** 들어간 뒤 '처음 화면으로' — 이용자층 선택 화면을 다시 보여 준다 (RoleGate 가 듣는다) */
+export function backToPicker(): void {
+  unmarkPicked();
+  window.dispatchEvent(new Event(EVENT));
+}
+
+export function onBackToPicker(f: () => void): () => void {
+  window.addEventListener(EVENT, f);
+  return () => window.removeEventListener(EVENT, f);
+}

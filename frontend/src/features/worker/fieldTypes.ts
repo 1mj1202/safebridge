@@ -2,7 +2,7 @@
 import type { Plan } from "./FloorPlan";
 
 export type UiKey = "greet" | "ask" | "issue" | "urgent" | "reply" | "change_zone" | "ask_lead"
-  | "scan_hint" | "understood" | "understood_q" | "read_again" | "question" | "report" | "listen" | "photo" | "video" | "logout";
+  | "scan_hint" | "understood" | "understood_q" | "read_again" | "question" | "report" | "listen" | "photo" | "video" | "logout" | "switch_role";
 
 export interface ZoneRow { zone: string; label: string; storey: string; restricted: boolean; teams: string[]; langs: string[] }
 
