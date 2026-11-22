@@ -1010,16 +1010,16 @@
       "my": "လေတိုက်နှုန်း {value}m/s၊ လုပ်ငန်းခွင်သတ်မှတ်ချက် {limit}m/s ကျော်: ပစ္စည်းမခြင်းနှင့် ကွန်ကရစ်ပြားအစွန်းတွင် အလုပ်ရပ်ရန် စဉ်းစားနေသည်"
     },
     "weather.wind_stop": {
-      "ko": "순간풍속 {value}m/s: 타워크레인 운전 작업중지 (법령 기준 20m/s 초과)",
-      "en": "Gusts {value} m/s: tower crane operation, stop work (legal limit 20 m/s exceeded)",
-      "zh": "阵风{value}米/秒：塔吊运行停止作业（超过法定标准20米/秒）",
-      "vi": "Gió giật {value} m/s: vận hành cần trục tháp phải dừng làm việc (vượt mức luật định 20 m/s)",
-      "th": "ลมกระโชก {value} ม./วินาที: การเดินทาวเวอร์เครน หยุดงาน (เกินเกณฑ์กฎหมาย 20 ม./วินาที)",
-      "ne": "झोक्का {value}m/s: टावर क्रेन चलाउने काम रोक्ने (कानुनी सीमा 20m/s भन्दा बढी)",
-      "mn": "Шуурга {value}m/s: цамхаг кран ажиллуулах ажил зогсоох (хуулийн хязгаар 20m/s-ээс хэтэрсэн)",
-      "lo": "ລົມກະໂຊກ {value}m/s: ການແລ່ນເຄນຫໍຄອຍ ຢຸດເຮັດວຽກ (ເກີນເກນກົດໝາຍ 20m/s)",
-      "tet": "Anin {value}m/s: opera guindaste-torre, hapara serbisu (liu limite lei nian 20m/s)",
-      "my": "လေတိုက်နှုန်း {value}m/s: တာဝါကရိန်း မောင်းနှင်ခြင်း အလုပ်ရပ် (ဥပဒေသတ်မှတ်ချက် 20m/s ကျော်)"
+      "ko": "순간풍속 {value}m/s: 타워크레인 운전 작업중지 (법령 기준 15m/s 초과)",
+      "en": "Gusts {value} m/s: tower crane operation, stop work (legal limit 15 m/s exceeded)",
+      "zh": "阵风{value}米/秒：塔吊运行停止作业（超过法定标准15米/秒）",
+      "vi": "Gió giật {value} m/s: vận hành cần trục tháp phải dừng làm việc (vượt mức luật định 15 m/s)",
+      "th": "ลมกระโชก {value} ม./วินาที: การเดินทาวเวอร์เครน หยุดงาน (เกินเกณฑ์กฎหมาย 15 ม./วินาที)",
+      "ne": "झोक्का {value}m/s: टावर क्रेन चलाउने काम रोक्ने (कानुनी सीमा 15m/s भन्दा बढी)",
+      "mn": "Шуурга {value}m/s: цамхаг кран ажиллуулах ажил зогсоох (хуулийн хязгаар 15m/s-ээс хэтэрсэн)",
+      "lo": "ລົມກະໂຊກ {value}m/s: ການແລ່ນເຄນຫໍຄອຍ ຢຸດເຮັດວຽກ (ເກີນເກນກົດໝາຍ 15m/s)",
+      "tet": "Anin {value}m/s: opera guindaste-torre, hapara serbisu (liu limite lei nian 15m/s)",
+      "my": "လေတိုက်နှုန်း {value}m/s: တာဝါကရိန်း မောင်းနှင်ခြင်း အလုပ်ရပ် (ဥပဒေသတ်မှတ်ချက် 15m/s ကျော်)"
     },
     "ui.approved_ko": {
       "ko": "관리자 승인 원문",

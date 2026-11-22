@@ -193,7 +193,7 @@ def status(probe: dict | None = None) -> dict:
         try:
             got = fetch(get_settings().law_api_oc.strip(), probe["law"], probe["article"])
             out["probe"] = {"ok": True, "article": probe["article"], "effective": got["effective"],
-                            "head": got["text"][:80]}
+                            "head": got["text"][:80], "text": got["text"]}
         except (httpx.HTTPError, LawApiError, ValueError, KeyError, TypeError) as e:
             out["probe"] = {"ok": False, "error": str(e), "egress_ip": egress_ip()}
     return out

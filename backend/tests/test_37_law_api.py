@@ -112,3 +112,15 @@ def test_status_reports_error_and_probe(monkeypatch, api):
     st = law.status(probe=True)
     assert st["probe"]["egress_ip"] == "1.2.3.4"
     assert "검증에 실패" in st["last_error"] and st["probe"]["ok"] is False and "tester" not in str(st)
+
+
+def test_status_probe_any_article(api):
+    st = law.status(probe=True, article="제42조")
+    assert st["probe"]["ok"] and st["probe"]["text"].startswith("제42조")
+
+
+def test_crane_stop_at_legal_15ms(monkeypatch):
+    from app.services import weather
+    monkeypatch.setattr(weather, "forecast", lambda day: {"wind_gust": 16.0, "rain_mm_h": 0, "temp_min": 5})
+    a = weather.judge("2026-11-24", ["양중"])["alerts"][0]
+    assert a["code"] == "wind_crane_stop" and "15m/s" in a["text"] and "15m/s 초과" in a["legal"]

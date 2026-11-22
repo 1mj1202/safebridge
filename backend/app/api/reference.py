@@ -56,9 +56,9 @@ def profile(profile_id: str):
 
 
 @router.get("/law-status")
-def law_status(probe: bool = False):
-    """법제처 Open API 연결 점검 — 키 유무, 마지막 오류, probe=true 면 실제 조회 한 번."""
-    return law.status(probe)
+def law_status(probe: bool = False, article: str = ""):
+    """법제처 Open API 연결 점검 — 키 유무, 마지막 오류, probe=true 면 실제 조회 한 번(article=제331조 처럼 조 지정 가능)."""
+    return law.status(probe, article)
 
 
 @router.get("/law/{article_id}")

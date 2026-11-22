@@ -3,7 +3,7 @@
 경고마다 근거 종류를 나눈다(basis):
 - 법령: 산업안전보건기준에 관한 규칙 제37조
   ① 비·눈·바람 등 기상 불안정으로 위험이 예상되면 작업 중지(수치 없음)
-  ② 순간풍속 10m/s 초과 타워크레인 설치·수리·점검·해체 중지, 20m/s 초과 타워크레인 운전 중지
+  ② 순간풍속 10m/s 초과 타워크레인 설치·수리·점검·해체 중지, 15m/s 초과 타워크레인 운전 중지
 - 현장 기준: 현장이 정한 관리 기준(법령 아님). 기본값은 아래 SITE_LIMITS, site.json "site_limits" 로 바꿀 수 있다.
   순간풍속 10m/s 초과 양중·단부 작업중지 검토 / 강수 1mm/h 이상 미끄럼 주의·타설 재검토
 - 최저기온 0℃ 이하: 결빙·미끄럼 주의(참고)
@@ -21,7 +21,7 @@ log = logging.getLogger(__name__)
 
 
 SITE_LIMITS = {"wind_ms": 10.0, "rain_mm_h": 1.0}
-LAW_WIND_NOTE = "법령(제37조②): 타워크레인 설치·수리·점검·해체는 순간풍속 10m/s 초과, 운전은 20m/s 초과 시 중지"
+LAW_WIND_NOTE = "법령(제37조②): 타워크레인 설치·수리·점검·해체는 순간풍속 10m/s 초과, 운전은 15m/s 초과 시 중지"
 
 
 def site_limits() -> dict:
@@ -49,7 +49,7 @@ def judge(day: str, trades: list[str]) -> dict:
     alerts = []
     gust, rain, tmin = fc["wind_gust"], fc["rain_mm_h"], fc["temp_min"]
     # 관리자 문구와 근로자 문구는 같은 문장 은행 문장(한국어 = 관리자 문구)에서 나온다 — 대상 작업·조건·지시가 같게
-    if gust > 20:
+    if gust > 15:
         alerts.append({"code": "wind_crane_stop", "level": "stop", "phrase": "weather.wind_stop", "value": gust,
                        "text": glossary.phrase("weather.wind_stop", "ko", value=gust), "rule": "LAW-37",
                        "basis": "법령", "legal": LAW_WIND_NOTE + " — 오늘 법정 중지 대상"})
