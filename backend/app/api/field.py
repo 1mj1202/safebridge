@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.core.db import get_db
 from app.models import Issue
-from app.services import field_chat, glossary, issues, names, risk, schedule, site, translate, zone_brief
+from app.services import brief_actions, field_chat, glossary, issues, names, risk, schedule, site, translate, zone_brief
 
 from .launch import stamp
 from .schemas import ChatRequest, IssueRequest
@@ -49,6 +49,10 @@ def brief(token: str, zone: str, lang: str = "ko", db: Session = Depends(get_db)
     # 평면도는 작업 층 구역에만. 관리자 한마디는 작업 구역에만 — 출입 통제 구역은 마지막 줄이 출입금지 지침이다
     out["plan"] = place.get("plan") if place.get("plan") and place["plan"]["storey"] == out["storey"] else None
     out["memo"] = "" if out["restricted"] else _memo(check, (tc.get("memo") or {}).get(lang), lang)
+    # 이미 나온 안내만 되풀이하는 한마디는 숨긴다 — 새 장소·시간·작업 제한이 있으면 그대로 (사용자 결정 2026-11-22)
+    if out["memo"] and brief_actions.memo_repeats(check.get("memo_ko") or "", set(out["shown_checks"])):
+        out["memo"] = ""
+    out.pop("shown_checks")
     return out
 
 
