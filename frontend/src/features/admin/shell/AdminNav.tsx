@@ -1,19 +1,20 @@
 // 왼쪽 세로 메뉴(PC) / 아래쪽 탭(휴대폰). 신고함·확인 현황에 알림 숫자, 승인 전 '발행'은 흐리게
 import type { MenuBadge, MenuId } from "./menu";
-import { MENU } from "./menu";
+import type { MENU } from "./menu";
 
 interface Props {
   cur: MenuId;
   onPick: (id: MenuId) => void;
   badges: Partial<Record<MenuId, MenuBadge>>;
   dimmed: Partial<Record<MenuId, boolean>>;
+  items: typeof MENU;
 }
 
-export default function AdminNav({ cur, onPick, badges, dimmed }: Props) {
+export default function AdminNav({ cur, onPick, badges, dimmed, items }: Props) {
   return (
     <nav aria-label="관리자 메뉴"
       className="order-last flex shrink-0 bg-slate-800 text-slate-300 lg:order-first lg:w-24 lg:flex-col lg:py-2">
-      {MENU.map(({ id, label, icon: Icon }) => {
+      {items.map(({ id, label, icon: Icon }) => {
         const on = cur === id;
         const b = badges[id];
         return (
