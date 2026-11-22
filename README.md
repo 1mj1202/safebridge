@@ -1,140 +1,351 @@
 # SafeBridge 세이프브릿지
 
-재해 데이터와 BIM으로 '오늘의 위험'을 찾고, 근로자의 언어로 전하는 청년 현장관리자용 AI 안전 TBM 에이전트입니다.
-(2026 대한민국 청년 CAREER FAIR AI 해커톤 출품작)
+> 외국인 건설근로자에게 **오늘 내 구역의 위험**을 **모국어로** 전하는 AI 안전 TBM 에이전트
+>
+> 2026 대한민국 청년 CAREER FAIR AI 해커톤 출품작
 
-신입 현장관리자가 "내일 3층 작업 위험 알려줘"라고 물으면, 에이전트가 4D 공정·재해 패턴·BIM 공간 위험·기상·조문 도구를 호출해
-위험성평가 초안을 만들고(모든 항목에 근거 ID), 관리자가 검토·승인하면 구역별 QR로 근로자 휴대폰의 현장 챗봇이 그 구역 브리핑을 모국어·음성으로 안내합니다.
-근로자는 로그인 없이 질문하거나 문제를 알리고, 관리자는 긴급도 순 이슈함에서 한국어로 회신하며(근로자 언어로 자동 번역) 언어별 이해 확인 현황을 봅니다.
+**바로 써 보기:** <https://safebridge-mgqp.onrender.com>
+(로그인 없이 첫 화면에서 이용자층을 고르면 들어갑니다. 근로자 앱은 [`/app`](https://safebridge-mgqp.onrender.com/app))
 
-**원칙: 숫자·위치·판정은 코드가, 해석·작성은 AI가.** 위험 영역·위험도·기상 판정·카드 번역(문장 은행)은 결정론적이고,
-LLM은 도구 선택과 설명 문장, 관리자 한마디·근로자 질문 답변(승인된 브리핑 안에서만)·이슈 번역·분류만 맡습니다. 그래서 LLM 없이(오프라인 모드)도 시연 흐름 전체가 동작합니다.
+---
 
-## 구현 범위
+## 목차
 
-- **재해 패턴 DB**: 실제 공공데이터 사고사례 3,484건(안전보건공단 SIF 건설업 사망사고 3,459건 + 국토안전관리원 사고사례 25건)을 공종 × 사고유형 × 기인물 × 원인 × 대책으로 집계, 문자 2-gram TF-IDF 유사사례 검색(안전보건공단 유의어사전으로 검색어 확장)
-- **위험도 근거**: 국토안전관리원 위험요소 프로파일(철근콘크리트·가설공사)의 공종×사고유형별 사고가능성·심각성 평균으로 빈도×강도 산정, 항목마다 관련 KOSHA GUIDE, 기상 항목에는 날씨별 사고 통계
-- **BIM·4D**: 샘플 IFC 생성기(5층 RC 골조, 개구부 2개/층) → IfcOpenShell 추출 → 공정(층별 골조 사이클) 연결, 날짜별 부재 상태(완료·진행·미시공)
-- **공간 위험**: 슬래브 작업 층 단부 1m 띠·개구부 둘레(추락, 빨강), 작업 슬래브 하부·개구부 직하부·외곽 지상(낙하, 주황), 영역마다 부재 ID·조문 ID
-- **안전 에이전트**: LLM tool calling 도구 8개(진행 활동·위험 구역·위험 규칙·유사 사망사고·KOSHA GUIDE·근거 조문·기상·사고 통계), 빠진 필수 도구는 코드가 보완 호출, 근거 없는 항목은 '확인 불가'
-- **위험 순위**: R = 사고가능성 P × 심각성 S × 공종 사고 빈도 w + 기상 보정, 상위 5개. 표준 공종키(RC-FORM·RC-REBAR·RC-POUR·LIFT-CRANE, `data/crosswalk.json`)
-- **구역·팀 배정**: "A동 3F-a" 구역 × 협력업체 팀(`data/site.json`, 개인 정보 없음), 구역별 챗봇 브리핑 골격(날씨·시공·안전)
-- **LLM 공급자 교체**: `SAFEBRIDGE_LLM_PROVIDER=claude | ollama | mock` — 개발은 Claude API, 시연은 Ollama 로컬 모델, 키 없으면 mock
-- **다국어 TBM (10개 언어)**: 한국어·영어·중국어·베트남어·태국어 + 네팔어·몽골어·라오어·테툼어(동티모르)·미얀마어. 새 5개 언어는 안전보건공단 「외국인 노동자 안전보건용어 400선」 용어를 우선 사용(`data/terms400.json`, 약 380개 용어·예문 추출). 안전용어 고정 번역 사전 20개 + 카드 문장 은행, 언어별 핵심 용어 유지율, 관리자 한마디 번역·역번역
-- **근로자 현장 챗봇**: 내 구역 3D 모델(내 구역 초록·위험 영역, 평면도 전환), 구역 입구 QR 또는 NFC 태그로 접속(로그인 없음, 주소의 `?zone=` 으로 구역 지정, 직접 고르기도 가능. 화면을 연 채 태그에 대면 구역 전환은 안드로이드 크롬), 언어·구역 선택 → 구역 브리핑(날씨·시공·안전 순위·확인할 것, 평면도·픽토그램·음성) → 질문하면 승인된 브리핑 안에서만 모국어로 답(근거 밖이면 "반장에게 확인") → 문제 알리기는 한국어 번역·한 줄 요약·긴급도 판정 후 구역 반장·원청 공사담당(안전·긴급이면 안전관리자)에게 전달, 회신은 근로자 언어로 번역돼 대화에 표시
-- **관리자 화면**: 3D 위험구역(클릭 → 근거), 날짜 슬라이더, 진행 작업·기상 판정, 초안 수정·승인(위험 순위·산식 표시), 구역별 챗봇 브리핑 미리보기, TBM 발행(전체 QR + 구역별 QR·NFC 태그 쓰기), 현장 이슈함(긴급 먼저·전달 대상·회신), 언어별 확인 현황(대면 재설명 대상 표시)
-- **데이터 파이프라인**: 사고사례 CSV → LLM 구조화(`scripts/structure_accidents.py`), 수작업 라벨 대비 정확도 평가(`scripts/eval_structuring.py`)
+1. [프로젝트 소개](#1-프로젝트-소개)
+2. [주요 기능](#2-주요-기능)
+3. [화면](#3-화면)
+4. [시스템 아키텍처](#4-시스템-아키텍처)
+5. [기술 스택 · 개발 환경](#5-기술-스택--개발-환경)
+6. [폴더(모듈) 구조](#6-폴더모듈-구조)
+7. [설치 및 실행](#7-설치-및-실행)
+8. [사용 방법 (시연 흐름)](#8-사용-방법-시연-흐름)
+9. [테스트 · 검증 현황](#9-테스트--검증-현황)
+10. [알려진 한계](#10-알려진-한계)
+11. [개발 기간 · 팀](#11-개발-기간--팀)
+12. [Credits / Licenses](#12-credits--licenses)
 
-개인정보: 카메라·위치추적·근로자 이름을 쓰지 않습니다. 확인·신고는 언어별 익명 집계로만 저장하고, 외부 LLM에는 작업·가상 데이터만 보냅니다.
+---
 
-## 폴더 구조
+## 1. 프로젝트 소개
+
+### 문제
+
+건설현장의 외국인 근로자는 매일 아침 TBM(작업 전 안전점검)과 안전교육을 받지만, 한국어로 진행되는 설명을 제대로 이해하기 어렵습니다.
+신입 현장관리자도 그날 공정·날씨·구역에 맞는 위험성평가를 빠르게 만들기 어렵습니다. 그 결과 **"교육은 했지만 전달은 되지 않은"** 안전교육 공백이 생깁니다.
+
+### 해결
+
+SafeBridge는 이 공백을 두 단계로 잇습니다.
+
+1. **관리자 쪽:** "내일 3층 작업 위험 알려줘"라고 물으면 AI 에이전트가 4D 공정·BIM 공간 위험·공공 사고사례·기상·조문을 도구로 조회해 **근거가 달린 위험성평가 초안**을 만듭니다. 관리자가 검토·수정·승인하면 **구역별로 발행**합니다.
+2. **근로자 쪽:** 구역 입구의 **QR 또는 NFC 태그**에 휴대폰을 대면, 그 구역의 오늘 브리핑이 **10개 언어**와 음성, 3D/2D 사고 재현 영상으로 열립니다. 궁금한 점은 챗봇에 모국어로 묻고, 위험은 사진과 함께 신고합니다.
+
+### 설계 원칙
+
+**숫자·위치·판정은 코드가, 해석·작성은 AI가.**
+위험 영역 계산, 위험도 순위, 기상 판정, 브리핑 카드 번역(문장 은행)은 결정론적인 코드가 맡습니다.
+LLM은 도구 선택, 설명 문장 작성, 승인된 브리핑 안에서의 질문 답변, 신고 번역·분류만 맡습니다. 근거가 없는 항목은 '확인 불가'로 표시합니다.
+
+---
+
+## 2. 주요 기능
+
+### 관리자 (안전관리자 · 현장소장 · 발주처/감리)
+
+| 기능 | 설명 |
+|---|---|
+| **AI 위험성평가 초안** | LLM tool calling 에이전트가 도구 8개(진행 작업, 위험 구역, 위험 규칙, 유사 사망사고, KOSHA GUIDE, 근거 조문, 기상, 사고 통계)를 호출. 빠진 필수 도구는 코드가 보완 호출하고, 모든 항목에 근거 ID를 붙임 |
+| **위험 순위** | R = 사고가능성 P × 심각성 S × 공종 사고 빈도 w + 기상 보정, 상위 5개 |
+| **3D 위험구역 지도** | 샘플 IFC 모델 위에 날짜별 공정 상태와 추락(빨강)·낙하(주황) 영역 표시, 클릭하면 근거 |
+| **검토 · 승인 · 발행** | 초안 항목·대책 수정 → 현장소장 승인 → 구역별 브리핑 발행(구역 QR 인쇄, NFC 태그 쓰기) |
+| **유사사례 검색** | 공공 사고사례 3,484건에서 문자 2-gram TF-IDF로 유사 사망사고 검색(안전보건공단 유의어사전으로 검색어 확장) |
+| **신고함 · 사진함** | 근로자 신고를 긴급도 순으로 정리, 한국어로 회신하면 근로자 언어로 번역해 전달. 안전시설 사진 증빙 확인 |
+| **확인 현황** | 언어별 '이해했어요' 비율, 대면 재설명이 필요한 언어 표시 |
+| **이용자층별 화면** | 안전관리자(분석·수정·발행), 현장소장(승인), 발주처·감리(보기 전용). 휴대폰용 '오늘' 홈 |
+
+### 근로자
+
+| 기능 | 설명 |
+|---|---|
+| **QR/NFC 구역 입장** | 로그인·가입 없이 구역 태그로 접속(직접 구역 선택도 가능) |
+| **10개 언어 브리핑** | 한국어·영어·중국어·베트남어·태국어 + 네팔어·몽골어·라오어·테툼어·미얀마어. 작업 조건(날씨), 시점이 있는 행동 카드("작업 시작 전, …"), 출입통제 배너, 공통 보호구, 음성 읽기 |
+| **3D/2D 자동 사고 재현** | 내 구역 3D 모델·평면도에서 위험 위치를 짚고, 사고 4종(슬래브 단부 추락, 개구부 추락, 낙하물, 붕괴)을 재현 영상으로 보여 줌 |
+| **현장 챗봇** | 승인된 브리핑을 근거로만 모국어 답변(근거 밖이면 "반장에게 확인"). 출입금지·행동·보호구 근거 제시, 예보 기온으로 더위(33℃ 이상)·추위(0℃ 이하) 답변 |
+| **위험 신고 · 사진 증빙** | 신고를 한국어로 번역·요약·긴급도 판정 후 담당자에게 전달, 회신은 모국어로 표시. 사진은 촬영정보(EXIF·GPS) 삭제와 얼굴 흐림 후 저장 |
+| **예방 영상** | 안전보건공단(KOSHA) 안전보건자료 영상 링크 |
+
+### 외부 연동
+
+- **기상청 단기예보 API**: 작업일 바람·강수·기온으로 작업중지 검토 판정(키가 없으면 가상 예보)
+- **KOSHA 안전보건자료 API**: 구역 위험에 맞는 예방 영상
+- **법제처 국가법령정보 API**: 「산업안전보건기준에 관한 규칙」 원문 조회(키가 없으면 팀 요약 조문)
+- **Claude API** (`claude-sonnet-5-5`): 에이전트·챗봇·번역. 설정 한 줄로 Ollama 로컬 모델이나 mock(오프라인)으로 교체 가능
+
+---
+
+## 3. 화면
+
+| 첫 화면 (이용자층 선택) | 근로자 브리핑 (한국어) | 근로자 브리핑 (베트남어) |
+|:---:|:---:|:---:|
+| <img src="docs/images/role-picker.png" width="230"> | <img src="docs/images/worker-brief-ko.jpg" width="230"> | <img src="docs/images/worker-brief-vi.jpg" width="230"> |
+
+| 3D 사고 재현 | 2D 사고 재현 |
+|:---:|:---:|
+| <img src="docs/images/replay-3d.jpg" width="230"> | <img src="docs/images/replay-2d.jpg" width="230"> |
+
+**관리자 위험 지도** (3D 위험구역 · 날짜 슬라이더 · 안전 에이전트 질의 · 주요 위험 순위)
+
+<img src="docs/images/admin-map.png" width="720">
+
+---
+
+## 4. 시스템 아키텍처
+
+```
+[데이터]   공공 사고사례·위험요소 프로파일·통계·유의어·KOSHA GUIDE (scripts/public_data 로 JSON 변환)
+           샘플 IFC 모델(engine)   기상청 예보 / 가상 예보   조문(법제처 / 팀 요약)
+                │
+                ▼
+[도구 8개]  진행 작업(4D) · 위험 구역(BIM) · 위험 규칙(P·S) · 유사사례(TF-IDF) · KOSHA GUIDE · 조문 · 기상 · 사고 통계(w)
+                │
+                ▼
+[에이전트]  LLM tool calling 루프 → 필수 도구 보완 → 초안 골격(코드) → 위험 순위 → 구역별 브리핑 골격
+            → LLM 이 설명·대책 작성 → 병합 (모든 항목에 근거 ID)
+                │
+                ▼
+[관리자]    검토·수정 → 승인(현장소장) → 구역별 발행: 10개 언어 카드(문장 은행) + 평면도 + QR/NFC
+                │
+                ▼
+[근로자]    QR/NFC → 언어·구역 브리핑·음성·사고 재현 → 챗봇(브리핑 안에서만) · 신고/사진 → 번역 회신
+```
+
+- **한 서버 배포:** FastAPI가 API와 빌드된 React 화면을 같은 주소에서 냅니다(`backend/app/web/spa.py`).
+- **LLM 공급자 분리:** 에이전트는 `LLMProvider` 인터페이스만 쓰고, `claude`·`ollama`·`mock` 구현이 메시지 형식을 맞춥니다(`backend/app/llm/`).
+- 자세한 내용: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), 배포: [docs/deploy.md](docs/deploy.md)
+
+---
+
+## 5. 기술 스택 · 개발 환경
+
+| 구분 | 사용 기술 |
+|---|---|
+| Backend | Python 3.13, FastAPI, Uvicorn, SQLAlchemy(SQLite), Pydantic |
+| BIM · 3D | IfcOpenShell(IFC 생성·추출), three.js |
+| AI | Claude API(`claude-sonnet-5-5`, Anthropic SDK) / Ollama(`qwen3:8b`) / mock, 문자 2-gram TF-IDF 유사사례 검색 |
+| 사진 처리 | OpenCV(얼굴 흐림, 재인코딩으로 EXIF·GPS 삭제) |
+| Frontend | React 19, TypeScript, Vite, Tailwind CSS 4, React Router, lucide-react 아이콘, qrcode, Web Speech API(음성), Web NFC |
+| 테스트 · CI | pytest, vitest, GitHub Actions(백엔드 pytest + 프런트 타입검사·vitest·빌드) |
+| 배포 | Docker, Render(Blueprint `render.yaml`, 1GB 디스크에 DB·사진 보관) |
+| 개발 도구 | Claude Code(AI 코딩 도구), Git/GitHub(기능별 PR) |
+
+---
+
+## 6. 폴더(모듈) 구조
+
+기능별로 모듈을 나눴습니다. 백엔드는 `engine`(웹과 무관한 계산) → `services`(도메인 로직) → `agent`(LLM 루프·도구) → `api`(라우터) 순으로 의존합니다.
 
 ```
 safebridge/
 ├─ backend/
-│  ├─ engine/            샘플 IFC 생성기 · IFC 추출 · 4D 공정 생성 · 공간 위험 계산 (웹/DB 독립 모듈)
+│  ├─ engine/              샘플 IFC 생성 · IFC 추출 · 4D 공정 생성 · 공간 위험 계산 (웹·DB 독립)
 │  ├─ app/
-│  │  ├─ core/           설정(SAFEBRIDGE_*) · DB · '오늘'(시간대·시연 고정)
-│  │  ├─ models/         SQLAlchemy 표 (위험성평가 · TBM · 확인 · 신고)
-│  │  ├─ llm/            공급자 인터페이스 + claude · ollama · mock + factory
-│  │  ├─ agent/          에이전트 루프(runner) · 프롬프트 · 초안 골격(draft) · ranking · briefing · tools/ 도구 8개
-│  │  ├─ services/       bim · schedule · risk · patterns · weather(+kma) · law · glossary · translate · tbm
-│  │  ├─ api/            FastAPI 라우터 (bim · reference · assessments · worker)
-│  │  └─ main.py         API 진입점
-│  ├─ data/              사고사례·위험요소 프로파일·사고 통계·유의어·KOSHA GUIDE(공공데이터 변환) · 조문 요약 · 가상 예보 · 용어 사전 · 카드 문장 은행
-│  ├─ scripts/           공공데이터 변환(public_data) · 가상 사례 생성 · 사고사례 구조화 · 정확도 평가 · 샘플 IFC 생성
-│  ├─ samples/           샘플 IFC (가상, 생성기로 재현 가능)
-│  └─ tests/             pytest
-├─ frontend/             React 19 + TypeScript + Tailwind 4 + three.js
-│  └─ src/features/      admin · viewer · assessment · tbm · worker
-├─ docs/                 ARCHITECTURE.md
-├─ .github/workflows/    CI (백엔드 pytest · 프런트 타입검사·vitest·빌드)
-└─ docker-compose.yml    api · web (+ ollama, profile local-llm)
+│  │  ├─ core/             설정(SAFEBRIDGE_*) · DB · '오늘'(시간대·시연 날짜 고정)
+│  │  ├─ models/           SQLAlchemy 테이블 (위험성평가 · TBM · 확인 · 신고 · 사진)
+│  │  ├─ llm/              공급자 인터페이스 + claude · ollama · mock + factory
+│  │  ├─ agent/            에이전트 루프(runner) · 프롬프트 · 브리핑 · tools/ (도구 8개)
+│  │  ├─ services/         bim · schedule · risk · patterns(TF-IDF) · weather·kma · law·law_api
+│  │  │                    glossary · translate · tbm · zone_brief · brief_actions · field_chat
+│  │  │                    chat_weather · issues · photos·photo_check · videos·kosha_media
+│  │  ├─ api/              FastAPI 라우터 (bim · reference · assessments · worker · field · issues · photos · admin …)
+│  │  ├─ web/              빌드된 프런트엔드 서빙 (한 서버 배포)
+│  │  └─ main.py           API 진입점
+│  ├─ data/                공공데이터 변환 JSON · 조문 요약 · 가상 예보 · 용어 사전 · 카드 문장 은행 · 현장/구역(site.json)
+│  ├─ scripts/             공공데이터 변환 · 사고사례 구조화 · 정확도 평가 · 샘플 IFC · 기상청 점검 · 시연 데이터
+│  ├─ samples/             샘플 IFC (가상, 생성기로 재현 가능)
+│  ├─ seed/                클라우드 첫 기동용 시연 DB 사본
+│  └─ tests/               pytest
+├─ frontend/src/
+│  ├─ features/
+│  │  ├─ entry/            이용자층 선택
+│  │  ├─ admin/            관리자 셸 · 홈(부류별) · 지도 · 미리보기
+│  │  ├─ assessment/       초안 검토 · 근거 · 대책 편집 · 구역 브리핑
+│  │  ├─ tbm/              발행 · 구역 QR · NFC 쓰기 · 신고함 · 사진함 · 확인 현황
+│  │  ├─ viewer/           3D BIM 뷰어
+│  │  ├─ worker/           근로자 챗봇 · 브리핑 · 구역 3D/평면도 · 음성 · 사진 요청
+│  │  ├─ sim/              3D 사고 재현 장면(4종)
+│  │  └─ app/              홈 화면 앱(PWA) 진입
+│  └─ shared/              API 클라이언트 · 타입 · 언어 · NFC · 공통 UI
+├─ docs/                   ARCHITECTURE.md · deploy.md · images/
+├─ .github/workflows/      CI
+├─ Dockerfile · render.yaml  공개 배포(한 서버 이미지)
+└─ docker-compose.yml      로컬 다중 컨테이너 (api · web, + ollama 프로필)
 ```
 
-## 실행 방법
+---
 
-### A. 로컬 직접 실행 (이 저장소를 실제 검증한 방식)
+## 7. 설치 및 실행
 
-필요한 환경: Python 3.13, Node 22.
+### 필요 환경
+
+- Python 3.13, Node.js 22
+- (선택) Anthropic API 키, Ollama, 기상청·KOSHA·법제처 API 키. **키가 하나도 없어도 mock 공급자로 전체 흐름이 동작합니다.**
+
+### A. 로컬 실행
 
 ```bash
-# 백엔드
+git clone https://github.com/1mj1202/safebridge.git
+cd safebridge
+
+# 백엔드 (기본 LLM = mock, 오프라인)
 cd backend
 pip install -r requirements.txt
-SAFEBRIDGE_DEMO_TODAY=2026-11-23 uvicorn app.main:app --port 8000     # 기본 LLM = mock(오프라인)
-# 프론트엔드
-cd ../frontend && npm install && npm run dev                            # http://localhost:5173
+SAFEBRIDGE_DEMO_TODAY=2026-11-23 uvicorn app.main:app --port 8000
+
+# 프런트엔드 (새 터미널)
+cd frontend
+npm install
+npm run dev            # http://localhost:5173
 ```
 
 LLM 바꾸기:
 
 ```bash
-# Claude API (개발)
-SAFEBRIDGE_LLM_PROVIDER=claude ANTHROPIC_API_KEY=sk-... uvicorn app.main:app --port 8000
-# Ollama 로컬 모델 (시연)
+# Claude API
+SAFEBRIDGE_LLM_PROVIDER=claude SAFEBRIDGE_CLAUDE_MODEL=claude-sonnet-5-5 \
+ANTHROPIC_API_KEY=<내 키> uvicorn app.main:app --port 8000
+
+# Ollama 로컬 모델
 ollama pull qwen3:8b
 SAFEBRIDGE_LLM_PROVIDER=ollama uvicorn app.main:app --port 8000
 ```
 
-시연 때 휴대폰으로 QR 접속: 같은 Wi-Fi에서 `VITE_HOST=0.0.0.0 npm run dev`, 백엔드에 `SAFEBRIDGE_PUBLIC_WEB_URL=http://<PC IP>:5173`.
-
-### B. Docker Compose (공개 배포용)
+### B. Docker
 
 ```bash
 cp .env.example .env
-docker compose up --build                          # http://localhost:8080
-docker compose --profile local-llm up --build      # + Ollama
+docker compose up --build                       # http://localhost:8080
+docker compose --profile local-llm up --build   # + Ollama
 ```
 
-### 환경변수 (접두어 `SAFEBRIDGE_`)
+### C. Render 배포
+
+저장소 루트의 `Dockerfile`(한 서버 이미지)과 `render.yaml`(Blueprint)을 씁니다. Render에서 New > Blueprint로 이 저장소를 고르고, 비밀값은 Render 화면에서 직접 입력합니다. 자세한 내용은 [docs/deploy.md](docs/deploy.md).
+
+### 주요 환경변수 (접두어 `SAFEBRIDGE_`)
 
 | 변수 | 기본값 | 설명 |
 |---|---|---|
 | `LLM_PROVIDER` | `mock` | `claude` · `ollama` · `mock` |
-| `CLAUDE_MODEL` / `CLAUDE_EFFORT` | `claude-opus-5-5` / `medium` | Claude 모델·노력 수준 (`ANTHROPIC_API_KEY` 필요) |
+| `CLAUDE_MODEL` | `claude-opus-5-5` | 배포본은 `claude-sonnet-5-5` (`ANTHROPIC_API_KEY` 필요) |
 | `OLLAMA_URL` / `OLLAMA_MODEL` | `http://127.0.0.1:11434` / `qwen3:8b` | 로컬 LLM |
-| `DEMO_TODAY` | (비움) | 시연 '오늘' 고정. `2026-11-23`이면 '내일' = 3F 거푸집 설치일(강풍 예보) |
-| `PUBLIC_WEB_URL` | `http://localhost:5173` | 근로자 QR 주소 |
-| `ADMIN_PASSWORD` | (비움) | 관리자 화면 비밀번호. 넣으면 관리자 화면·API(분석·승인·발행·이슈함·사진함)는 로그인해야 열림. 근로자 화면은 그대로 |
-| `KMA_SERVICE_KEY` | (비움) | 기상청 단기예보 서비스키. 없으면 가상 예보 |
-| `LAW_API_OC` | (비움) | 법제처 Open API OC. 없으면 팀 요약 조문 |
+| `DEMO_TODAY` | (비움) | 시연 '오늘' 고정. `2026-11-23`이면 '내일'(11/24)이 3F 거푸집 설치일, 강풍 예보 |
+| `PUBLIC_WEB_URL` | `http://localhost:5173` | QR/NFC가 가리킬 주소 (Render에서는 자동) |
+| `KMA_SERVICE_KEY` | (비움) | 기상청 단기예보. 없으면 가상 예보 |
+| `KOSHA_SERVICE_KEY` | (비움) | KOSHA 안전보건자료 영상. 없으면 누리집 링크 |
+| `LAW_API_OC` | (비움) | 법제처 Open API. 없으면 팀 요약 조문 |
+| `STAFF_PASSWORD_CHECK` | `false` | 켜면 관리자 부류별 비밀번호(`ADMIN_`/`MANAGER_`/`VIEWER_PASSWORD`) 사용 |
 | `DATABASE_URL` | `sqlite:///backend/var/safebridge.db` | DB |
 
-## 공공데이터 다시 변환하기
+> API 키 같은 비밀값은 `.env`나 배포 화면에만 넣고 저장소에 올리지 않습니다.
 
-학습자료(Data.zip)를 풀어 둔 폴더를 넘기면 `backend/data/` 의 JSON 5개를 다시 만듭니다. 원본 CSV 는 용량이 커서 저장소에 넣지 않습니다(`backend/data/raw/` 에 두면 git 이 무시).
+### 공공데이터 다시 변환하기 (선택)
+
+원본 CSV는 용량이 커서 저장소에 넣지 않았습니다. 학습자료 폴더를 넘기면 `backend/data/`의 JSON을 다시 만듭니다.
 
 ```bash
 cd backend
-python -m scripts.public_data --src data/raw
+python -m scripts.public_data --src data/raw      # 400선 PDF 변환은 pip install pymupdf 필요
 ```
 
-| 원본 | 결과 | 쓰임 |
+---
+
+## 8. 사용 방법 (시연 흐름)
+
+1. [배포 주소](https://safebridge-mgqp.onrender.com)에서 **관리자·안전관리자**를 고릅니다.
+2. 위험 지도에서 날짜를 **11월 24일**로 두고 "3층 작업 위험 알려줘"를 입력해 **위험 분석**을 누릅니다.
+3. 초안의 위험 항목·근거·대책을 확인하고 필요하면 고칩니다. **현장소장** 이용자층으로 승인합니다.
+4. **발행** 메뉴에서 구역별 QR을 확인합니다(인쇄하거나 NFC 태그에 쓰기).
+5. 휴대폰으로 QR을 찍거나 [`/app`](https://safebridge-mgqp.onrender.com/app)에서 구역을 골라 근로자 화면을 엽니다. 언어를 바꿔 브리핑, 음성, 3D/2D 사고 재현을 확인합니다.
+6. 챗봇에 "너무 추워요", "어디가 출입금지예요?"처럼 묻고, **위험 신고**를 보내 봅니다.
+7. 관리자 **신고함**에서 번역된 신고를 보고 한국어로 회신하면, 근로자 화면에 모국어로 표시됩니다.
+
+---
+
+## 9. 테스트 · 검증 현황
+
+```bash
+cd backend && python -m pytest -q
+cd frontend && npx tsc --noEmit -p . && npx vitest run && npx vite build
+```
+
+- 모든 PR에서 GitHub Actions가 위 검사를 돌립니다(테스트는 mock 공급자라 비밀값 없이 동작).
+- Claude API(`claude-sonnet-5-5`), 기상청 API, KOSHA API 실호출과 Render 배포 동작을 확인했습니다.
+
+## 10. 알려진 한계
+
+- 사고사례·위험요소·통계는 **실제 공공데이터**이고, 현장·공정·BIM 모델·근로자는 **가상**입니다. 시연 날짜(11/23~26)는 가상 강풍 예보를 씁니다.
+- 조문은 법제처 API 키가 없으면 팀이 요약한 문장을 씁니다. 법적 판단은 원문을 확인해야 합니다.
+- 새 5개 언어(네팔·몽골·라오·테툼·미얀마어) 행동 문장은 원어민 검수 전입니다. 테툼어는 브라우저 음성이 없어 포르투갈어 음성으로 읽습니다.
+- 공개 주소를 아는 사람은 누구나 관리자 화면에 들어갈 수 있습니다(시연용 설정, `STAFF_PASSWORD_CHECK`로 잠글 수 있음).
+- AI 답변 정확도는 정량 측정하지 않았습니다.
+
+개인정보: 근로자 이름·위치를 받지 않습니다. 확인은 기기·언어별 익명 집계로만 저장하고, 사진은 촬영정보 삭제와 얼굴 흐림 후 보관합니다. 외부 LLM에는 작업·가상 데이터만 보냅니다.
+
+---
+
+## 11. 개발 기간 · 팀
+
+- **개발 기간:** 2026.11.19 ~ 2026.11.23
+- **팀:** _(팀명·팀원·역할을 적어 주세요)_
+
+---
+
+## 12. Credits / Licenses
+
+### 공공데이터 · 자료 출처
+
+| 출처 | 자료 | 쓰임 |
 |---|---|---|
-| 안전보건공단 사망사고 고위험요인(SIF) 건설업, 국토안전관리원 위험요소프로파일 사고사례 | `accidents.json` | 재해 패턴·유사사례 |
-| 국토안전관리원 설계안전성검토 위험요소 프로파일 | `risk_profile.json` | 위험도(사고가능성·심각성) |
-| 국토안전관리원 건설안전사고 재해자특성, 안전보건공단 시간대별 사고사망자수 | `accident_stats.json` | 날씨별 사고, 사망 최다 시간대 |
-| 안전보건공단 산업현장 법률용어 유의어사전 | `synonyms.json` | 유사사례 검색어 확장 |
-| 안전보건공단 KOSHA GUIDE 목록(건설안전 C) | `kosha_guides.json` | 항목별 관련 지침 |
-| 안전보건공단 외국인 노동자 안전보건용어 400선 PDF(5개 언어) | `terms400.json` | 새 5개 언어 용어 사전 근거 (`pip install pymupdf` 필요) |
+| 한국산업안전보건공단 | 사망사고 고위험요인(SIF) 건설업 사례 | 재해 패턴 DB · 유사사례 |
+| 한국산업안전보건공단 | 시간대별 사고사망자수 | 사고 통계 |
+| 한국산업안전보건공단 | 산업현장 법률용어 유의어사전 | 유사사례 검색어 확장 |
+| 한국산업안전보건공단 | KOSHA GUIDE 목록(건설안전 C) | 항목별 관련 지침 |
+| 한국산업안전보건공단 | 외국인 노동자 안전보건용어 400선(네팔·몽골·라오스·동티모르·미얀마어) | 새 5개 언어 용어 근거 |
+| 한국산업안전보건공단 | 안전보건자료 링크 서비스(공공데이터포털 API) | 예방 영상 링크 |
+| 국토안전관리원 | 설계안전성검토 위험요소 프로파일, 건설사고 사례 | 위험도(사고가능성·심각성) · 사례 |
+| 국토안전관리원 | 건설안전사고 재해자 특성 | 날씨별 사고 통계 |
+| 기상청 | 단기예보 조회서비스(공공데이터포털 API) | 작업일 기상 판정 |
+| 법제처 | 국가법령정보 Open API, 「산업안전보건기준에 관한 규칙」 | 근거 조문 |
+| 고용노동부 | 온열질환 예방 가이드 | 폭염 기준(33℃) 안내 문장 |
 
-분류 대응(공종 4종·사고유형·기인물)은 `scripts/public_data/mapping.py` 한 곳에 있습니다. SIF 는 사망사고 자료라서 화면의 건수는 "사망사고 사례 중 비중"으로 표시합니다.
+공공데이터는 각 기관이 정한 이용조건(공공누리 등)에 따라 출처를 밝혀 사용했습니다. 「외국인 노동자 안전보건용어 400선」은 공공누리 제4유형(출처표시·상업적 이용금지·변경금지) 자료로, 비상업 해커톤 시연 목적에 한해 용어를 참고했습니다.
 
-## 다른 사고사례 CSV 구조화하기 (선택)
+### 오픈소스
 
-```bash
-cd backend
-SAFEBRIDGE_LLM_PROVIDER=claude python -m scripts.structure_accidents uploads/cases.csv \
-    --map 사고경위=사고경위내용 --out data/accidents.json
-python -m scripts.eval_structuring data/labels.csv        # 라벨 100건 대비 공종·사고유형·기인물 정확도
-```
+| 이름 | 라이선스 |
+|---|---|
+| FastAPI | MIT |
+| Uvicorn | BSD-3-Clause |
+| SQLAlchemy | MIT |
+| Pydantic | MIT |
+| HTTPX | BSD-3-Clause |
+| NumPy | BSD-3-Clause |
+| IfcOpenShell | LGPL-3.0 |
+| OpenCV (opencv-python-headless) | Apache-2.0 |
+| Anthropic Python SDK | MIT |
+| React · React DOM · React Router | MIT |
+| three.js | MIT |
+| Vite · Vitest · Tailwind CSS · @vitejs/plugin-react | MIT |
+| TypeScript | Apache-2.0 |
+| lucide-react | ISC |
+| qrcode | MIT |
+| Noto Sans KR (@fontsource-variable/noto-sans-kr) | SIL OFL 1.1 |
 
-CSV 기본 열: `사고번호, 발생일, 공종, 사고경위, 사고원인, 재발방지대책, 인명피해` (다르면 `--map`).
+### AI 도구
 
-## 검증 현황
+- **Claude API** (Anthropic, `claude-sonnet-5-5`): 서비스 안의 에이전트·챗봇·번역
+- **Claude Code** (Anthropic): 개발 과정의 코드 작성·리뷰 보조
 
-- 백엔드 pytest 31개, 프런트 vitest 11개, 타입검사·빌드 통과
-- 헤드리스 브라우저로 관리자 흐름(분석 → 3D 영역 → 승인 → 발행)과 근로자 흐름(언어 → 구역 브리핑 → 문제 알리기 → 관리자 회신이 대화에 표시)을 mock 공급자로 확인
-- **아직 확인하지 못한 것**: 실제 Claude API·Ollama 모델 호출(작성 환경에 키·모델 없음, 공급자 형식 변환은 단위 테스트로만 확인), Docker 기동, 기상청 API 실호출
-- 사고사례·위험요소·통계는 실제 공공데이터, 현장·공정·예보는 가상. 조문은 팀 요약이며 제출 전 법제처 원문 대조 필요. 용어 사전·카드 문장은 원어민 검수 전(특히 새 5개 언어 카드 문장은 400선 용어를 넣어 팀이 작성). 테툼어는 브라우저 음성이 없어 포르투갈어 음성으로 읽음
+### 이 저장소의 라이선스
+
+해커톤 출품용 저장소로, 별도 오픈소스 라이선스를 지정하지 않았습니다. 위 오픈소스와 공공데이터는 각자의 라이선스·이용조건을 따릅니다.
