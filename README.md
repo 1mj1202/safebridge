@@ -167,7 +167,7 @@ safebridge/
 ├─ frontend/src/
 │  ├─ features/
 │  │  ├─ entry/            이용자층 선택
-│  │  ├─ admin/            관리자 셸 · 홈(부류별) · 지도 · 미리보기
+│  │  ├─ admin/            관리자 셸 · 홈(부류별) · 지도 · 오늘의 TBM(근로자 브리핑 미리보기)
 │  │  ├─ assessment/       초안 검토 · 근거 · 대책 편집 · 구역 브리핑
 │  │  ├─ tbm/              발행 · 구역 QR · NFC 쓰기 · 신고함 · 사진함 · 확인 현황
 │  │  ├─ viewer/           3D BIM 뷰어

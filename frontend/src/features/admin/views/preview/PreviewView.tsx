@@ -1,4 +1,4 @@
-// 메뉴 '근로자 화면': 관리자·현장소장·발주처가 언어와 구역을 골라 근로자가 보는 구역 브리핑(위험·대책·예방 영상)을 미리 본다.
+// 메뉴 '오늘의 TBM': 관리자·현장소장·발주처가 언어와 구역을 골라 근로자가 보는 구역 브리핑(위험·대책·예방 영상)을 미리 본다.
 // 근로자 화면(WorkerPage)과 같은 발행본·같은 브리핑 부품을 쓰되 읽기만 한다 — 열람·이해 확인·위치는 기록되지 않는다.
 import { Ban, Eye, MapPin } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -24,10 +24,10 @@ export default function PreviewView({ s }: { s: AdminState }) {
   useEffect(() => { if (ko && !zone) setZone(firstZone(ko.zones)); }, [ko, zone]);
 
   if (!s.tbm) {
-    return <div className="mx-auto max-w-3xl p-4"><Panel title="근로자 화면 미리보기">
+    return <div className="mx-auto max-w-3xl p-4"><Panel title="오늘의 TBM">
       <p className="text-sm text-slate-500">발행된 TBM이 없어요. 발행하면 근로자가 보는 화면을 여기서 미리 볼 수 있어요.</p></Panel></div>;
   }
-  if (error) return <div className="p-6 text-red-600">근로자 화면을 불러오지 못했어요 ({error})</div>;
+  if (error) return <div className="p-6 text-red-600">오늘의 TBM을 불러오지 못했어요 ({error})</div>;
   if (!ko) return <div className="p-6 text-slate-500">불러오는 중…</div>;
 
   const row = ko.zones.find((z) => z.zone === zone);
@@ -67,7 +67,7 @@ export default function PreviewView({ s }: { s: AdminState }) {
           미리보기예요. 근로자 열람·이해 확인·위치는 기록되지 않고, 질문·신고·사진 보내기는 꺼져 있어요.</p>
       </div>
 
-      <section aria-label="근로자 화면 미리보기" className="overflow-hidden rounded-[2rem] border-8 border-slate-800 bg-white shadow-lg lg:sticky lg:top-4 lg:self-start">
+      <section aria-label="오늘의 TBM 미리보기" className="overflow-hidden rounded-[2rem] border-8 border-slate-800 bg-white shadow-lg lg:sticky lg:top-4 lg:self-start">
         <header className="border-b border-slate-100 px-4 py-3 text-center text-lg font-semibold">{title}</header>
         {local?.stamp && ui && (
           <p className="border-b border-slate-100 px-4 py-1.5 text-center text-xs text-slate-500" data-testid="stamp">{stampLine(local.stamp, ui)}</p>
