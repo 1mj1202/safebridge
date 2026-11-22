@@ -4,7 +4,7 @@
 """
 from __future__ import annotations
 
-from . import glossary, names, videos, weather_text
+from . import brief_actions, glossary, names, videos, weather_text
 from .tbm import PICTO
 
 
@@ -49,6 +49,7 @@ def brief(draft: dict, zone: str, lang: str, weather_tr: dict | None = None) -> 
         checks += [c for c in it.get("checks", []) if c not in checks]
     build = [glossary.phrase("chat.restricted", lang)] if b["restricted"] else []
     hazard_keys = [items[s["item_id"]]["key"] for s in b["safety"] if s["item_id"] in items]
+    cards, ppe, shown = brief_actions.actions([items[s["item_id"]] for s in b["safety"] if s["item_id"] in items], lang, b["restricted"])
     return {
         "zone": b["zone"], "lang": lang, "label": names.zone(b["zone"], lang), "storey": b["storey"], "restricted": b["restricted"],
         "teams": [{"team": names.team(t["trade"], lang), "lead": names.lead(t["trade"], lang)} for t in b["teams"]],
@@ -62,6 +63,14 @@ def brief(draft: dict, zone: str, lang: str, weather_tr: dict | None = None) -> 
         # 근로자가 마지막에 기억할 한 줄: 출입 통제 구역은 승인된 구역 지침(출입금지) 그대로.
         # 작업 구역은 관리자 한마디가 이 자리에 온다(api/field.py).
         "final": glossary.phrase("chat.restricted_final", lang) if b["restricted"] else None,
+        # 화면 순서(사용자 결정 2026-11-22): 출입금지 배너 → 오늘의 작업 조건 → 해야 할 행동 → 공통 보호구 → 사진 → 영상(접힘)
+        "ban": {"text": glossary.phrase("chat.restricted", lang), "until": glossary.phrase("chat.restricted_final", lang),
+                "hazards": [glossary.phrase(f"hazard.{k}", lang) for k in hazard_keys]} if b["restricted"] else None,
+        "actions": cards,
+        "ppe": ppe,
+        "shown_checks": sorted(shown),  # 관리자 한마디 되풀이 판단용 (api/field.py)
+        "labels": {k: glossary.phrase(f"ui.{k}", lang) for k in ("conditions", "actions", "ppe", "view_3d")}
+        | {"videos": glossary.phrase("ui.videos_n", lang, n=len(videos.kosha_links(hazard_keys)) if hazard_keys else 0)},
         "photo": None if b["restricted"] else photo_request(hazard_keys, lang),
         "videos": videos.kosha_links(hazard_keys) if hazard_keys else [],
         "sims": sims(hazard_keys, lang),
