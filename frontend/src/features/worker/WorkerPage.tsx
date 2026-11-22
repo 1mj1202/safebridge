@@ -153,7 +153,8 @@ export default function WorkerPage() {
         onListen={brief ? () => voice.toggle(briefSpeech(brief), lang) : undefined} />
       <SideMenu open={menu} onClose={() => setMenu(false)} zones={data.zones} zone={zone} onZone={pickZone} nfc={nfc}
         langs={data.langs} lang={lang} onLang={(l) => setLang(remember(`sb-lang-${token}`, l) ?? l)} big={big} onBig={setBig}
-        account={auth.worker ? { name: auth.worker.name, company: auth.worker.company, logout: ui.logout, onLogout: auth.logout } : undefined} />
+        account={auth.worker ? { name: auth.worker.name, company: auth.worker.company, logout: ui.logout, onLogout: auth.logout } : undefined}
+        guestBack={!auth.worker && auth.guest ? { label: ui.login, onBack: () => auth.setGuest(false) } : undefined} />
 
       <main className="space-y-5 px-4 pb-64 pt-4">
         {brief ? <BriefMessage brief={brief} big={big} token={token} ui={ui}

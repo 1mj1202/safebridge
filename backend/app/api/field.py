@@ -24,6 +24,7 @@ def zones(token: str, lang: str = "ko", db: Session = Depends(get_db)):
     ui = {k: glossary.phrase(f"chat.{k}", lang) for k in UI_KEYS}
     ui.update({k: glossary.phrase(f"ui.{k}", lang) for k in ("understood", "understood_q", "read_again", "question", "report", "listen", "photo", "video")})
     ui["logout"] = glossary.phrase("auth.logout", lang)
+    ui["login"] = glossary.phrase("auth.login", lang)  # 가입 없이 보기에서 가입·로그인 화면으로 돌아가기
     return {"lang": lang, "langs": glossary.lang_names(), "work_date": a.work_date,
             "zones": zone_brief.zones(a.draft, lang), "ui": ui}
 
