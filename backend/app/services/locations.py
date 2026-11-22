@@ -75,3 +75,11 @@ def snapshot(db: Session) -> dict:
         if c and c.zone not in boxes:
             boxes[c.zone] = site.zone_box(c.zone)
     return {"now": now.isoformat(), "fresh_hours": int(FRESH.total_seconds() // 3600), "workers": rows, "boxes": boxes}
+
+
+def anonymous(snap: dict) -> dict:
+    """발주처·감리용: 지금 현장에 있는(최근 태그) 사람만, 사람을 알아볼 수 있는 값은 모두 뺀다 — 구역별 인원·교육 확인 집계용."""
+    here = sorted((w for w in snap["workers"] if w["zone"] and w["fresh"]), key=lambda w: (w["zone"], w["understood"]))
+    rows = [{"id": i + 1, "name": "", "company": "", "team": "", "lang": "", "zone": w["zone"], "source": None,
+             "at": None, "minutes": None, "fresh": True, "understood": w["understood"]} for i, w in enumerate(here)]
+    return {**snap, "workers": rows, "anonymous": True}

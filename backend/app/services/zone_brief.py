@@ -4,7 +4,7 @@
 """
 from __future__ import annotations
 
-from . import glossary, names, videos
+from . import glossary, names, videos, weather_text
 from .tbm import PICTO
 
 
@@ -22,7 +22,8 @@ def _items(draft: dict) -> dict[str, dict]:
     return {i["id"]: i for i in draft["items"] if i.get("included", True)}
 
 
-def brief(draft: dict, zone: str, lang: str) -> dict | None:
+def brief(draft: dict, zone: str, lang: str, weather_tr: dict | None = None) -> dict | None:
+    """weather_tr: 발행 때 뜻 검사를 거친 기상 경고 번역 {item_id: {lang: check}} (관리자가 문구를 고친 경우만)."""
     b = find(draft, zone)
     if b is None:
         return None
@@ -32,7 +33,7 @@ def brief(draft: dict, zone: str, lang: str) -> dict | None:
         it = items.get(w["item_id"])
         if it:
             weather.append({"item_id": it["id"], "level": it["level"], "pictogram": PICTO.get(it["key"]),
-                            "text": glossary.phrase(it["weather"]["phrase"], lang, value=it["weather"]["value"])})
+                            "text": weather_text.line(it, lang, (weather_tr or {}).get(it["id"]))})
     # 위험마다 바로 밑에 대책 한 줄(build.<key>) — 따로 있던 '작업 순서' 줄과 같은 내용이라 합쳤다 (사용자 결정 2026-11-22).
     # 번호는 현장 전체 순위가 아니라 이 구역 안에서 1부터.
     phrases = glossary.load_json("phrases.json")["phrases"]
@@ -49,7 +50,7 @@ def brief(draft: dict, zone: str, lang: str) -> dict | None:
     build = [glossary.phrase("chat.restricted", lang)] if b["restricted"] else []
     hazard_keys = [items[s["item_id"]]["key"] for s in b["safety"] if s["item_id"] in items]
     return {
-        "zone": b["zone"], "label": names.zone(b["zone"], lang), "storey": b["storey"], "restricted": b["restricted"],
+        "zone": b["zone"], "lang": lang, "label": names.zone(b["zone"], lang), "storey": b["storey"], "restricted": b["restricted"],
         "teams": [{"team": names.team(t["trade"], lang), "lead": names.lead(t["trade"], lang)} for t in b["teams"]],
         "title": glossary.phrase("chat.today", lang, zone=names.zone(b["zone"], lang)),
         "sections": [
@@ -58,6 +59,9 @@ def brief(draft: dict, zone: str, lang: str) -> dict | None:
             {"type": "safety", "title": glossary.phrase("chat.safety", lang), "lines": safety},
         ],
         "checks": [glossary.phrase(c, lang) for c in checks[:5]],
+        # 근로자가 마지막에 기억할 한 줄: 출입 통제 구역은 승인된 구역 지침(출입금지) 그대로.
+        # 작업 구역은 관리자 한마디가 이 자리에 온다(api/field.py).
+        "final": glossary.phrase("chat.restricted_final", lang) if b["restricted"] else None,
         "photo": None if b["restricted"] else photo_request(hazard_keys, lang),
         "videos": videos.kosha_links(hazard_keys) if hazard_keys else [],
         "sims": sims(hazard_keys, lang),

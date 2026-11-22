@@ -117,7 +117,9 @@ export default function WorkerPage() {
   // 질문을 보낸 근로자는 '질문 있음'으로 한 번 집계 (관리자 TBM 확인 현황)
   const ack = (status: "understood" | "question") => api.post(`/w/${token}/ack`, { lang, status }).catch(() => undefined);
 
-  const title = brief?.zone === zone ? brief.label : zone;
+  // 구역·언어를 바꾸면 새 브리핑이 올 때까지 이전 구역 내용(도면·대책)을 그리지 않는다 — 제목·도면·본문이 함께 바뀐다
+  const ready = brief && brief.zone === zone && (brief.lang ?? lang) === lang ? brief : null;
+  const title = data.zones.find((z) => z.zone === zone)?.label ?? zone;
   // '이해했어요'는 기기·언어당 한 번만 익명 집계
   const isDone = done;
   const understood = () => {
@@ -128,7 +130,7 @@ export default function WorkerPage() {
   return (
     <div className="mx-auto min-h-screen max-w-md bg-white">
       <TopBar title={title} onMenu={() => setMenu(true)} listen={ui.listen} speaking={voice.speaking}
-        onListen={brief ? () => voice.toggle(briefSpeech(brief), lang) : undefined} />
+        onListen={ready ? () => voice.toggle(briefSpeech(ready), lang) : undefined} />
       <SideMenu open={menu} onClose={() => setMenu(false)} zones={data.zones} zone={zone} onZone={pickZone} nfc={nfc}
         langs={data.langs} lang={lang} onLang={(l) => setLang(remember(`sb-lang-${token}`, l) ?? l)} big={big} onBig={setBig}
         onStart={{ label: ui.switch_role, go: backToPicker }} />
@@ -138,8 +140,9 @@ export default function WorkerPage() {
       )}
 
       <main className="space-y-5 px-4 pb-64 pt-4">
-        {brief ? <BriefMessage brief={brief} big={big} token={token} ui={ui}
-          photo={{ done: msgs.some((m) => m.image), busy, onShoot: shoot }} /> : <p className="text-slate-400">…</p>}
+        {ready ? <BriefMessage brief={ready} big={big} token={token} ui={ui}
+          photo={{ done: msgs.some((m) => m.image), busy, onShoot: shoot }} />
+          : <p role="status" className="py-10 text-center text-slate-400" data-testid="brief-loading">{ui.loading ?? "…"}</p>}
         <MessageList msgs={msgs} big={big} />
         {isDone && <p className={big ? "text-xl" : "text-base"}>{THANKS[lang]}</p>}
         <div ref={end} />

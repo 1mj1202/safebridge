@@ -984,6 +984,54 @@
       "lo": "ກຳລັງໂຫຼດ…",
       "tet": "Hela karrega…",
       "my": "ဖွင့်နေသည်…"
+    },
+    "chat.restricted_final": {
+      "ko": "출입 통제가 해제될 때까지 이 구역에 들어가지 마세요",
+      "en": "Do not enter this zone until the entry restriction is lifted",
+      "zh": "在解除出入管制之前，不要进入此区域",
+      "vi": "Không vào khu vực này cho đến khi lệnh cấm ra vào được dỡ bỏ",
+      "th": "ห้ามเข้าพื้นที่นี้จนกว่าจะยกเลิกการควบคุมการเข้าออก",
+      "ne": "प्रवेश नियन्त्रण नहटेसम्म यो क्षेत्रमा नपस्नुहोस्",
+      "mn": "Нэвтрэх хязгаарлалт цуцлагдах хүртэл энэ бүсэд бүү ор",
+      "lo": "ຢ່າເຂົ້າເຂດນີ້ ຈົນກວ່າຈະຍົກເລີກການຄວບຄຸມການເຂົ້າອອກ",
+      "tet": "Labele tama fatin ida-ne'e to'o sira hasai bandu atu tama",
+      "my": "ဝင်ရောက်ခွင့် ကန့်သတ်ချက် မဖယ်ရှားမချင်း ဤနေရာသို့ မဝင်ပါနှင့်"
+    },
+    "weather.wind_high": {
+      "ko": "순간풍속 {value}m/s · 현장 기준 {limit}m/s 초과: 양중·단부 작업중지 검토",
+      "en": "Gusts {value} m/s, over the site limit of {limit} m/s: whether to stop work for lifting and slab edges is under review",
+      "zh": "阵风{value}米/秒，超过现场标准{limit}米/秒：正在研究吊装和楼板边缘是否停止作业",
+      "vi": "Gió giật {value} m/s, vượt ngưỡng công trường {limit} m/s: đang xem xét dừng làm việc cẩu nâng và mép sàn bê tông",
+      "th": "ลมกระโชก {value} ม./วินาที เกินเกณฑ์หน้างาน {limit} ม./วินาที: กำลังพิจารณาหยุดงานการยกและงานริมขอบพื้นคอนกรีต",
+      "ne": "झोक्का {value}m/s, साइटको सीमा {limit}m/s भन्दा बढी: उठाउने र स्ल्याबको किनारको काम रोक्ने बारे विचार हुँदैछ",
+      "mn": "Шуурга {value}m/s, талбайн хязгаар {limit}m/s-ээс хэтэрсэн: өргөх болон хавтангийн захад ажил зогсоох эсэхийг хянаж байна",
+      "lo": "ລົມກະໂຊກ {value}m/s ເກີນເກນໜ້າງານ {limit}m/s: ກຳລັງພິຈາລະນາຢຸດເຮັດວຽກຍົກ ແລະ ແຄມແຜ່ນພື້ນ",
+      "tet": "Anin {value}m/s, liu limite fatin serbisu nian {limit}m/s: hela konsidera atu hapara serbisu hasa'e no iha lantai nia ninin",
+      "my": "လေတိုက်နှုန်း {value}m/s၊ လုပ်ငန်းခွင်သတ်မှတ်ချက် {limit}m/s ကျော်: ပစ္စည်းမခြင်းနှင့် ကွန်ကရစ်ပြားအစွန်းတွင် အလုပ်ရပ်ရန် စဉ်းစားနေသည်"
+    },
+    "weather.wind_stop": {
+      "ko": "순간풍속 {value}m/s: 타워크레인 운전 작업중지 (법령 기준 20m/s 초과)",
+      "en": "Gusts {value} m/s: tower crane operation, stop work (legal limit 20 m/s exceeded)",
+      "zh": "阵风{value}米/秒：塔吊运行停止作业（超过法定标准20米/秒）",
+      "vi": "Gió giật {value} m/s: vận hành cần trục tháp phải dừng làm việc (vượt mức luật định 20 m/s)",
+      "th": "ลมกระโชก {value} ม./วินาที: การเดินทาวเวอร์เครน หยุดงาน (เกินเกณฑ์กฎหมาย 20 ม./วินาที)",
+      "ne": "झोक्का {value}m/s: टावर क्रेन चलाउने काम रोक्ने (कानुनी सीमा 20m/s भन्दा बढी)",
+      "mn": "Шуурга {value}m/s: цамхаг кран ажиллуулах ажил зогсоох (хуулийн хязгаар 20m/s-ээс хэтэрсэн)",
+      "lo": "ລົມກະໂຊກ {value}m/s: ການແລ່ນເຄນຫໍຄອຍ ຢຸດເຮັດວຽກ (ເກີນເກນກົດໝາຍ 20m/s)",
+      "tet": "Anin {value}m/s: opera guindaste-torre, hapara serbisu (liu limite lei nian 20m/s)",
+      "my": "လေတိုက်နှုန်း {value}m/s: တာဝါကရိန်း မောင်းနှင်ခြင်း အလုပ်ရပ် (ဥပဒေသတ်မှတ်ချက် 20m/s ကျော်)"
+    },
+    "ui.approved_ko": {
+      "ko": "관리자 승인 원문",
+      "en": "Approved original (Korean)",
+      "zh": "管理者批准原文（韩语）",
+      "vi": "Bản gốc đã duyệt (tiếng Hàn)",
+      "th": "ต้นฉบับที่อนุมัติ (ภาษาเกาหลี)",
+      "ne": "स्वीकृत मूल (कोरियाली)",
+      "mn": "Баталсан эх (солонгос)",
+      "lo": "ຕົ້ນສະບັບທີ່ອະນຸມັດ (ພາສາເກົາຫຼີ)",
+      "tet": "Orijinál aprova ona (Koreanu)",
+      "my": "အတည်ပြုထားသော မူရင်း (ကိုရီးယား)"
     }
   }
 }

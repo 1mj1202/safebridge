@@ -14,6 +14,7 @@ import logging
 
 from app.core.config import get_settings
 
+from . import glossary
 from .data_store import load_json
 
 log = logging.getLogger(__name__)
@@ -47,15 +48,16 @@ def judge(day: str, trades: list[str]) -> dict:
     lim = site_limits()
     alerts = []
     gust, rain, tmin = fc["wind_gust"], fc["rain_mm_h"], fc["temp_min"]
+    # 관리자 문구와 근로자 문구는 같은 문장 은행 문장(한국어 = 관리자 문구)에서 나온다 — 대상 작업·조건·지시가 같게
     if gust > 20:
-        alerts.append({"code": "wind_crane_stop", "level": "stop", "phrase": "weather.wind", "value": gust,
-                       "text": f"순간풍속 {gust}m/s: 타워크레인 운전 작업중지 (법령 기준 20m/s 초과)", "rule": "LAW-37",
+        alerts.append({"code": "wind_crane_stop", "level": "stop", "phrase": "weather.wind_stop", "value": gust,
+                       "text": glossary.phrase("weather.wind_stop", "ko", value=gust), "rule": "LAW-37",
                        "basis": "법령", "legal": LAW_WIND_NOTE + " — 오늘 법정 중지 대상"})
     elif gust > lim["wind_ms"]:
         legal = LAW_WIND_NOTE + (" — 크레인 운전(양중)은 법정 중지 대상 아님, 설치·해체 작업이 있으면 중지 대상"
                                  if gust > 10 else " — 오늘 법정 중지 대상 아님")
-        alerts.append({"code": "wind_high", "level": "warn", "phrase": "weather.wind", "value": gust,
-                       "text": f"순간풍속 {gust}m/s · 현장 기준 {lim['wind_ms']:g}m/s 초과: 양중·단부 작업중지 검토",
+        alerts.append({"code": "wind_high", "level": "warn", "phrase": "weather.wind_high", "value": gust,
+                       "text": glossary.phrase("weather.wind_high", "ko", value=gust, limit=f"{lim['wind_ms']:g}"),
                        "rule": "LAW-37", "basis": "현장 기준", "legal": legal,
                        "affects": [t for t in trades if t in ("양중", "거푸집", "철근")]})
     if rain >= lim["rain_mm_h"]:
