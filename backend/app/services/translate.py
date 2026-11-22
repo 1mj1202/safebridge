@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import logging
 import re
+import unicodedata
 
 from app.llm.base import LLMError
 from app.llm.factory import get_provider
@@ -31,14 +32,20 @@ def _llm(prompt: str) -> str:
     return get_provider().complete(SYSTEM, prompt).strip()
 
 
-def translate(text: str, src: str, tgt: str) -> dict:
+def translate(text: str, src: str, tgt: str, ko_terms: list[str] | None = None) -> dict:
+    """ko_terms: 역번역(→ko)일 때, 원문에 있던 현장 용어. 같은 뜻이면 그 한국어 용어로 쓰게 한다
+    (예: '가장자리' 대신 '단부', '안전벨트' 대신 '안전대'). 뜻이 다르면 쓰지 말라고 해서 검사는 그대로 의미가 있다."""
     if src == tgt or not text.strip():
         return {"text": text, "ok": True}
     if get_provider().name == "mock":
         return {"text": text, "ok": False, "note": "오프라인 모드: 번역하지 않음"}
     hint = glossary.glossary_hint(text, tgt) if src == "ko" else ""
+    ko_hint = ""
+    if tgt == "ko" and ko_terms:
+        ko_hint = "Korean site terms to prefer where they fit: " + ", ".join(ko_terms) + "\n"
     prompt = (f"Translate from {NAMES[src]} to {NAMES[tgt]}.\n"
               + (f"Use these fixed safety terms exactly:\n{hint}\n" if hint else "")
+              + ko_hint
               + f"Text:\n{text}")
     try:
         return {"text": _llm(prompt), "ok": True}
@@ -52,12 +59,22 @@ KEY_WORDS = ("양중", "단부", "개구부", "타워크레인", "크레인", "�
              "출입금지", "출입", "대피", "안전대", "안전모", "안전난간", "신호수", "덮개")
 
 
+def _ascii_digits(text: str) -> str:
+    return "".join(str(unicodedata.decimal(c)) if c.isdecimal() else c for c in text)
+
+
+def key_words(src_ko: str) -> list[str]:
+    """원문에 있는 작업·지시 말 + 사전 용어 ('작업중지'가 있으면 '중지'는 따로 안 본다)."""
+    words = [w for w in KEY_WORDS if w in src_ko]
+    words += [t["ko"] for t in glossary.terms_in(src_ko) if t["ko"] not in words]
+    return [w for w in words if not any(w != o and w in o for o in words)]
+
+
 def meaning_check(src_ko: str, translated: str, back_ko: str) -> dict:
     """번역이 뜻을 지켰는지: 원문의 수치(조건)는 번역문에, 작업·지시 말은 역번역(한국어)에 남아 있어야 한다."""
     nums = re.findall(r"\d+(?:\.\d+)?", src_ko)
-    words = [w for w in KEY_WORDS if w in src_ko]
-    words += [t["ko"] for t in glossary.terms_in(src_ko) if t["ko"] not in words]
-    words = [w for w in words if not any(w != o and w in o for o in words)]  # '작업중지'가 있으면 '중지'는 따로 안 본다
+    words = key_words(src_ko)
+    translated = _ascii_digits(translated)  # 네팔어 १०, 태국어 ๑๐ 처럼 그 나라 숫자로 써도 같은 수로 본다
     missing = [n for n in nums if n not in translated] + [w for w in words if w not in back_ko]
     return {"ok": not missing, "missing": missing}
 
@@ -68,7 +85,7 @@ def with_back_translation(ko_text: str, lang: str) -> dict:
     뜻 검사(적용 작업·조건·지시)를 통과하지 못하면 ok=False → 근로자에게는 한국어 원문이 나간다.
     """
     fwd = translate(ko_text, "ko", lang)
-    back = translate(fwd["text"], lang, "ko") if fwd["ok"] else {"text": "", "ok": False}
+    back = translate(fwd["text"], lang, "ko", ko_terms=key_words(ko_text)) if fwd["ok"] else {"text": "", "ok": False}
     meaning = meaning_check(ko_text, fwd["text"], back["text"]) if fwd["ok"] and back["ok"] else None
     note = fwd.get("note", "")
     if meaning and not meaning["ok"]:
