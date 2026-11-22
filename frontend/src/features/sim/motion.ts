@@ -5,6 +5,8 @@ export const G = 9.8;
 export const PHASE_SEC = 6;
 /** 실제 건물 3D 에서 위험 구역을 짚는 장면 길이(초) */
 export const INTRO_SEC = 4;
+/** 위험 사이사이 평소 화면(건물 3D·평면도 전체)을 보여 주는 길이(초) — 예방 영상은 이 간격으로 주기적으로 재생 */
+export const BASE_SEC = 8;
 
 export const clamp01 = (x: number) => Math.min(1, Math.max(0, x));
 export const lerp = (a: number, b: number, t: number) => a + (b - a) * clamp01(t);
@@ -29,14 +31,14 @@ export function walk(from: number, to: number, t: number, t0: number, t1: number
   return { x: lerp(from, to, k), swing: moving ? Math.sin(t * 9) * 0.6 : 0, k };
 }
 
-export type Phase = "intro" | "accident" | "measure";
+export type Phase = "base" | "intro" | "accident" | "measure";
 
-const PHASES: [Phase, number][] = [["intro", INTRO_SEC], ["accident", PHASE_SEC], ["measure", PHASE_SEC]];
+const PHASES: [Phase, number][] = [["base", BASE_SEC], ["intro", INTRO_SEC], ["accident", PHASE_SEC], ["measure", PHASE_SEC]];
 const CYCLE = PHASES.reduce((a, [, s]) => a + s, 0);
 
-/** 재생 위치(초) → 몇 번째 위험 · 위험 구역 짚기/사고/대책 · 그 장면 안에서 흐른 시간 */
+/** 재생 위치(초) → 몇 번째 위험 · 평소 화면/위험 구역 짚기/사고/대책 · 그 장면 안에서 흐른 시간 */
 export function timeline(elapsed: number, count: number) {
-  if (count <= 0) return { index: 0, phase: "intro" as Phase, t: 0 };
+  if (count <= 0) return { index: 0, phase: "base" as Phase, t: 0 };
   const total = count * CYCLE;
   const e = ((elapsed % total) + total) % total;
   const index = Math.floor(e / CYCLE);

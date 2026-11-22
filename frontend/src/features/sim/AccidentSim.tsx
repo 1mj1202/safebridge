@@ -1,5 +1,5 @@
 // 3D 사고 재현 재생기: 위험 순위대로 '(실제 건물에서 위험 구역 짚기) → 사고 장면 → 대책 장면'을 반복 재생한다 (소리 없음)
-// 짚기 장면 동안은 사고 장면 첫 화면을 멈춰 두고(위에 실제 건물 3D 가 덮인다) 단계만 알린다
+// 평소 화면·짚기 장면 동안은 사고 장면 첫 화면을 멈춰 두고(위에 건물 3D·평면도가 덮인다) 단계만 알린다
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { timeline, type Phase } from "./motion";
@@ -73,7 +73,7 @@ export default function AccidentSim({ kinds, onStep }: Props) {
       const dx = pos[0] - target[0], dz = pos[2] - target[2];
       camera.position.set(target[0] + dx * Math.cos(sway) - dz * Math.sin(sway), pos[1], target[2] + dx * Math.sin(sway) + dz * Math.cos(sway));
       camera.lookAt(...target);
-      cur.built.update(phase === "intro" ? 0 : t);
+      cur.built.update(phase === "intro" || phase === "base" ? 0 : t);
       renderer.render(scene, camera);
     };
     loop();
