@@ -32,7 +32,7 @@ export default function DraftItemCard({ it, laws, locked, onChange, onEvidence, 
       <div className="flex flex-wrap items-center gap-2">
         <input type="checkbox" checked={!off} disabled={locked} aria-label={`${it.hazard} 포함`}
           onChange={(e) => onChange({ included: e.target.checked })} />
-        {it.risk_rank && <span className={`rounded px-1.5 text-xs font-bold ${it.top ? "bg-slate-900 text-white" : "bg-slate-200"}`}>
+        {it.risk_rank && <span className={`rounded px-1.5 text-xs font-bold ${it.top ? "bg-brand-700 text-white" : "bg-slate-200"}`}>
           {it.risk_rank}순위</span>}
         <button type="button" onClick={() => setOpen(!open)} aria-expanded={open}
           className="flex items-center gap-0.5 text-left text-sm font-bold hover:text-slate-600">
