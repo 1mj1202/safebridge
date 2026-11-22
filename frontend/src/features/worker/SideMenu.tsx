@@ -1,5 +1,5 @@
 // 메뉴(왼쪽 서랍): 내 이름·업체(로그아웃) · 구역 · NFC · 언어(기본 5 + 접기) · 큰 글씨
-import { Ban, Check, ChevronDown, Globe, MapPin, Nfc, Type } from "lucide-react";
+import { ArrowLeftRight, Ban, Check, ChevronDown, Globe, MapPin, Nfc, Type } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { splitLangs } from "../../shared/langs";
 import type { ZoneRow } from "./fieldTypes";
@@ -16,6 +16,8 @@ interface Props {
   onLang: (l: string) => void;
   big: boolean;
   onBig: (b: boolean) => void;
+  /** 이용자층 선택 화면으로 */
+  onStart: { label: string; go: () => void };
 }
 
 const ROW = "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-[15px] active:bg-slate-100";
@@ -30,7 +32,7 @@ function Group({ icon: I, children }: { icon: typeof MapPin; children: ReactNode
   );
 }
 
-export default function SideMenu({ open, onClose, zones, zone, onZone, nfc, langs, lang, onLang, big, onBig }: Props) {
+export default function SideMenu({ open, onClose, zones, zone, onZone, nfc, langs, lang, onLang, big, onBig, onStart }: Props) {
   const { main, more } = splitLangs(Object.keys(langs));
   const [moreOpen, setMoreOpen] = useState(more.includes(lang));
   if (!open) return null;
@@ -74,6 +76,8 @@ export default function SideMenu({ open, onClose, zones, zone, onZone, nfc, lang
             </span>
           </button>
         </Group>
+        <button onClick={() => pick(onStart.go)} className={`${ROW} mt-auto text-slate-500`}>
+          <ArrowLeftRight {...ICON} className="shrink-0" />{onStart.label}</button>
       </nav>
     </div>
   );

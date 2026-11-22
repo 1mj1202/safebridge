@@ -18,6 +18,7 @@ import SuggestionChips from "./SuggestionChips";
 import TopBar from "./TopBar";
 import { useIssueReplies } from "./useIssueReplies";
 import { useNfcZone } from "./useNfcZone";
+import { backToPicker } from "../entry/picked";
 import { useSpeech } from "./useSpeech";
 import ZonePicker from "./ZonePicker";
 
@@ -128,7 +129,8 @@ export default function WorkerPage() {
       <TopBar title={title} onMenu={() => setMenu(true)} listen={ui.listen} speaking={voice.speaking}
         onListen={brief ? () => voice.toggle(briefSpeech(brief), lang) : undefined} />
       <SideMenu open={menu} onClose={() => setMenu(false)} zones={data.zones} zone={zone} onZone={pickZone} nfc={nfc}
-        langs={data.langs} lang={lang} onLang={(l) => setLang(remember(`sb-lang-${token}`, l) ?? l)} big={big} onBig={setBig} />
+        langs={data.langs} lang={lang} onLang={(l) => setLang(remember(`sb-lang-${token}`, l) ?? l)} big={big} onBig={setBig}
+        onStart={{ label: ui.switch_role, go: backToPicker }} />
 
       <main className="space-y-5 px-4 pb-64 pt-4">
         {brief ? <BriefMessage brief={brief} big={big} token={token} ui={ui}

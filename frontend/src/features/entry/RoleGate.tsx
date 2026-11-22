@@ -6,7 +6,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import RoleLogin from "../admin/RoleLogin";
 import { api } from "../../shared/api";
 import type { StaffMe } from "../../shared/staff";
-import { gateIdx, historyIdx, markPicked, picked, unmarkPicked } from "./picked";
+import { gateIdx, historyIdx, markPicked, onBackToPicker, picked, unmarkPicked } from "./picked";
 
 export default function RoleGate({ children }: { children: ReactNode }) {
   const nav = useNavigate();
@@ -23,7 +23,8 @@ export default function RoleGate({ children }: { children: ReactNode }) {
       if (picked() && historyIdx() <= gateIdx()) { unmarkPicked(); setMe(undefined); setDone(false); }
     };
     window.addEventListener("popstate", back);
-    return () => window.removeEventListener("popstate", back);
+    const off = onBackToPicker(() => { setMe(undefined); setDone(false); }); // 화면 안 '처음 화면으로' 버튼
+    return () => { window.removeEventListener("popstate", back); off(); };
   }, []);
 
   if (done) return <>{children}</>;
