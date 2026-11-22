@@ -37,6 +37,7 @@ def prefetch() -> None:
     law_api.prefetch(articles())
 
 
-def status(probe: bool = False) -> dict:
+def status(probe: bool = False, article: str = "") -> dict:
+    """probe=True 면 실제 조회 한 번. article(예: '제331조')을 주면 요약본에 없는 조도 원문 대조용으로 본다."""
     a = articles()[0] if probe else None
-    return law_api.status({"law": a["law"], "article": a["article"]} if a else None)
+    return law_api.status({"law": a["law"], "article": article or a["article"]} if a else None)
