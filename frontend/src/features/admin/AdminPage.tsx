@@ -1,5 +1,5 @@
 // 관리자 화면 (PDF 별첨 2-10·2-11 목업): 머리글(현장·기상·상태) + 왼쪽 메뉴(휴대폰은 아래 탭), 소장·발주처는 '오늘' 홈부터
-// 위험 지도 / TBM 초안 / 발행 / 확인 현황 / 신고함 / 근로자 화면(미리보기). 날짜·초안·TBM 은 메뉴끼리 공유(useAdminState)
+// 위험 지도 / TBM 초안 / 발행 / 확인 현황 / 신고함 / 오늘의 TBM(근로자 브리핑 미리보기). 날짜·초안·TBM 은 메뉴끼리 공유(useAdminState)
 import { useMemo, useState } from "react";
 import { useStaff } from "../../shared/staff";
 import type { Zone } from "../../shared/types";
