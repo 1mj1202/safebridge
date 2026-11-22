@@ -1,5 +1,5 @@
 // 챗봇 첫 메시지: 구역 브리핑 — 제목·소제목 없이 3D/평면도 · 날씨 · 위험 순위(밑에 대책) · 확인할 것
-import { CircleCheck, Construction, MessageSquareText, ShieldCheck, Wind } from "lucide-react";
+import { Ban, CircleCheck, Construction, MessageSquareText, ShieldCheck, Wind } from "lucide-react";
 import Pictogram from "./Pictogram";
 import PhotoRequest from "./PhotoRequest";
 import KoshaVideos from "./KoshaVideos";
@@ -14,7 +14,7 @@ function Icon({ of: C }: { of: typeof Wind }) {
 }
 
 export function briefSpeech(b: Brief): string {
-  return cardSpeech(b.title, [...b.sections.flatMap((s) => s.lines.flatMap((l) => [l.text, l.measure ?? ""])), ...b.checks, b.memo]
+  return cardSpeech(b.title, [...b.sections.flatMap((s) => s.lines.flatMap((l) => [l.text, l.measure ?? ""])), ...b.checks, b.memo, b.final ?? ""]
     .filter(Boolean));
 }
 
@@ -57,6 +57,10 @@ export default function BriefMessage({ brief, big, token, ui, photo }: {
       )}
       {brief.memo && (
         <p className="flex items-start gap-2"><MessageSquareText size={18} strokeWidth={1.75} className="mt-0.5 shrink-0 text-slate-500" />{brief.memo}</p>
+      )}
+      {brief.final && (
+        <p className="flex items-start gap-2 rounded-xl bg-red-50 p-3 font-semibold text-red-700" data-testid="brief-final">
+          <Ban size={18} strokeWidth={2} className="mt-0.5 shrink-0" />{brief.final}</p>
       )}
       {brief.photo && <PhotoRequest text={brief.photo.text} label={ui.photo} {...photo} />}
     </div>

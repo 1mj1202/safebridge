@@ -10,7 +10,8 @@ import ZoneQrList from "./ZoneQrList";
 
 export default function PublishPanel({ tbm, meta, busy, onPublish, zones }: {
   tbm: Tbm | null; meta: Meta; busy: boolean; onPublish: (memo: string) => void; zones: ZoneBriefing[] }) {
-  const [memo, setMemo] = useState("오늘은 바람이 강하니 단부 작업 전 꼭 안전대를 거세요");
+  // 기본값은 비워 둔다 — 날씨와 상관없는 문구(예: 강풍)가 미리 채워져 모든 날 발행되지 않게
+  const [memo, setMemo] = useState("");
   const [qr, setQr] = useState("");
   const [lang, setLang] = useState("vi");
   const [moreOpen, setMoreOpen] = useState(false);
@@ -22,7 +23,7 @@ export default function PublishPanel({ tbm, meta, busy, onPublish, zones }: {
   if (!tbm) {
     return (
       <Panel title="TBM 발행">
-        <label className="text-xs font-bold text-slate-500" htmlFor="memo">관리자 한마디 (선택, 자동 번역·역번역)</label>
+        <label className="text-xs font-bold text-slate-500" htmlFor="memo">관리자 한마디 (선택, 작업 구역에만 · 출입 통제 구역은 출입금지 지침 · 자동 번역·역번역)</label>
         <textarea id="memo" className="mt-1 w-full rounded-lg border border-slate-200 p-2 text-sm" rows={2}
           value={memo} onChange={(e) => setMemo(e.target.value)} />
         <div className="mt-2 text-right"><Button kind="danger" disabled={busy} onClick={() => onPublish(memo)}>
