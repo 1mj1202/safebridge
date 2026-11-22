@@ -1,7 +1,7 @@
 """근로자 현장 챗봇 — 구역 선택 → 브리핑 → 질문 → 이슈(긴급도·전달) → 관리자 회신."""
 import pytest
 
-from app.services import field_chat, glossary, issues, translate
+from app.services import chat_weather, field_chat, glossary, issues, translate, weather, zone_brief
 
 
 @pytest.fixture(scope="module")
@@ -97,6 +97,26 @@ def test_chat_korean_worker_gets_korean_rule(monkeypatch):
     r = field_chat.answer("안전대 어디에 걸어?", "ko", "위험: 추락")
     assert r == {"text": "안전대를 단부 지지점에 거세요", "grounded": True}
     assert "never in Korean" not in seen[0] and "never in Korean" in field_chat.system_prompt("vi")
+
+
+def test_chat_context_has_ban_actions_and_ppe(client, tbm):
+    a = client.get(f"/api/assessments/{tbm['assessment_id']}").json()
+    work = zone_brief.context_ko(a["draft"], "A동 3F-a")
+    assert "행동:" in work and "공통 보호구:" in work and "출입:" not in work
+    ban = zone_brief.context_ko(a["draft"], "A동 2F-a")
+    assert "출입: 이 구역은" in ban and "행동:" not in ban
+    assert "covers the question only in part" in field_chat.system_prompt("ko")
+
+
+def test_chat_weather_uses_forecast_temperature(monkeypatch):
+    fc = {"wind_gust": 3.0, "rain_mm_h": 0.0, "temp_min": 24.0, "temp_max": 34.5, "sky": "맑음", "source": "가상 예보"}
+    monkeypatch.setattr(weather, "forecast", lambda day: fc)
+    hot = "\n".join(chat_weather.context_lines("2026-08-01"))
+    assert "최고 34.5℃" in hot and "폭염 기준(최고 33℃ 이상) 해당:" in hot and "한랭" not in hot
+    fc.update(temp_min=-1.0, temp_max=7.0)
+    cold = "\n".join(chat_weather.context_lines("2026-11-24"))
+    assert "폭염 기준(최고 33℃ 이상) 해당 없음" in cold and "한랭 기준(최저 0℃ 이하) 해당" in cold
+    assert "더위 증상" in cold  # 증상 안내는 늘 들어간다
 
 
 def test_scene_for_zone(client, tbm):

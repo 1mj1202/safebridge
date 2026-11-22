@@ -102,8 +102,11 @@ def context_ko(draft: dict, zone: str) -> str:
     if b is None:
         return ""
     items = _items(draft)
+    shown = brief(draft, zone, "ko")  # 근로자 화면과 같은 출입금지·행동·보호구 문장
     lines = [f"구역: {b['zone']} ({'출입 통제 구역' if b['restricted'] else '작업 구역'})",
              "팀: " + (", ".join(f"{t['team']}(반장: {t['lead']})" for t in b["teams"]) or "없음")]
+    if shown["ban"]:
+        lines.append(f"출입: {shown['ban']['text']}. {shown['ban']['until']}")
     for w in b["weather"]:
         if w["item_id"] in items:
             lines.append(f"날씨: {items[w['item_id']]['hazard']}")
@@ -117,4 +120,8 @@ def context_ko(draft: dict, zone: str) -> str:
         lines += [f"  - 확인: {glossary.phrase(c, 'ko')}" for c in it.get("checks", [])]
         if it.get("explanation"):
             lines.append(f"  - 설명: {it['explanation']}")
+    for a in shown["actions"]:
+        lines.append(f"행동: {a['hazard']} → {(a['when'] + ' ') if a['when'] else ''}{a['do']}")
+    if shown["ppe"]:
+        lines.append("공통 보호구: " + ", ".join(shown["ppe"]))
     return "\n".join(lines)

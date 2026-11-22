@@ -18,7 +18,9 @@ NO_ANSWER = "NO_ANSWER"
 
 _BASE = ("You are SafeBridge, a construction-site safety assistant talking to a site worker. "
          "Answer ONLY using the approved safety briefing given to you. Never invent rules, numbers or permissions. "
-         f"If the briefing does not answer the question, reply exactly {NO_ANSWER}. ")
+         "If the briefing covers the question only in part, say just what the briefing says and add that "
+         "the worker should ask their team leader for the rest. "
+         f"Only if nothing in the briefing relates to the question, reply exactly {NO_ANSWER}. ")
 
 
 def system_prompt(lang: str) -> str:

@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.core.db import get_db
 from app.models import Issue
-from app.services import brief_actions, field_chat, glossary, issues, names, risk, schedule, site, translate, zone_brief
+from app.services import brief_actions, chat_weather, field_chat, glossary, issues, names, risk, schedule, site, translate, zone_brief
 
 from .launch import stamp
 from .schemas import ChatRequest, IssueRequest
@@ -70,7 +70,10 @@ def _memo(card: dict, mcheck: dict | None, lang: str) -> str:
 def chat(token: str, body: ChatRequest, db: Session = Depends(get_db)):
     t = _zone(db, token, body.zone)
     lang = _lang(body.lang)
-    return field_chat.answer(body.message, lang, zone_brief.context_ko(t.assessment.draft, body.zone))
+    ctx = zone_brief.context_ko(t.assessment.draft, body.zone)
+    if ctx:  # 더위·추위 질문은 작업일 예보 온도로 답한다
+        ctx = "\n".join([ctx, *chat_weather.context_lines(t.assessment.work_date)])
+    return field_chat.answer(body.message, lang, ctx)
 
 
 @router.post("/{token}/issue")
