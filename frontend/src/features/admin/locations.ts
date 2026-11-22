@@ -12,6 +12,8 @@ export interface Locations {
   fresh_hours: number;
   workers: WorkerLoc[];
   boxes: Record<string, { min: Vec3; max: Vec3 } | null>;
+  /** 발주처·감리 화면: 이름·업체 없이 지금 현장에 있는 인원만 (서버가 뺀다) */
+  anonymous?: boolean;
 }
 
 export function filterCompany(ws: WorkerLoc[], company: string): WorkerLoc[] {

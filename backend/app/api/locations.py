@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 
 from app.core import worker_auth
-from app.core.admin_auth import require_admin
+from app.core.admin_auth import require_admin, role_of
 from app.core.db import get_db
 from app.services import locations, zone_brief
 
@@ -25,5 +25,7 @@ def checkin(token: str, body: CheckInRequest, request: Request, db: Session = De
 
 
 @router.get("/locations", dependencies=[Depends(require_admin)])
-def current_locations(db: Session = Depends(get_db)):
-    return locations.snapshot(db)
+def current_locations(request: Request, db: Session = Depends(get_db)):
+    snap = locations.snapshot(db)
+    # 발주처·감리(보기 전용)는 익명·구역 중심: 이름·업체·팀·언어·태그 시각 없이 구역별 인원과 교육 확인만
+    return locations.anonymous(snap) if role_of(request) == "viewer" else snap
