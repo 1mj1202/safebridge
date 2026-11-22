@@ -31,6 +31,10 @@ export interface Brief {
   checks: string[];
   plan: Plan | null;
   memo: string;
+  /** 응답 언어 (언어를 바꾼 직후 이전 언어 브리핑을 그리지 않게) */
+  lang?: string;
+  /** 마지막에 기억할 한 줄 — 출입 통제 구역의 출입금지 지침 */
+  final?: string | null;
   photo: { key: string; text: string } | null;
   /** 예방 영상(3D 사고 재현) 장면: 위험 순위 순 */
   sims?: { kind: "fall_edge" | "fall_opening" | "falling_object" | "collapse"; accident: string; measure: string }[];

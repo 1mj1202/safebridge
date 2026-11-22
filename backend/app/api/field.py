@@ -45,9 +45,10 @@ def brief(token: str, zone: str, lang: str = "ko", db: Session = Depends(get_db)
     lang = _lang(lang)
     out = zone_brief.brief(t.assessment.draft, zone, lang)
     place, _hz, check = t.cards[lang]
-    # 평면도는 작업 층 구역에만, 관리자 한마디는 모든 구역에
+    # 평면도는 작업 층 구역에만. 관리자 한마디는 작업 구역에만 — 출입 통제 구역은 마지막 줄이 출입금지 지침이다
     out["plan"] = place.get("plan") if place.get("plan") and place["plan"]["storey"] == out["storey"] else None
-    out["memo"] = (check.get("memo") if check.get("memo_translated") else check.get("memo_ko")) or ""
+    out["memo"] = "" if out["restricted"] else (
+        (check.get("memo") if check.get("memo_translated") else check.get("memo_ko")) or "")
     return out
 
 

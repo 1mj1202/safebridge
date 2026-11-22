@@ -49,7 +49,7 @@ def brief(draft: dict, zone: str, lang: str) -> dict | None:
     build = [glossary.phrase("chat.restricted", lang)] if b["restricted"] else []
     hazard_keys = [items[s["item_id"]]["key"] for s in b["safety"] if s["item_id"] in items]
     return {
-        "zone": b["zone"], "label": names.zone(b["zone"], lang), "storey": b["storey"], "restricted": b["restricted"],
+        "zone": b["zone"], "lang": lang, "label": names.zone(b["zone"], lang), "storey": b["storey"], "restricted": b["restricted"],
         "teams": [{"team": names.team(t["trade"], lang), "lead": names.lead(t["trade"], lang)} for t in b["teams"]],
         "title": glossary.phrase("chat.today", lang, zone=names.zone(b["zone"], lang)),
         "sections": [
@@ -58,6 +58,9 @@ def brief(draft: dict, zone: str, lang: str) -> dict | None:
             {"type": "safety", "title": glossary.phrase("chat.safety", lang), "lines": safety},
         ],
         "checks": [glossary.phrase(c, lang) for c in checks[:5]],
+        # 근로자가 마지막에 기억할 한 줄: 출입 통제 구역은 승인된 구역 지침(출입금지) 그대로.
+        # 작업 구역은 관리자 한마디가 이 자리에 온다(api/field.py).
+        "final": glossary.phrase("chat.restricted_final", lang) if b["restricted"] else None,
         "photo": None if b["restricted"] else photo_request(hazard_keys, lang),
         "videos": videos.kosha_links(hazard_keys) if hazard_keys else [],
         "sims": sims(hazard_keys, lang),
