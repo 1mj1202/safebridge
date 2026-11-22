@@ -16,11 +16,19 @@ from .translate import NAMES
 log = logging.getLogger(__name__)
 NO_ANSWER = "NO_ANSWER"
 
-SYSTEM = ("You are SafeBridge, a construction-site safety assistant talking to a foreign worker. "
-          "Answer ONLY using the approved safety briefing given to you. Never invent rules, numbers or permissions. "
-          f"If the briefing does not answer the question, reply exactly {NO_ANSWER}. "
-          "Use at most 3 short, plain sentences in the worker's language, never in Korean "
-          "(the briefing is Korean only for reference). No markdown.")
+_BASE = ("You are SafeBridge, a construction-site safety assistant talking to a site worker. "
+         "Answer ONLY using the approved safety briefing given to you. Never invent rules, numbers or permissions. "
+         f"If the briefing does not answer the question, reply exactly {NO_ANSWER}. ")
+
+
+def system_prompt(lang: str) -> str:
+    """언어 규칙은 근로자 언어별로 — 한국어 근로자에게 'never in Korean' 을 주면 늘 NO_ANSWER 로 빠졌다."""
+    if lang == "ko":
+        rule = "Use at most 3 short, plain sentences in Korean. No markdown."
+    else:
+        rule = ("Use at most 3 short, plain sentences in the worker's language, never in Korean "
+                "(the briefing is Korean only for reference). No markdown.")
+    return _BASE + rule
 
 
 def answer(question: str, lang: str, context_ko: str) -> dict:
@@ -32,7 +40,7 @@ def answer(question: str, lang: str, context_ko: str) -> dict:
               + (f"Use these fixed safety terms in {NAMES[lang]} exactly:\n{hint}\n\n" if hint else "")
               + f"Worker's question:\n{question}\n\nAnswer in {NAMES[lang]}.")
     try:
-        text = get_provider().complete(SYSTEM, prompt).strip()
+        text = get_provider().complete(system_prompt(lang), prompt).strip()
     except LLMError as e:
         log.warning("챗봇 답변 실패: %s", e)
         return fallback
